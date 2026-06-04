@@ -1,0 +1,65 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: sigopem
+          POSTGRES_PASSWORD: sigopem_password
+          POSTGRES_DB: sigopem_db
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U sigopem -d sigopem_db"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+
+    env:
+      DATABASE_URL: postgresql://sigopem:sigopem_password@localhost:5432/sigopem_db
+      SECRET_KEY: ci-test-secret-key-min-32-chars-long
+      JWT_EXPIRES_MINUTES: '480'
+      ALLOW_PUBLIC_REGISTER: 'true'
+      UPLOAD_DIR: ./uploads
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm --filter @sigopem/api exec prisma generate
+
+      - name: Migrate database
+        run: pnpm --filter @sigopem/api exec prisma migrate deploy
+
+      - name: Seed database
+        run: pnpm --filter @sigopem/api exec prisma db seed
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Build
+        run: pnpm build
+
+      - name: Test API e2e
+        run: pnpm test

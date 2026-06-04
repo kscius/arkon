@@ -1,0 +1,17 @@
+node_modules
+**/node_modules
+.git
+.gitignore
+**/.env
+**/.env.*
+!**/.env.example
+**/dist
+**/coverage
+**/.turbo
+uploads
+*.md
+!apps/web/nginx.conf
+.cursor
+**/*.log
+**/test
+**/__tests__

@@ -1,0 +1,75 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 220 15% 12%;
+    --card: 0 0% 100%;
+    --card-foreground: 220 15% 12%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 220 15% 12%;
+    --primary: 211 55% 23%;
+    --primary-foreground: 0 0% 100%;
+    --secondary: 180 80% 26%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 220 14% 96%;
+    --muted-foreground: 218 11% 35%;
+    --accent: 30 78% 57%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 98%;
+    --border: 214 20% 90%;
+    --input: 214 20% 90%;
+    --ring: 211 55% 23%;
+    --radius: 0.5rem;
+
+    --sidebar-background: 211 55% 23%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 30 78% 57%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 211 55% 30%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 211 40% 30%;
+    --sidebar-ring: 30 78% 57%;
+
+    --sigopem-primary: #1B3A5C;
+    --sigopem-primary-light: #2C5282;
+    --sigopem-secondary: #0D7377;
+    --sigopem-accent: #E8913A;
+    --sigopem-surface: #F7F8FA;
+    --sigopem-surface-dark: #E2E8F0;
+    --sigopem-success: #38A169;
+    --sigopem-warning: #D69E2E;
+    --sigopem-danger: #DC2626;
+    --sigopem-info: #3182CE;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-[#F7F8FA] text-foreground font-sans antialiased;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}

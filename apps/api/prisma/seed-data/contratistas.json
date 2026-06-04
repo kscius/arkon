@@ -1,0 +1,98 @@
+[
+  {
+    "nombre": "Constructora del Centro S.A. de C.V.",
+    "rfc": "CCE010101ABC",
+    "representante": "Ing. Carlos Mendez Rodriguez",
+    "email": "contacto@cceconstructora.com",
+    "telefono": "222-123-4567",
+    "registro_padron": "PAD-2024-001"
+  },
+  {
+    "nombre": "Grupo Desarrollador Poblano S.A. de C.V.",
+    "rfc": "GDP020202DEF",
+    "representante": "Arq. Maria Elena Torres",
+    "email": "info@grupodp.com",
+    "telefono": "222-234-5678",
+    "registro_padron": "PAD-2024-002"
+  },
+  {
+    "nombre": "Infraestructura y Edificacion del Sur S.A. de C.V.",
+    "rfc": "IES030303GHI",
+    "representante": "Ing. Roberto Hernandez Lopez",
+    "email": "admin@iesinfra.com",
+    "telefono": "222-345-6789",
+    "registro_padron": "PAD-2024-003"
+  },
+  {
+    "nombre": "Obras Civiles Mexicanas S.A. de C.V.",
+    "rfc": "OCM040404JKL",
+    "representante": "Ing. Patricia Garcia Ruiz",
+    "email": "ventas@ocmex.com",
+    "telefono": "222-456-7890",
+    "registro_padron": "PAD-2024-004"
+  },
+  {
+    "nombre": "Consorcio Constructor del Centro S.A. de C.V.",
+    "rfc": "CCC050505MNO",
+    "representante": "Lic. Fernando Alvarez",
+    "email": "info@ccconstructor.com",
+    "telefono": "222-567-8901",
+    "registro_padron": "PAD-2024-005"
+  },
+  {
+    "nombre": "Servicios de Construccion Integral S.A. de C.V.",
+    "rfc": "SCI060606PQR",
+    "representante": "Ing. Ana Maria Santos",
+    "email": "contacto@scintegral.com",
+    "telefono": "222-678-9012",
+    "registro_padron": "PAD-2024-006"
+  },
+  {
+    "nombre": "Proyectos Urbanos del Estado de Puebla S.A. de C.V.",
+    "rfc": "PUE070707STU",
+    "representante": "Arq. Luis Fernando Camacho",
+    "email": "admin@pueproyectos.com",
+    "telefono": "222-789-0123",
+    "registro_padron": "PAD-2024-007"
+  },
+  {
+    "nombre": "Constructora El Carmen S.A. de C.V.",
+    "rfc": "CEC080808VWX",
+    "representante": "Ing. Diana Laura Morales",
+    "email": "info@elcarmen.com",
+    "telefono": "222-890-1234",
+    "registro_padron": "PAD-2024-008"
+  },
+  {
+    "nombre": "Desarrollo Inmobiliario Poblano S.A. de C.V.",
+    "rfc": "DIP090909YZA",
+    "representante": "Lic. Eduardo Sanchez",
+    "email": "ventas@dip.com",
+    "telefono": "222-901-2345",
+    "registro_padron": "PAD-2024-009"
+  },
+  {
+    "nombre": "Ingenieria y Proyectos del Altiplano S.A. de C.V.",
+    "rfc": "IPA101010BCD",
+    "representante": "Ing. Gabriela Jimenez",
+    "email": "contacto@ipaltiplano.com",
+    "telefono": "222-012-3456",
+    "registro_padron": "PAD-2024-010"
+  },
+  {
+    "nombre": "Soluciones Constructivas del Centro S.A. de C.V.",
+    "rfc": "SCC111111EFG",
+    "representante": "Ing. Alejandro Castillo",
+    "email": "info@sccentro.com",
+    "telefono": "222-112-2233",
+    "registro_padron": "PAD-2024-011"
+  },
+  {
+    "nombre": "Proyectos de Infraestructura Poblana S.A. de C.V.",
+    "rfc": "PIP121212HIJ",
+    "representante": "Arq. Sandra Patricia Luna",
+    "email": "admin@pipob.com",
+    "telefono": "222-223-3344",
+    "registro_padron": "PAD-2024-012"
+  }
+]

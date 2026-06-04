@@ -1,0 +1,307 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Rol {
+  estatal
+  municipal
+  contratista
+}
+
+enum EstatusObra {
+  en_ejecucion_a_tiempo
+  en_ejecucion_retraso
+  concluida
+  en_riesgo
+  en_preparacion
+  en_revision
+  suspendida
+  en_adjudicacion
+  en_licitacion
+  cancelada
+  cerrada
+}
+
+enum TipoObra {
+  pavimentacion_urbana
+  infraestructura_educativa
+  drenaje_saneamiento
+  electrificacion
+  agua_potable
+  espacios_publicos
+  salud
+  proteccion_civil
+  infraestructura_comercial
+  patrimonio_cultural
+  puentes_vialidades
+  caminos_rurales
+  alumbrado_publico
+}
+
+enum EstatusAvance {
+  pendiente
+  en_revision
+  validado
+  observado
+}
+
+enum EstatusEstimacion {
+  no_presentada
+  presentada
+  en_revision_municipal
+  observada_municipio
+  validada_municipio
+  en_revision_estatal
+  observada_estado
+  autorizada
+  pagada
+  rechazada
+}
+
+enum EstadoDocumento {
+  no_cargado
+  cargado
+  en_revision
+  observado
+  validado
+}
+
+enum CategoriaDocumento {
+  administrativa
+  tecnica
+  ejecucion
+  cierre
+  programa
+}
+
+enum EstatusObservacion {
+  abierta
+  en_atencion
+  atendida
+  cerrada
+}
+
+model Municipio {
+  id        String   @id @default(uuid()) @db.Uuid
+  nombre    String   @unique
+  latitud   Decimal? @db.Decimal(10, 6)
+  longitud  Decimal? @db.Decimal(10, 6)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users         Usuario[]
+  obras         Obra[]
+  alertas       Alerta[]
+
+  @@map("municipios")
+}
+
+model Contratista {
+  id             String   @id @default(uuid()) @db.Uuid
+  nombre         String
+  rfc            String   @unique
+  representante  String
+  email          String?
+  telefono       String?
+  registroPadron String?  @map("registro_padron")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  users Usuario[]
+  obras Obra[]
+
+  @@map("contratistas")
+}
+
+model Usuario {
+  id             String    @id @default(uuid()) @db.Uuid
+  email          String    @unique
+  passwordHash   String    @map("password_hash")
+  fullName       String    @map("full_name")
+  rol            Rol
+  avatarInitials String    @default("US") @map("avatar_initials")
+  isActive       Boolean   @default(true) @map("is_active")
+  lastLogin      DateTime? @map("last_login")
+  municipioId    String?   @map("municipio_id") @db.Uuid
+  contratistaId  String?   @map("contratista_id") @db.Uuid
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @updatedAt @map("updated_at")
+
+  municipio   Municipio?   @relation(fields: [municipioId], references: [id])
+  contratista Contratista? @relation(fields: [contratistaId], references: [id])
+
+  @@index([municipioId])
+  @@index([contratistaId])
+  @@map("users")
+}
+
+model Programa {
+  id          String   @id @default(uuid()) @db.Uuid
+  nombre      String
+  nombreCorto String   @map("nombre_corto")
+  tipo        String
+  dependencia String
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("programas")
+}
+
+model Obra {
+  id                       String       @id @default(uuid()) @db.Uuid
+  folio                    String       @unique
+  nombre                   String
+  localidad                String
+  programa                 String
+  tipoPrograma             String       @default("federal") @map("tipo_programa")
+  dependencia              String
+  tipoObra                 TipoObra     @map("tipo_obra")
+  descripcion              String?
+  poblacionBeneficiada     Int          @default(0) @map("poblacion_beneficiada")
+  montoAutorizado          Decimal      @map("monto_autorizado") @db.Decimal(14, 2)
+  montoContratado          Decimal      @default(0) @map("monto_contratado") @db.Decimal(14, 2)
+  montoEjercido            Decimal      @default(0) @map("monto_ejercido") @db.Decimal(14, 2)
+  supervisor               String?
+  fechaInicio              String?      @map("fecha_inicio")
+  fechaTerminoProgramada   String?      @map("fecha_termino_programada")
+  fechaTerminoReal         String?      @map("fecha_termino_real")
+  plazoEjecucion           Int          @default(0) @map("plazo_ejecucion")
+  avanceFisicoProgramado   Decimal      @default(0) @map("avance_fisico_programado") @db.Decimal(5, 2)
+  avanceFisicoReal         Decimal      @default(0) @map("avance_fisico_real") @db.Decimal(5, 2)
+  avanceFinanciero         Decimal      @default(0) @map("avance_financiero") @db.Decimal(5, 2)
+  estatus                  EstatusObra  @default(en_preparacion)
+  riesgo                   String       @default("bajo")
+  latitud                  Decimal?     @db.Decimal(10, 6)
+  longitud                 Decimal?     @db.Decimal(10, 6)
+  evidenciaFotografica     Json         @default("[]") @map("evidencia_fotografica")
+  municipioId              String       @map("municipio_id") @db.Uuid
+  contratistaId            String?      @map("contratista_id") @db.Uuid
+  createdAt                DateTime     @default(now()) @map("created_at")
+  updatedAt                DateTime     @updatedAt @map("updated_at")
+
+  municipio     Municipio      @relation(fields: [municipioId], references: [id])
+  contratista   Contratista?   @relation(fields: [contratistaId], references: [id])
+  avances       AvanceMensual[]
+  estimaciones  Estimacion[]
+  documentos    Documento[]
+  observaciones Observacion[]
+  alertas       Alerta[]
+
+  @@index([municipioId])
+  @@index([contratistaId])
+  @@index([estatus])
+  @@map("obras")
+}
+
+model AvanceMensual {
+  id          String        @id @default(uuid()) @db.Uuid
+  periodo     String
+  programado  Decimal       @default(0) @db.Decimal(5, 2)
+  reportado   Decimal       @default(0) @db.Decimal(5, 2)
+  validado    Decimal?      @db.Decimal(5, 2)
+  variacion   Decimal       @default(0) @db.Decimal(5, 2)
+  estatus     EstatusAvance @default(pendiente)
+  actividades String        @default("")
+  comentarios String        @default("")
+  obraId      String        @map("obra_id") @db.Uuid
+  createdAt   DateTime      @default(now()) @map("created_at")
+  updatedAt   DateTime      @updatedAt @map("updated_at")
+
+  obra Obra @relation(fields: [obraId], references: [id], onDelete: Cascade)
+
+  @@index([obraId])
+  @@map("avances_mensuales")
+}
+
+model Estimacion {
+  id                  String            @id @default(uuid()) @db.Uuid
+  numero              Int
+  periodo             String
+  montoEstimado       Decimal           @map("monto_estimado") @db.Decimal(14, 2)
+  montoAcumulado      Decimal           @map("monto_acumulado") @db.Decimal(14, 2)
+  porcentajeFinanciero Decimal          @map("porcentaje_financiero") @db.Decimal(5, 2)
+  estatus             EstatusEstimacion @default(no_presentada)
+  fechaPresentacion   String?           @map("fecha_presentacion")
+  fechaRevision       String?           @map("fecha_revision")
+  fechaAutorizacion   String?           @map("fecha_autorizacion")
+  validacionMunicipal Boolean           @default(false) @map("validacion_municipal")
+  validacionEstatal   Boolean           @default(false) @map("validacion_estatal")
+  observaciones       String            @default("")
+  obraId              String            @map("obra_id") @db.Uuid
+  createdAt           DateTime          @default(now()) @map("created_at")
+  updatedAt           DateTime          @updatedAt @map("updated_at")
+
+  obra Obra @relation(fields: [obraId], references: [id], onDelete: Cascade)
+
+  @@index([obraId])
+  @@map("estimaciones")
+}
+
+model Documento {
+  id          String             @id @default(uuid()) @db.Uuid
+  categoria   CategoriaDocumento
+  nombre      String
+  tipo        String             @default("pdf")
+  estatus     EstadoDocumento    @default(no_cargado)
+  fechaCarga  String?            @map("fecha_carga")
+  responsable String?
+  archivo     String?
+  tamanoBytes Int?               @map("tamano_bytes")
+  obraId      String             @map("obra_id") @db.Uuid
+  createdAt   DateTime           @default(now()) @map("created_at")
+  updatedAt   DateTime           @updatedAt @map("updated_at")
+
+  obra Obra @relation(fields: [obraId], references: [id], onDelete: Cascade)
+
+  @@index([obraId])
+  @@map("documentos")
+}
+
+model Observacion {
+  id              String             @id @default(uuid()) @db.Uuid
+  usuarioEmisor   String             @map("usuario_emisor")
+  fecha           String
+  tipo            String
+  descripcion     String
+  severidad       String             @default("media")
+  responsable     String?
+  fechaCompromiso String?            @map("fecha_compromiso")
+  estatus         EstatusObservacion @default(abierta)
+  respuestasJson  Json               @default("[]") @map("respuestas_json")
+  obraId          String             @map("obra_id") @db.Uuid
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+
+  obra Obra @relation(fields: [obraId], references: [id], onDelete: Cascade)
+
+  @@index([obraId])
+  @@map("observaciones")
+}
+
+model Alerta {
+  id               String   @id @default(uuid()) @db.Uuid
+  municipio        String
+  municipioId      String?  @map("municipio_id") @db.Uuid
+  titulo           String
+  descripcion      String
+  tipo             String
+  severidad        String   @default("media")
+  fechaGeneracion  String   @map("fecha_generacion")
+  atendida         Boolean  @default(false)
+  accionTomada     String?  @map("accion_tomada")
+  obraId           String?  @map("obra_id") @db.Uuid
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  obra      Obra?      @relation(fields: [obraId], references: [id], onDelete: SetNull)
+  municipioRef Municipio? @relation(fields: [municipioId], references: [id])
+
+  @@index([atendida, severidad])
+  @@index([municipioId])
+  @@map("alertas")
+}

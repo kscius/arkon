@@ -1,0 +1,84 @@
+[
+  {
+    "obra_id": null,
+    "municipio": "Puebla",
+    "titulo": "Asignacion de presupuesto pendiente para Q3",
+    "descripcion": "Las obras FORTAMUN-2024-002 y PEF-2024-001 requieren liberacion de recursos adicionales para continuar en tiempo.",
+    "tipo": "presupuestaria",
+    "severidad": "alta",
+    "fecha_generacion": "15-05-2024",
+    "atendida": false
+  },
+  {
+    "obra_id": null,
+    "municipio": "Tehuacan",
+    "titulo": "Reprogramacion de visita de supervision",
+    "descripcion": "La visita de supervision del 20 de mayo fue pospuesta. Se requiere nueva fecha para validacion de estimacion No. 2.",
+    "tipo": "operativa",
+    "severidad": "media",
+    "fecha_generacion": "18-05-2024",
+    "atendida": false
+  },
+  {
+    "obra_id": null,
+    "municipio": "Atlixco",
+    "titulo": "Retraso en entrega de materiales",
+    "descripcion": "El proveedor de cemento reporta retraso de 2 semanas. Impacto potencial en obra FORTAMUN-2024-001.",
+    "tipo": "logistica",
+    "severidad": "alta",
+    "fecha_generacion": "10-05-2024",
+    "atendida": true,
+    "accion_tomada": "Se activo proveedor alterno. Entrega garantizada para el 25 de mayo."
+  },
+  {
+    "obra_id": null,
+    "municipio": "Cholula",
+    "titulo": "Permiso de proteccion civil vencido",
+    "descripcion": "El permiso de proteccion civil de la obra FORTAMUN-2024-003 vencio el 30 de abril. Se requiere renovacion.",
+    "tipo": "regulatoria",
+    "severidad": "critica",
+    "fecha_generacion": "02-05-2024",
+    "atendida": false
+  },
+  {
+    "obra_id": null,
+    "municipio": "San Andres Cholula",
+    "titulo": "Validacion de estimacion municipal pendiente",
+    "descripcion": "Estimacion No. 3 de FOISE-2024-001 lleva 15 dias sin validacion municipal.",
+    "tipo": "administrativa",
+    "severidad": "media",
+    "fecha_generacion": "20-05-2024",
+    "atendida": false
+  },
+  {
+    "obra_id": null,
+    "municipio": "Puebla",
+    "titulo": "Alerta climatica - Temporada de lluvias",
+    "descripcion": "Inicio de temporada de lluvias pronosticado para la primera semana de junio. Verificar proteccion de obras abiertas.",
+    "tipo": "climatica",
+    "severidad": "media",
+    "fecha_generacion": "25-05-2024",
+    "atendida": false
+  },
+  {
+    "obra_id": null,
+    "municipio": "Amozoc",
+    "titulo": "Cambio de director de obra",
+    "descripcion": "El Ing. Carlos Mendez reporta cambio de residente de obra. Se requiere actualizacion de documentacion.",
+    "tipo": "administrativa",
+    "severidad": "baja",
+    "fecha_generacion": "12-05-2024",
+    "atendida": true,
+    "accion_tomada": "Documentacion actualizada. Nuevo residente registrado."
+  },
+  {
+    "obra_id": null,
+    "municipio": "Huejotzingo",
+    "titulo": "Desvio de avance mayor al 10%",
+    "descripcion": "La obra SISPLADE-2024-001 presenta desvio de 12% en avance fisico vs programado.",
+    "tipo": "tecnica",
+    "severidad": "alta",
+    "fecha_generacion": "22-05-2024",
+    "atendida": false
+  }
+]
