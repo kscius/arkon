@@ -29,20 +29,7 @@ import type {
   User,
 } from '@/types';
 
-const MUNICIPIO_COLORS = [
-  '#1B3A5C',
-  '#0D7377',
-  '#E8913A',
-  '#38A169',
-  '#3182CE',
-  '#805AD5',
-  '#D69E2E',
-  '#DD6B20',
-  '#DC2626',
-  '#059669',
-  '#2B6CB0',
-  '#276749',
-];
+import { getMunicipioChartColors } from '@/config/brand';
 
 export async function login(email: string, password: string): Promise<User> {
   const res = await apiFetch<{
@@ -203,7 +190,8 @@ export async function deleteUser(id: string): Promise<void> {
 
 export async function fetchMunicipios(): Promise<MunicipioData[]> {
   const rows = await apiFetch<Record<string, unknown>[]>('/municipios');
-  return rows.map((row, i) => mapMunicipio(row, MUNICIPIO_COLORS[i % MUNICIPIO_COLORS.length]));
+  const colors = getMunicipioChartColors();
+  return rows.map((row, i) => mapMunicipio(row, colors[i % colors.length]));
 }
 
 export async function fetchMunicipio(id: string): Promise<MunicipioData> {

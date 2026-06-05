@@ -2,14 +2,17 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { ApiError } from '@/lib/api-client';
+import { getBrand } from '@/config/brand';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Shield, Mail, Lock, AlertCircle } from 'lucide-react';
+import { Mail, Lock, AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('estatal@arkon.gob.mx');
+  const brand = getBrand();
+  const [email, setEmail] = useState(brand.demoEmail);
   const [password, setPassword] = useState('');
+  const [logoFailed, setLogoFailed] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useApp();
@@ -39,16 +42,38 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F7F8FA] to-[#E2E8F0] p-4">
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{
+        background: `linear-gradient(to bottom right, ${brand.colors.surface}, ${brand.colors.surfaceDark})`,
+      }}
+    >
       <div className="w-full max-w-md">
         <div className="bg-white rounded-xl shadow-lg p-8">
           <div className="text-center mb-6">
-            <div className="w-16 h-16 mx-auto mb-4 bg-[#1B3A5C] rounded-xl flex items-center justify-center">
-              <Shield className="w-8 h-8 text-[#E8913A]" />
-            </div>
-            <h1 className="text-2xl font-bold text-[#1B3A5C]">ARKON</h1>
-            <p className="text-sm text-gray-500 mt-1">Sistema Integral de Gestion de Obras Publicas</p>
-            <p className="text-xs text-gray-400">Plataforma multi-nivel para gobiernos estatales y municipales</p>
+            {brand.logoSrc && !logoFailed ? (
+              <img
+                src={brand.logoSrc}
+                alt={brand.logoAlt}
+                onError={() => setLogoFailed(true)}
+                className="h-16 w-auto max-w-[240px] mx-auto mb-4 object-contain"
+              />
+            ) : (
+              <div
+                className="w-16 h-16 mx-auto mb-4 rounded-xl flex items-center justify-center text-2xl font-bold text-white"
+                style={{ backgroundColor: brand.colors.primary }}
+              >
+                {brand.productShortName.slice(0, 1)}
+              </div>
+            )}
+            <h1
+              className="text-2xl font-bold"
+              style={{ color: brand.colors.primary }}
+            >
+              {brand.productName}
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">{brand.loginSubtitle}</p>
+            <p className="text-xs text-gray-400">{brand.tagline}</p>
           </div>
 
           {error && (
@@ -89,7 +114,10 @@ export default function LoginPage() {
             </div>
             <Button
               type="submit"
-              className="w-full h-11 bg-[#1B3A5C] hover:bg-[#2C5282] text-white font-medium"
+              className="w-full h-11 text-white font-medium"
+              style={{
+                backgroundColor: brand.colors.primary,
+              }}
               disabled={loading}
             >
               {loading ? 'Iniciando sesion...' : 'Iniciar Sesion'}
@@ -97,7 +125,7 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center text-[11px] text-gray-400 mt-4">
-            Demo: estatal@arkon.gob.mx / Arkon2024!
+            Demo: {brand.demoEmail} / {brand.demoPasswordHint}
           </p>
         </div>
       </div>

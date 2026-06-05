@@ -1,14 +1,16 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { EstatusObra, Usuario } from '@prisma/client';
+import { getApiBrand } from '../common/brand';
 import { ScopeService } from '../common/scope.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 const SUGGESTIONS = [
-  'Ver obras en ejecucion',
-  'Ver alertas criticas',
-  'Ver avance financiero',
-  'Analisis de riesgos del portafolio',
+  'Que obras necesitan atencion urgente ahora?',
+  'Cuales son las obras con mayor desfase fisico?',
+  'Resumen ejecutivo del portafolio de obras',
+  'Cuantas alertas criticas estan sin atender?',
+  'Comparativo de avance fisico vs financiero',
 ];
 
 @Injectable()
@@ -70,12 +72,40 @@ export class ChatService {
         (a.obra ? ` (obra ${a.obra.folio})` : ` (${a.municipio})`),
     );
 
+    const totalObras = obras.length;
+    const enEjecucion = obras.filter(
+      (o) =>
+        o.estatus === EstatusObra.en_ejecucion_a_tiempo ||
+        o.estatus === EstatusObra.en_ejecucion_retraso,
+    ).length;
+    const conRetraso = obras.filter((o) => o.estatus === EstatusObra.en_ejecucion_retraso).length;
+    const concluidas = obras.filter((o) => o.estatus === EstatusObra.concluida).length;
+    const enRiesgo = obras.filter(
+      (o) =>
+        o.estatus === EstatusObra.en_riesgo ||
+        o.estatus === EstatusObra.en_ejecucion_retraso,
+    ).length;
+    const montoAutorizadoTotal = obras.reduce((s, o) => s + Number(o.montoAutorizado), 0);
+    const avancePromedio =
+      totalObras > 0
+        ? obras.reduce((s, o) => s + Number(o.avanceFisicoReal), 0) / totalObras
+        : 0;
+
+    const resumenLines = [
+      'Resumen estadistico:',
+      `- Total: ${totalObras} obras | En ejecucion: ${enEjecucion} | Con retraso: ${conRetraso} | Concluidas: ${concluidas} | En riesgo: ${enRiesgo}`,
+      `- Monto total autorizado: $${montoAutorizadoTotal.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN`,
+      `- Avance fisico promedio: ${avancePromedio.toFixed(1)}%`,
+    ];
+
     return [
       `Obras en alcance (${obras.length} muestra):`,
       obraLines.join('\n') || '(sin obras)',
       '',
       'Alertas abiertas:',
       alertaLines.join('\n') || '(sin alertas abiertas)',
+      '',
+      resumenLines.join('\n'),
     ].join('\n');
   }
 
@@ -85,12 +115,18 @@ export class ChatService {
     apiKey: string,
   ): Promise<string> {
     const context = await this.buildObraContext(user);
+    const brand = getApiBrand();
     const systemPrompt = [
-      'Eres ARKON AI, asistente del Sistema Integral de Gestion de Obras Publicas del Estado de Mexico.',
+      brand.systemPromptIntro,
       'Responde en espanol, de forma clara y accionable para funcionarios publicos.',
       'Incluye analisis de riesgos (retrasos fisicos, desvios financieros, alertas) y recomendaciones concretas.',
       'Usa solo los datos del contexto; si falta informacion, indicalo.',
       'Formato: parrafos breves y listas cuando ayude.',
+      'Montos: siempre en pesos mexicanos (MXN) con separadores de miles, formato $X,XXX,XXX.XX MXN.',
+      'Porcentajes: usa siempre un decimal (ej. 73.4%).',
+      'Tono: analisis directo, sin ambiguedades, basado en datos concretos del contexto; evita frases vagas.',
+      'Longitud: respuestas cortas para preguntas simples (1-3 oraciones); detalladas con listas para analisis.',
+      'Datos insuficientes: si el contexto no tiene la informacion necesaria, indicalo explicitamente y sugiere que modulo consultar (Obras, Alertas, Contratos o Reportes).',
       '',
       '--- CONTEXTO DEL PORTAFOLIO (alcance del usuario) ---',
       context,
@@ -158,14 +194,27 @@ export class ChatService {
           `Monto autorizado: **$${Number(obra.montoAutorizado).toLocaleString('es-MX', { minimumFractionDigits: 2 })}**.`
         );
       }
-      return `No encontre una obra con folio similar a '${folio}'. Verifique el folio e intente de nuevo.`;
+      return (
+        `No encontre una obra con folio similar a '${folio}'. ` +
+        'Sugerencias: (1) verifica que el folio este completo (ej. "MUN-2024-001"), ' +
+        '(2) puedes buscar por nombre parcial consultando el modulo de Obras con el buscador, ' +
+        '(3) escribe "obra [FOLIO]" con el folio exacto tal como aparece en el catalogo.'
+      );
     }
+
+    const brand = getApiBrand();
+
+    const avgFisico =
+      totalObras > 0
+        ? obras.reduce((s, o) => s + Number(o.avanceFisicoReal), 0) / totalObras
+        : 0;
 
     if (['hola', 'buenos dias', 'buenas tardes', 'buenas noches', 'saludos'].some((k) => lower.includes(k))) {
       return (
-        'Hola, soy **ARKON AI**, tu asistente para la gestion de obras publicas. ' +
-        'Puedo ayudarte con informacion sobre obras, avances, alertas, presupuestos y mas. ' +
-        `Actualmente el sistema registra **${totalObras} obras** en tu alcance. En que puedo ayudarte?`
+        `Hola, soy **${brand.assistantName}**, tu asistente para la gestion de obras publicas. ` +
+        `El portafolio en tu alcance tiene **${totalObras} obras**: avance fisico promedio **${avgFisico.toFixed(1)}%**, ` +
+        `**${obrasRetraso} con retraso** y **${obrasRiesgo} en riesgo**. ` +
+        'Puedo ayudarte con avances, alertas, contratos, presupuestos y analisis de riesgos. En que puedo ayudarte?'
       );
     }
 
@@ -174,9 +223,12 @@ export class ChatService {
     }
 
     if (['retras', 'atras', 'desfas'].some((k) => lower.includes(k))) {
+      const pctRetraso = totalObras > 0 ? ((obrasRetraso / totalObras) * 100).toFixed(1) : '0.0';
       return (
-        `Actualmente hay **${obrasRetraso} obras con retraso**. ` +
-        'Te recomiendo revisar el modulo de Alertas para ver los detalles y tomar acciones correctivas.'
+        `Hay **${obrasRetraso} obras con retraso** (${pctRetraso}% del portafolio). ` +
+        'Acciones recomendadas: (1) abre el modulo de Alertas y filtra por severidad ALTA, ' +
+        '(2) revisa el desfase fisico de cada obra y solicita informe al contratista, ' +
+        '(3) evalua si procede reprogramacion o aplicacion de penalizaciones contractuales.'
       );
     }
 
@@ -186,19 +238,38 @@ export class ChatService {
 
     if (['riesgo', 'alerta critica', 'urgencia', 'analisis'].some((k) => lower.includes(k))) {
       return (
-        `Hay **${obrasRiesgo} obras en riesgo** (con retraso o en riesgo directo). ` +
-        'Se recomienda revision inmediata del panel de alertas y priorizar obras con desfase fisico mayor a 10 puntos.'
+        `Hay **${obrasRiesgo} obras en riesgo** (retraso fisico o estatus de riesgo directo). ` +
+        'Pasos inmediatos: (1) ve al modulo **Alertas** y filtra por severidad CRITICA, ' +
+        '(2) en el modulo **Obras** ordena por desfase fisico descendente para identificar las mas criticas, ' +
+        '(3) verifica si las obras con desfase mayor a 10 pp tienen contratista activo y fechas de entrega vigentes, ' +
+        '(4) genera un reporte ejecutivo desde el modulo Reportes para presentar a la direccion.'
       );
     }
 
     if (['avance', 'progres', 'avanza'].some((k) => lower.includes(k))) {
-      const avg =
-        totalObras > 0
-          ? obras.reduce((s, o) => s + Number(o.avanceFisicoReal), 0) / totalObras
-          : 0;
+      const obrasConDesfase = obras
+        .filter((o) => Number(o.avanceFisicoProgramado) - Number(o.avanceFisicoReal) > 0)
+        .sort(
+          (a, b) =>
+            (Number(b.avanceFisicoProgramado) - Number(b.avanceFisicoReal)) -
+            (Number(a.avanceFisicoProgramado) - Number(a.avanceFisicoReal)),
+        )
+        .slice(0, 3);
+      const desfaseTop =
+        obrasConDesfase.length > 0
+          ? ' Las obras con mayor desfase son: ' +
+            obrasConDesfase
+              .map(
+                (o) =>
+                  `**${o.folio}** (${(Number(o.avanceFisicoProgramado) - Number(o.avanceFisicoReal)).toFixed(1)} pp)`,
+              )
+              .join(', ') +
+            '.'
+          : '';
       return (
-        `El avance fisico promedio es **${avg.toFixed(1)}%**. ` +
-        `Obras en ejecucion: **${obrasEjecucion}**.`
+        `El avance fisico promedio es **${avgFisico.toFixed(1)}%**. ` +
+        `Obras en ejecucion: **${obrasEjecucion}** | Con retraso: **${obrasRetraso}**.` +
+        desfaseTop
       );
     }
 
@@ -206,16 +277,30 @@ export class ChatService {
       return `El monto total autorizado en tu alcance es de **$${montoTotal.toLocaleString('es-MX', { minimumFractionDigits: 2 })} MXN**.`;
     }
 
-    if (['que es arkon', 'sigo pem', 'funcion', 'para que sirve'].some((k) => lower.includes(k))) {
-      return (
-        '**ARKON** (Sistema Integral de Gestion de Obras Publicas del Estado de Mexico) ' +
-        'es una plataforma para dar seguimiento a obras publicas financiadas por programas ' +
-        'federales y estatales. Permite monitorear avances fisicos y financieros, gestionar ' +
-        'alertas, controlar estimaciones y coordinar entre dependencias estatales, municipios y contratistas.'
-      );
+    if (
+      ['que es arkon', 'que es conagua', 'sigo pem', 'funcion', 'para que sirve'].some((k) =>
+        lower.includes(k),
+      )
+    ) {
+      return brand.aboutProductResponse;
     }
 
-    if (['programa', 'fondo', 'fapaa', 'camino'].some((k) => lower.includes(k))) {
+    if (
+      [
+        'programa',
+        'fondo',
+        'fapaa',
+        'camino',
+        'proagua',
+        'peas',
+        'prodder',
+        'agua',
+        'saneamiento',
+        'ptar',
+        'macromedicion',
+        'devolucion',
+      ].some((k) => lower.includes(k))
+    ) {
       const programas = [...new Set(obras.map((o) => o.programa))].sort();
       return (
         `Los programas activos en tu alcance son: **${programas.join(', ')}**. ` +
@@ -224,9 +309,13 @@ export class ChatService {
     }
 
     return (
-      `Entiendo tu pregunta. En tu alcance hay **${totalObras} obras** registradas, ` +
-      `con **${obrasEjecucion} en ejecucion**, **${obrasRetraso} con retraso** y **${obrasConcluidas} concluidas**. ` +
-      'Para informacion mas especifica, preguntame sobre una obra por folio o consulta los modulos de Obras y Alertas.'
+      `Tu portafolio tiene **${totalObras} obras**: ${obrasEjecucion} en ejecucion, ${obrasRetraso} con retraso, ${obrasConcluidas} concluidas. ` +
+      'Puedo responder preguntas como: ' +
+      '"Cuales obras tienen retraso?", ' +
+      '"Cual es el avance financiero del portafolio?", ' +
+      '"Que alertas criticas estan abiertas?", ' +
+      '"Dame informacion de la obra [FOLIO]". ' +
+      'Para analisis avanzado, consulta los modulos de Obras, Alertas, Contratos o Reportes.'
     );
   }
 }

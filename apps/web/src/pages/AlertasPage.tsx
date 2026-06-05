@@ -19,8 +19,10 @@ import {
 } from '@/components/ui/dialog';
 import { AlertCircle, CheckCircle, Filter, Search } from 'lucide-react';
 import type { Alerta } from '@/types';
+import { getBrand } from '@/config/brand';
 
 export default function AlertasPage() {
+  const brand = getBrand();
   const navigate = useNavigate();
   const { user, refreshNotifications } = useApp();
   const canAtender = user?.role === 'estatal' || user?.role === 'municipal';
@@ -92,7 +94,7 @@ export default function AlertasPage() {
     documental: '#805AD5',
     financiera: '#D69E2E',
     tecnica: '#3182CE',
-    programa: '#1B3A5C',
+    programa: brand.colors.primary,
   };
 
   const obraName = (obraId: string) => obras.find((o) => o.id === obraId)?.nombre ?? 'Obra';
@@ -101,7 +103,7 @@ export default function AlertasPage() {
     <PageState loading={loading} error={error} onRetry={reload}>
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-[#1B3A5C]">Centro de Alertas</h1>
+        <h1 className="text-xl font-bold text-brand-primary">Centro de Alertas</h1>
         <p className="text-xs text-gray-500 mt-1">Monitoreo de alertas y notificaciones del sistema</p>
       </div>
 
@@ -212,7 +214,7 @@ export default function AlertasPage() {
                           setAccionText('');
                           setAtenderTarget(alerta);
                         }}
-                        className="ml-auto text-[10px] font-medium text-[#2C5282] hover:underline"
+                        className="ml-auto text-[10px] font-medium text-brand-primary-light hover:underline"
                       >
                         Atender
                       </button>
@@ -255,7 +257,7 @@ export default function AlertasPage() {
               type="button"
               disabled={atenderBusy}
               onClick={handleAtenderSubmit}
-              className="px-3 py-2 text-xs rounded-md bg-[#1B3A5C] text-white hover:bg-[#2C5282] disabled:opacity-60"
+              className="px-3 py-2 text-xs rounded-md bg-brand-primary text-white hover:bg-brand-primary-light disabled:opacity-60"
             >
               {atenderBusy ? 'Guardando...' : 'Confirmar'}
             </button>

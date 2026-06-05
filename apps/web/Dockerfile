@@ -11,7 +11,9 @@ RUN pnpm install --filter ./apps/web... --no-frozen-lockfile
 COPY apps/web ./apps/web
 
 ARG VITE_API_URL=/api
+ARG VITE_TENANT=arkon
 ENV VITE_API_URL=${VITE_API_URL}
+ENV VITE_TENANT=${VITE_TENANT}
 
 WORKDIR /app/apps/web
 RUN pnpm run build

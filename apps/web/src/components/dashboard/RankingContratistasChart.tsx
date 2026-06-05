@@ -10,6 +10,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { TopContratistaChartRow } from '@/types';
+import { getBrand } from '@/config/brand';
 import { formatCurrencyM, formatPercentage } from '@/lib/utils';
 import {
   Bar,
@@ -34,6 +35,7 @@ export function RankingContratistasChart({
   programaFilter,
   onProgramaFilterChange,
 }: RankingContratistasChartProps) {
+  const brand = getBrand();
   const navigate = useNavigate();
 
   const chartData = useMemo(
@@ -109,7 +111,7 @@ export function RankingContratistasChart({
                 <Bar
                   dataKey="obrasCount"
                   name="obrasCount"
-                  fill="#1B3A5C"
+                  fill={brand.colors.primary}
                   radius={[0, 3, 3, 0]}
                   cursor="pointer"
                   onClick={(data) => {

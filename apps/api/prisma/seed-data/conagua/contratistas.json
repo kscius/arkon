@@ -1,0 +1,114 @@
+[
+  {
+    "nombre": "Comisión del Agua del Estado de Durango (CAD)",
+    "rfc": "RFC-PENDIENTE-01",
+    "representante": "Director General CAD",
+    "email": "contacto@cad.gob.mx",
+    "telefono": "618-137-0000",
+    "registro_padron": "ORG-CAD-001"
+  },
+  {
+    "nombre": "Comisión Estatal del Agua y Saneamiento de Oaxaca (CEABIEN)",
+    "rfc": "RFC-PENDIENTE-02",
+    "representante": "Director General CEABIEN",
+    "email": "contacto@ceabien.gob.mx",
+    "telefono": "951-501-0000",
+    "registro_padron": "ORG-CEABIEN-001"
+  },
+  {
+    "nombre": "Comisión Estatal del Agua de Sonora (CEA Sonora)",
+    "rfc": "RFC-PENDIENTE-03",
+    "representante": "Director General CEA Sonora",
+    "email": "contacto@cea.gob.mx",
+    "telefono": "662-213-0000",
+    "registro_padron": "ORG-CEA-SON-001"
+  },
+  {
+    "nombre": "Sistema de Agua Potable y Alcantarillado de Cuernavaca (SAPAC)",
+    "rfc": "RFC-PENDIENTE-04",
+    "representante": "Director General SAPAC",
+    "email": "contacto@sapac.gob.mx",
+    "telefono": "777-312-0000",
+    "registro_padron": "ORG-SAPAC-001"
+  },
+  {
+    "nombre": "Sistema de Agua Potable y Alcantarillado de León (SAPAL)",
+    "rfc": "RFC-PENDIENTE-05",
+    "representante": "Director General SAPAL",
+    "email": "contacto@sapal.gob.mx",
+    "telefono": "477-710-0000",
+    "registro_padron": "ORG-SAPAL-001"
+  },
+  {
+    "nombre": "Junta de Agua Potable y Alcantarillado de Irapuato (JAPAMI)",
+    "rfc": "RFC-PENDIENTE-06",
+    "representante": "Director General JAPAMI",
+    "email": "contacto@japami.gob.mx",
+    "telefono": "462-623-0000",
+    "registro_padron": "ORG-JAPAMI-001"
+  },
+  {
+    "nombre": "Junta Municipal de Agua Potable y Alcantarillado de Celaya (JUMAPA)",
+    "rfc": "RFC-PENDIENTE-07",
+    "representante": "Director General JUMAPA",
+    "email": "contacto@jumapa.gob.mx",
+    "telefono": "461-612-0000",
+    "registro_padron": "ORG-JUMAPA-001"
+  },
+  {
+    "nombre": "Junta Municipal de Agua Potable y Alcantarillado de Cortázar (JUMAPAC)",
+    "rfc": "RFC-PENDIENTE-08",
+    "representante": "Director General JUMAPAC",
+    "email": "contacto@jumapac.gob.mx",
+    "telefono": "411-693-0000",
+    "registro_padron": "ORG-JUMAPAC-001"
+  },
+  {
+    "nombre": "Sistema Intermunicipal de Agua Potable y Alcantarillado de Guanajuato (SIMAPAG)",
+    "rfc": "RFC-PENDIENTE-09",
+    "representante": "Director General SIMAPAG",
+    "email": "contacto@simapag.gob.mx",
+    "telefono": "473-732-0000",
+    "registro_padron": "ORG-SIMAPAG-001"
+  },
+  {
+    "nombre": "Junta de Agua Potable y Alcantarillado de San Juan del Río (JAPAM)",
+    "rfc": "RFC-PENDIENTE-10",
+    "representante": "Director General JAPAM",
+    "email": "contacto@japam.gob.mx",
+    "telefono": "427-272-0000",
+    "registro_padron": "ORG-JAPAM-001"
+  },
+  {
+    "nombre": "Sistema Operador de Agua Potable y Alcantarillado de Puebla (SOAPAP)",
+    "rfc": "RFC-PENDIENTE-11",
+    "representante": "Director General SOAPAP",
+    "email": "contacto@soapap.gob.mx",
+    "telefono": "222-246-0000",
+    "registro_padron": "ORG-SOAPAP-001"
+  },
+  {
+    "nombre": "Sistema de Aguas de la Ciudad de México (SACMEX)",
+    "rfc": "RFC-PENDIENTE-12",
+    "representante": "Director General SACMEX",
+    "email": "contacto@sacmex.cdmx.gob.mx",
+    "telefono": "55-5174-0000",
+    "registro_padron": "ORG-SACMEX-001"
+  },
+  {
+    "nombre": "Junta de Agua Potable y Alcantarillado de Yucatán (JAPAY)",
+    "rfc": "RFC-PENDIENTE-13",
+    "representante": "Director General JAPAY",
+    "email": "contacto@japay.gob.mx",
+    "telefono": "999-942-0000",
+    "registro_padron": "ORG-JAPAY-001"
+  },
+  {
+    "nombre": "Comisión de Agua Potable y Alcantarillado de Quintana Roo (CAPA)",
+    "rfc": "RFC-PENDIENTE-14",
+    "representante": "Director General CAPA",
+    "email": "contacto@capa.gob.mx",
+    "telefono": "983-832-0000",
+    "registro_padron": "ORG-CAPA-001"
+  }
+]

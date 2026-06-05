@@ -1,19 +1,22 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ApiError } from '@/lib/api-client';
+import { getBrand } from '@/config/brand';
 import { askChat } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Sparkles, Send, User, Bot, AlertTriangle, Lightbulb } from 'lucide-react';
+import { Sparkles, Send, User, Bot, Lightbulb } from 'lucide-react';
+import { AssistantMessageContent } from '@/components/assistant/AssistantMessageContent';
 
 interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
+  isError?: boolean;
 }
 
-const suggestedQuestions = [
+const DEFAULT_ASSISTANT_SUGGESTIONS = [
   'Que obras tienen retraso?',
   'Resumen de inversion por programa',
   'Obras en riesgo',
@@ -22,12 +25,13 @@ const suggestedQuestions = [
 ];
 
 export default function AsistentePage() {
+  const brand = getBrand();
+  const suggestedQuestions = brand.assistantSuggestions ?? DEFAULT_ASSISTANT_SUGGESTIONS;
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome',
       role: 'assistant',
-      content:
-        'Buen dia. Soy el Asistente Inteligente de ARKON. Puedo ayudarte con consultas sobre obras, avances, programas y alertas segun su perfil.\n\nQue informacion necesitas?',
+      content: brand.assistantGreeting,
       timestamp: new Date(),
     },
   ]);
@@ -75,6 +79,7 @@ export default function AsistentePage() {
           role: 'assistant',
           content: message,
           timestamp: new Date(),
+          isError: true,
         },
       ]);
     } finally {
@@ -88,21 +93,14 @@ export default function AsistentePage() {
         <Card>
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#0D7377]" />
-              <CardTitle className="text-sm font-semibold">Asistente ARKON</CardTitle>
-              <Badge className="bg-[#0D7377] text-[10px]">API</Badge>
+              <Sparkles className="w-4 h-4" style={{ color: brand.colors.secondary }} />
+              <CardTitle className="text-sm font-semibold">{brand.assistantName}</CardTitle>
+              <Badge className="text-[10px]" style={{ backgroundColor: brand.colors.secondary }}>
+                API
+              </Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
-            <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <AlertTriangle className="w-4 h-4 text-yellow-600" />
-                <span className="text-xs font-semibold text-yellow-800">Motor de reglas</span>
-              </div>
-              <p className="text-[11px] text-yellow-800">
-                Las respuestas provienen de POST /api/chat/ask con datos reales segun su rol.
-              </p>
-            </div>
             <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
               <div className="flex items-center gap-2 mb-2">
                 <Lightbulb className="w-4 h-4 text-blue-600" />
@@ -125,7 +123,7 @@ export default function AsistentePage() {
 
       <div className="lg:col-span-3 flex flex-col bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="p-3 border-b border-gray-200 flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-[#0D7377]" />
+          <Sparkles className="w-4 h-4 text-brand-secondary" />
           <span className="text-sm font-semibold text-gray-900">Chat</span>
           <span className="flex items-center gap-1 ml-auto">
             <span className="w-2 h-2 rounded-full bg-green-500" />
@@ -141,41 +139,65 @@ export default function AsistentePage() {
               animate={{ opacity: 1, y: 0 }}
               className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
             >
-              <div className={`flex gap-2 max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+              <div
+                className={`flex gap-2.5 ${
+                  msg.role === 'user' ? 'max-w-[85%] flex-row-reverse' : 'max-w-[min(100%,44rem)]'
+                } ${msg.role === 'user' ? '' : ''}`}
+              >
                 <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    msg.role === 'user' ? 'bg-[#1B3A5C]' : 'bg-[#0D7377]'
-                  }`}
+                  className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm"
+                  style={{
+                    backgroundColor:
+                      msg.role === 'user' ? brand.colors.primary : brand.colors.secondary,
+                  }}
                 >
                   {msg.role === 'user' ? (
-                    <User className="w-3.5 h-3.5 text-white" />
+                    <User className="w-4 h-4 text-white" />
                   ) : (
-                    <Bot className="w-3.5 h-3.5 text-white" />
+                    <Bot className="w-4 h-4 text-white" />
                   )}
                 </div>
                 <div
-                  className={`p-3 rounded-2xl text-xs leading-relaxed whitespace-pre-line ${
+                  className={`rounded-2xl px-4 py-3 shadow-sm ${
                     msg.role === 'user'
-                      ? 'bg-[#1B3A5C] text-white rounded-br-md'
-                      : 'bg-gray-50 border border-gray-200 text-gray-800 rounded-bl-md'
+                      ? 'text-white rounded-br-md'
+                      : msg.isError
+                        ? 'bg-red-50 border border-red-200 rounded-bl-md'
+                        : 'bg-white border border-gray-200 rounded-bl-md'
                   }`}
+                  style={
+                    msg.role === 'user' ? { backgroundColor: brand.colors.primary } : undefined
+                  }
                 >
-                  {msg.content}
+                  <AssistantMessageContent
+                    content={msg.content}
+                    variant={msg.isError ? 'error' : msg.role === 'user' ? 'user' : 'assistant'}
+                  />
                 </div>
               </div>
             </motion.div>
           ))}
 
           {isTyping && (
-            <div className="flex gap-2">
-              <div className="w-7 h-7 rounded-full bg-[#0D7377] flex items-center justify-center flex-shrink-0">
-                <Bot className="w-3.5 h-3.5 text-white" />
+            <div className="flex gap-2.5">
+              <div
+                className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5 shadow-sm"
+                style={{ backgroundColor: brand.colors.secondary }}
+              >
+                <Bot className="w-4 h-4 text-white" />
               </div>
-              <div className="p-3 bg-gray-50 border border-gray-200 rounded-2xl rounded-bl-md">
-                <div className="flex gap-1">
-                  <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" />
-                  <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '150ms' }} />
-                  <span className="w-2 h-2 rounded-full bg-gray-400 animate-bounce" style={{ animationDelay: '300ms' }} />
+              <div className="px-4 py-3 bg-white border border-gray-200 rounded-2xl rounded-bl-md shadow-sm">
+                <div className="flex items-center gap-1.5">
+                  <span className="w-2 h-2 rounded-full bg-brand-secondary/70 animate-bounce" />
+                  <span
+                    className="w-2 h-2 rounded-full bg-brand-secondary/70 animate-bounce"
+                    style={{ animationDelay: '150ms' }}
+                  />
+                  <span
+                    className="w-2 h-2 rounded-full bg-brand-secondary/70 animate-bounce"
+                    style={{ animationDelay: '300ms' }}
+                  />
+                  <span className="ml-1 text-[11px] text-gray-500">Analizando datos...</span>
                 </div>
               </div>
             </div>
@@ -198,8 +220,9 @@ export default function AsistentePage() {
               onClick={() => handleSend()}
               disabled={!input.trim() || isTyping}
               className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                input.trim() ? 'bg-[#1B3A5C] text-white' : 'bg-gray-200 text-gray-400'
+                input.trim() ? 'text-white' : 'bg-gray-200 text-gray-400'
               }`}
+              style={input.trim() ? { backgroundColor: brand.colors.primary } : undefined}
             >
               <Send className="w-3.5 h-3.5" />
             </button>

@@ -1,3 +1,4 @@
+import { getBrand } from '@/config/brand';
 import type {
   Alerta,
   AvanceMensual,
@@ -90,7 +91,10 @@ export function mapObra(raw: Record<string, unknown>): Obra {
   };
 }
 
-export function mapMunicipio(raw: Record<string, unknown>, color = '#1B3A5C'): MunicipioData {
+export function mapMunicipio(
+  raw: Record<string, unknown>,
+  color = getBrand().colors.primary,
+): MunicipioData {
   return {
     id: String(raw.id),
     nombre: String(raw.nombre),

@@ -10,11 +10,33 @@ import {
   TipoObra,
 } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
 import { join } from 'path';
 
 const prisma = new PrismaClient();
-const seedDir = join(__dirname, 'seed-data');
+
+function resolveSeedDir(): string {
+  const tenant = process.env.TENANT_ID?.trim().toLowerCase();
+  const conaguaDir = join(__dirname, 'seed-data', 'conagua');
+  if (tenant === 'conagua' && existsSync(conaguaDir)) {
+    return conaguaDir;
+  }
+  return join(__dirname, 'seed-data');
+}
+
+const seedDir = resolveSeedDir();
+
+function demoTenant() {
+  const tenant = process.env.TENANT_ID?.trim().toLowerCase();
+  if (tenant === 'conagua') {
+    return { domain: 'conagua.gob.mx', password: 'Conagua2024!', label: 'CONAGUA' };
+  }
+  return { domain: 'arkon.gob.mx', password: 'Arkon2024!', label: 'ARKON' };
+}
+
+function demoEmail(localPart: string): string {
+  return `${localPart}@${demoTenant().domain}`;
+}
 
 function loadJson<T>(name: string): T {
   return JSON.parse(readFileSync(join(seedDir, name), 'utf-8')) as T;
@@ -96,8 +118,16 @@ const MESES = [
   'Agosto',
 ];
 
-/** Canonical programas matching obra.programa strings in seed-data/obras.json */
-const PROGRAMAS_CANONICOS = [
+type ProgramaCanonico = {
+  id: string;
+  nombreCorto: string;
+  nombre: string;
+  tipo: string;
+  dependencia: string;
+};
+
+/** Canonical programas for ARKON demo (obra.programa in seed-data/obras.json) */
+const PROGRAMAS_CANONICOS_ARKON: readonly ProgramaCanonico[] = [
   {
     id: '10000000-0000-4000-8000-000000000001',
     nombreCorto: 'FAPAA',
@@ -156,8 +186,45 @@ const PROGRAMAS_CANONICOS = [
   },
 ] as const;
 
+const PROGRAMAS_CANONICOS_CONAGUA: readonly ProgramaCanonico[] = [
+  {
+    id: '20000000-0000-4000-8000-000000000001',
+    nombreCorto: 'PROAGUA',
+    nombre:
+      'Programa de Agua Potable, Drenaje y Tratamiento de Aguas Residuales (PROAGUA)',
+    tipo: 'federal',
+    dependencia: 'CONAGUA',
+  },
+  {
+    id: '20000000-0000-4000-8000-000000000002',
+    nombreCorto: 'PEAS',
+    nombre: 'Programa de Agua y Saneamiento para el Bienestar (PEAS)',
+    tipo: 'federal',
+    dependencia: 'CONAGUA',
+  },
+  {
+    id: '20000000-0000-4000-8000-000000000003',
+    nombreCorto: 'PRODDER',
+    nombre:
+      'Programa de Devolución de Derechos y Aprovechamientos (PRODDER)',
+    tipo: 'federal',
+    dependencia: 'CONAGUA',
+  },
+] as const;
+
+function programasCanonicosForTenant(tenantId?: string): readonly ProgramaCanonico[] {
+  const tenant = tenantId?.trim().toLowerCase() ?? process.env.TENANT_ID?.trim().toLowerCase();
+  if (tenant === 'conagua') {
+    return PROGRAMAS_CANONICOS_CONAGUA;
+  }
+  return PROGRAMAS_CANONICOS_ARKON;
+}
+
 async function main() {
-  console.log('ARKON Database Seeder');
+  const tenant = demoTenant();
+  const programasCanonicos = programasCanonicosForTenant();
+  console.log(`${tenant.label} Database Seeder`);
+  console.log(`  Seed data: ${seedDir}`);
   console.log('='.repeat(60));
 
   await prisma.$transaction([
@@ -173,7 +240,7 @@ async function main() {
     prisma.programa.deleteMany(),
   ]);
 
-  for (const p of PROGRAMAS_CANONICOS) {
+  for (const p of programasCanonicos) {
     await prisma.programa.upsert({
       where: { id: p.id },
       create: {
@@ -191,7 +258,7 @@ async function main() {
       },
     });
   }
-  console.log(`  Seeded ${PROGRAMAS_CANONICOS.length} programas`);
+  console.log(`  Seeded ${programasCanonicos.length} programas`);
 
   const municipiosData = loadJson<MunicipioSeed[]>('municipios.json');
   const municipios = await Promise.all(
@@ -204,6 +271,12 @@ async function main() {
   console.log(`  Seeded ${municipios.length} municipios`);
 
   const municipioByName = new Map(municipios.map((m) => [m.nombre, m]));
+  const municipioAt = (index: number): string => {
+    if (municipios.length === 0) {
+      throw new Error('No municipios seeded');
+    }
+    return municipios[index % municipios.length].id;
+  };
 
   const contratistasData = loadJson<ContratistaSeed[]>('contratistas.json');
   const contratistas = await Promise.all(
@@ -222,10 +295,10 @@ async function main() {
   );
   console.log(`  Seeded ${contratistas.length} contratistas`);
 
-  const passwordHash = await bcrypt.hash('Arkon2024!', 10);
+  const passwordHash = await bcrypt.hash(tenant.password, 10);
   const usersData = [
     {
-      email: 'estatal@arkon.gob.mx',
+      email: demoEmail('estatal'),
       fullName: 'Lic. Martha Elena Vazquez',
       rol: Rol.estatal,
       avatarInitials: 'MV',
@@ -233,7 +306,7 @@ async function main() {
       contratistaId: null as string | null,
     },
     {
-      email: 'coordinador@arkon.gob.mx',
+      email: demoEmail('coordinador'),
       fullName: 'Ing. Jorge Luis Martinez',
       rol: Rol.estatal,
       avatarInitials: 'JM',
@@ -241,39 +314,39 @@ async function main() {
       contratistaId: null,
     },
     {
-      email: 'municipal.centro@arkon.gob.mx',
+      email: demoEmail('municipal.centro'),
       fullName: 'Arq. Laura Patricia Mendez',
       rol: Rol.municipal,
       avatarInitials: 'LM',
-      municipioId: municipioByName.get('Centro')!.id,
+      municipioId: municipioAt(0),
       contratistaId: null,
     },
     {
-      email: 'municipal.norte@arkon.gob.mx',
+      email: demoEmail('municipal.norte'),
       fullName: 'Ing. Roberto Carlos Diaz',
       rol: Rol.municipal,
       avatarInitials: 'RD',
-      municipioId: municipioByName.get('Norte')!.id,
+      municipioId: municipioAt(1),
       contratistaId: null,
     },
     {
-      email: 'municipal.valle@arkon.gob.mx',
+      email: demoEmail('municipal.valle'),
       fullName: 'Lic. Maria Fernanda Ruiz',
       rol: Rol.municipal,
       avatarInitials: 'MR',
-      municipioId: municipioByName.get('Valle')!.id,
+      municipioId: municipioAt(2),
       contratistaId: null,
     },
     {
-      email: 'municipal.sur@arkon.gob.mx',
+      email: demoEmail('municipal.sur'),
       fullName: 'Ing. Jose Antonio Flores',
       rol: Rol.municipal,
       avatarInitials: 'JF',
-      municipioId: municipioByName.get('Sur')!.id,
+      municipioId: municipioAt(3),
       contratistaId: null,
     },
     {
-      email: 'cce@arkon.gob.mx',
+      email: demoEmail('cce'),
       fullName: 'Ing. Carlos Mendez Rodriguez',
       rol: Rol.contratista,
       avatarInitials: 'CM',
@@ -281,7 +354,7 @@ async function main() {
       contratistaId: contratistas[0].id,
     },
     {
-      email: 'gdp@arkon.gob.mx',
+      email: demoEmail('gdp'),
       fullName: 'Arq. Maria Elena Torres',
       rol: Rol.contratista,
       avatarInitials: 'MT',
@@ -289,7 +362,7 @@ async function main() {
       contratistaId: contratistas[1].id,
     },
     {
-      email: 'ies@arkon.gob.mx',
+      email: demoEmail('ies'),
       fullName: 'Ing. Roberto Hernandez Lopez',
       rol: Rol.contratista,
       avatarInitials: 'RH',
@@ -477,7 +550,7 @@ async function main() {
 
   console.log('='.repeat(60));
   console.log('Seed completed successfully!');
-  console.log('Default login: estatal@arkon.gob.mx / Arkon2024!');
+  console.log(`Default login: ${demoEmail('estatal')} / ${tenant.password}`);
 }
 
 main()

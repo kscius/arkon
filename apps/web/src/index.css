@@ -36,12 +36,18 @@
     --sidebar-border: 211 40% 30%;
     --sidebar-ring: 30 78% 57%;
 
-    --arkon-primary: #1B3A5C;
-    --arkon-primary-light: #2C5282;
-    --arkon-secondary: #0D7377;
-    --arkon-accent: #E8913A;
-    --arkon-surface: #F7F8FA;
-    --arkon-surface-dark: #E2E8F0;
+    --brand-primary: #1B3664;
+    --brand-primary-light: #3B83BD;
+    --brand-secondary: #2A6F97;
+    --brand-accent: #C5A059;
+    --brand-surface: #F5F7FA;
+    --brand-surface-dark: #E2E8F0;
+    --arkon-primary: var(--brand-primary);
+    --arkon-primary-light: var(--brand-primary-light);
+    --arkon-secondary: var(--brand-secondary);
+    --arkon-accent: var(--brand-accent);
+    --arkon-surface: var(--brand-surface);
+    --arkon-surface-dark: var(--brand-surface-dark);
     --arkon-success: #38A169;
     --arkon-warning: #D69E2E;
     --arkon-danger: #DC2626;
@@ -53,7 +59,7 @@
   }
 
   body {
-    @apply bg-[#F7F8FA] text-foreground font-sans antialiased;
+    @apply bg-brand-surface text-foreground font-sans antialiased;
   }
 
   html {

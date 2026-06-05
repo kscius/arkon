@@ -148,20 +148,30 @@ export function getTipoObraLabel(tipo: string): string {
   return labels[tipo] || tipo;
 }
 
+import { getProgramaBrandColors } from '@/config/brand';
+
 export function getProgramaColor(id: string): string {
-  const colors: Record<string, string> = {
-    'fise': '#1B3A5C', 'fism': '#0D7377', 'fortamun': '#E8913A',
-    'fais': '#38A169', 'faeispum': '#D69E2E', 'pem': '#3182CE',
-    'pds': '#805AD5', 'proteccion-civil': '#DD6B20',
-  };
-  return colors[id] || '#718096';
+  const colors = getProgramaBrandColors();
+  const lower = id.toLowerCase();
+  return colors[id] ?? colors[lower] ?? colors[id.toUpperCase()] ?? '#718096';
 }
 
 export function getProgramaName(id: string): string {
   const names: Record<string, string> = {
-    'fise': 'FISE', 'fism': 'FISM', 'fortamun': 'FORTAMUN',
-    'fais': 'FAIS', 'faeispum': 'FAEISPUM', 'pem': 'PEM',
-    'pds': 'PDS', 'proteccion-civil': 'PPAD',
+    fise: 'FISE',
+    fism: 'FISM',
+    fortamun: 'FORTAMUN',
+    fais: 'FAIS',
+    faeispum: 'FAEISPUM',
+    pem: 'PEM',
+    pds: 'PDS',
+    'proteccion-civil': 'PPAD',
+    PROAGUA: 'PROAGUA — Agua potable, drenaje y saneamiento',
+    proagua: 'PROAGUA — Agua potable, drenaje y saneamiento',
+    PEAS: 'PEAS — Fortalecimiento de entidades de agua y saneamiento',
+    peas: 'PEAS — Fortalecimiento de entidades de agua y saneamiento',
+    PRODDER: 'PRODDER — Devolución de derechos',
+    prodder: 'PRODDER — Devolución de derechos',
   };
-  return names[id] || id.toUpperCase();
+  return names[id] ?? names[id.toLowerCase()] ?? id;
 }

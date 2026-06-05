@@ -59,7 +59,7 @@ export default function MunicipioPanelPage() {
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <div>
             <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-lg font-bold text-[#1B3A5C]">Panel del Municipio</h1>
+              <h1 className="text-lg font-bold text-brand-primary">Panel del Municipio</h1>
               {canPickMunicipio ? (
                 <Select value={selectedId} onValueChange={setSelectedId}>
                   <SelectTrigger className="w-[200px] h-9 text-xs">
@@ -84,14 +84,14 @@ export default function MunicipioPanelPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
           <div className="bg-gray-50 rounded-lg p-3">
             <div className="flex items-center gap-2 mb-1">
-              <Building2 className="w-4 h-4 text-[#1B3A5C]" />
+              <Building2 className="w-4 h-4 text-brand-primary" />
               <span className="text-[10px] text-gray-500 uppercase">Obras</span>
             </div>
             <div className="text-xl font-bold text-gray-900">{municipio.obras}</div>
           </div>
           <div className="bg-gray-50 rounded-lg p-3">
             <div className="flex items-center gap-2 mb-1">
-              <DollarSign className="w-4 h-4 text-[#E8913A]" />
+              <DollarSign className="w-4 h-4 text-brand-accent" />
               <span className="text-[10px] text-gray-500 uppercase">Inversion</span>
             </div>
             <div className="text-xl font-bold text-gray-900">{formatCurrencyM(municipio.inversionTotal)}</div>

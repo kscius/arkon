@@ -21,8 +21,8 @@ const HashRouter = ReactRouter.HashRouter;
 
 function AuthBootScreen() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#F7F8FA]">
-      <Spinner className="size-8 text-[#1B3A5C]" />
+    <div className="min-h-screen flex items-center justify-center bg-brand-surface">
+      <Spinner className="size-8 text-brand-primary" />
     </div>
   );
 }
@@ -49,7 +49,7 @@ function AppLayout({ children }: { children: React.ReactNode }) {
   if (!user) return <Navigate to="/" replace />;
 
   return (
-    <div className="flex h-screen bg-[#F7F8FA]">
+    <div className="flex h-screen bg-brand-surface">
       <Sidebar />
       {mobileDrawerOpen && <MobileDrawer onClose={toggleMobileDrawer} />}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">

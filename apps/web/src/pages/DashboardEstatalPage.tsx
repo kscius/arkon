@@ -24,6 +24,7 @@ import {
 import { mapProgramaChartFromApi } from '@/lib/programa-chart';
 import { normalizeName } from '@/lib/api-mappers';
 import { formatCurrencyM, formatPercentage, getObraStatusColor, getObraStatusLabel, getSeverityColor, getSeverityLabel, getProgramaColor, getProgramaName } from '@/lib/utils';
+import { getBrand } from '@/config/brand';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -39,6 +40,7 @@ const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { st
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' as const } } };
 
 export default function DashboardPage() {
+  const brand = getBrand();
   const navigate = useNavigate();
   const { user, setNotifications, setSelectedMunicipio } = useApp();
   const [obraModalOpen, setObraModalOpen] = useState(false);
@@ -127,12 +129,12 @@ export default function DashboardPage() {
   }));
 
   const kpiCards = [
-    { label: 'Total de Obras', value: totalObras.toString(), sub: `${obrasEjecucion} en ejecucion`, icon: Building2, color: '#1B3A5C', trend: null },
-    { label: 'Inversion Autorizada', value: formatCurrencyM(montoAutorizado), sub: 'Presupuesto total', icon: DollarSign, color: '#E8913A', trend: null },
+    { label: 'Total de Obras', value: totalObras.toString(), sub: `${obrasEjecucion} en ejecucion`, icon: Building2, color: brand.colors.primary, trend: null },
+    { label: 'Inversion Autorizada', value: formatCurrencyM(montoAutorizado), sub: 'Presupuesto total', icon: DollarSign, color: brand.colors.accent, trend: null },
     { label: 'Obras en Ejecucion', value: obrasEjecucion.toString(), sub: `${Math.round((obrasEjecucion/totalObras)*100)}% del total`, icon: Activity, color: '#38A169', trend: Math.round((obrasEjecucion/totalObras)*100) },
     { label: 'Obras con Retraso', value: obrasRetraso.toString(), sub: `${Math.round((obrasRetraso/totalObras)*100)}% del total`, icon: AlertTriangle, color: '#DC2626', trend: null },
     { label: 'Avance Fisico Prom.', value: formatPercentage(avanceFisicoPromedio), sub: `Meta: 65%`, icon: TrendingUp, color: '#3182CE', trend: avanceFisicoPromedio },
-    { label: 'Monto Ejercido', value: formatCurrencyM(montoEjercido), sub: `${Math.round((montoEjercido/montoAutorizado)*100)}% autorizado`, icon: CreditCard, color: '#0D7377', trend: (montoEjercido/montoAutorizado)*100 },
+    { label: 'Monto Ejercido', value: formatCurrencyM(montoEjercido), sub: `${Math.round((montoEjercido/montoAutorizado)*100)}% autorizado`, icon: CreditCard, color: brand.colors.secondary, trend: (montoEjercido/montoAutorizado)*100 },
   ];
 
   return (
@@ -187,7 +189,7 @@ export default function DashboardPage() {
                   <Tooltip formatter={(value: number) => `${value}%`} />
                   <Legend wrapperStyle={{ fontSize: '11px' }} />
                   <Line type="monotone" dataKey="programado" name="Programado" stroke="#A0AEC0" strokeDasharray="5 5" strokeWidth={2} dot={false} />
-                  <Line type="monotone" dataKey="real" name="Real" stroke="#2C5282" strokeWidth={2} dot={{ r: 3 }} />
+                  <Line type="monotone" dataKey="real" name="Real" stroke={brand.colors.primaryLight} strokeWidth={2} dot={{ r: 3 }} />
                 </LineChart>
               </ResponsiveContainer>
             </CardContent>
@@ -254,13 +256,13 @@ export default function DashboardPage() {
                       className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 hover:border-gray-200 transition-all cursor-pointer"
                       onClick={() => m && navigate(`/municipios/${m.id}`)}
                     >
-                      <div className="w-7 h-7 rounded-full bg-[#1B3A5C] flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
+                      <div className="w-7 h-7 rounded-full bg-brand-primary flex items-center justify-center text-white text-xs font-bold flex-shrink-0">
                         {i + 1}
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-semibold text-gray-900 truncate">{row.municipio}</span>
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-[#0D7377] text-white">{count} obras</span>
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-brand-secondary text-white">{count} obras</span>
                         </div>
                         {m && (
                           <div className="flex items-center gap-3 mt-1">
@@ -297,8 +299,8 @@ export default function DashboardPage() {
                   <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}%`} />
                   <Tooltip formatter={(value: number) => `${value.toFixed(1)}%`} />
                   <Legend wrapperStyle={{ fontSize: '11px' }} />
-                  <Bar dataKey="fisico" name="Avance Fisico" fill="#2C5282" radius={[3, 3, 0, 0]} />
-                  <Bar dataKey="financiero" name="Avance Financiero" fill="#E8913A" radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="fisico" name="Avance Fisico" fill={brand.colors.primaryLight} radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="financiero" name="Avance Financiero" fill={brand.colors.accent} radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
             </CardContent>
@@ -325,7 +327,7 @@ export default function DashboardPage() {
                         ))}
                       </Pie>
                       <text x="50%" y="45%" textAnchor="middle" style={{ fontSize: '9px', fill: '#718096' }}>Total</text>
-                      <text x="50%" y="58%" textAnchor="middle" style={{ fontSize: '14px', fill: '#1B3A5C', fontWeight: 700 }}>{formatCurrencyM(montoAutorizado)}</text>
+                      <text x="50%" y="58%" textAnchor="middle" style={{ fontSize: '14px', fill: brand.colors.primary, fontWeight: 700 }}>{formatCurrencyM(montoAutorizado)}</text>
                     </PieChart>
                   </ResponsiveContainer>
                 </div>
@@ -352,7 +354,7 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-2">
                   {alertasCriticas > 0 && <Badge className="bg-red-500 text-[10px]">{alertasCriticas} criticas</Badge>}
                   {alertasAltas > 0 && <Badge className="bg-orange-500 text-[10px]">{alertasAltas} altas</Badge>}
-                  <button onClick={() => navigate('/alertas')} className="text-[11px] text-[#2C5282] hover:underline font-medium flex items-center gap-1">
+                  <button onClick={() => navigate('/alertas')} className="text-[11px] text-brand-primary-light hover:underline font-medium flex items-center gap-1">
                     Ver todas <ArrowRight className="w-3 h-3" />
                   </button>
                 </div>
@@ -439,7 +441,7 @@ export default function DashboardPage() {
                           <div className="w-3 h-3 rounded-full mx-auto" style={{ backgroundColor: semColor }} />
                         </td>
                         <td className="py-2.5 px-3 text-center">
-                          <button className="text-[#2C5282] hover:underline text-[10px] font-medium">Ver</button>
+                          <button className="text-brand-primary-light hover:underline text-[10px] font-medium">Ver</button>
                         </td>
                       </tr>
                     );

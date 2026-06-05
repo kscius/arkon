@@ -2,6 +2,19 @@
 
 Sistema Integral de Gestión de Obras Públicas — monorepo MVP (React + NestJS + PostgreSQL).
 
+## Version CONAGUA (rama `conagua`)
+
+White-label para la **Comisión Nacional del Agua** ([gob.mx/conagua](https://www.gob.mx/conagua)): logo institucional, paleta azul CONAGUA, textos del asistente y usuarios demo `@conagua.gob.mx`.
+
+Configure en `.env`:
+
+```env
+TENANT_ID=conagua
+VITE_TENANT=conagua
+```
+
+Detalle: [docs/CONAGUA.md](./docs/CONAGUA.md). Contraseña demo: **`Conagua2024!`** · login: `estatal@conagua.gob.mx`.
+
 ## Requisitos
 
 - [Node.js](https://nodejs.org/) 20+

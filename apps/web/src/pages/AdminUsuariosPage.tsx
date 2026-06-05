@@ -136,7 +136,7 @@ export default function AdminUsuariosPage() {
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-lg font-bold text-[#1B3A5C]">Administración de usuarios</h1>
+            <h1 className="text-lg font-bold text-brand-primary">Administración de usuarios</h1>
             <p className="text-xs text-gray-500">Solo personal estatal puede crear cuentas.</p>
           </div>
           <Button type="button" onClick={() => setDialogOpen(true)} className="gap-2">
@@ -194,7 +194,7 @@ export default function AdminUsuariosPage() {
                             type="button"
                             disabled={busyId === u.id}
                             onClick={() => handleToggleActive(u)}
-                            className="text-[#2C5282] hover:underline disabled:opacity-50"
+                            className="text-brand-primary-light hover:underline disabled:opacity-50"
                           >
                             {u.isActive ? 'Desactivar' : 'Activar'}
                           </button>

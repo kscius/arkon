@@ -1,0 +1,16 @@
+[
+  { "nombre": "Guadalupe Victoria", "latitud": 24.4462, "longitud": -104.1219 },
+  { "nombre": "Santiago Papasquiaro", "latitud": 25.0433, "longitud": -105.4192 },
+  { "nombre": "León", "latitud": 21.125, "longitud": -101.686 },
+  { "nombre": "Irapuato", "latitud": 20.6767, "longitud": -101.356 },
+  { "nombre": "Celaya", "latitud": 20.5233, "longitud": -100.8157 },
+  { "nombre": "Cortázar", "latitud": 20.48, "longitud": -100.96 },
+  { "nombre": "Guanajuato", "latitud": 21.0186, "longitud": -101.2591 },
+  { "nombre": "Puebla", "latitud": 19.0414, "longitud": -98.2063 },
+  { "nombre": "Mérida", "latitud": 20.9674, "longitud": -89.5926 },
+  { "nombre": "San Juan del Río", "latitud": 20.3883, "longitud": -99.9964 },
+  { "nombre": "Tulum", "latitud": 20.2114, "longitud": -87.4654 },
+  { "nombre": "Tepache", "latitud": 29.535, "longitud": -109.53 },
+  { "nombre": "Cuernavaca", "latitud": 18.9186, "longitud": -99.2342 },
+  { "nombre": "CDMX", "latitud": 19.4326, "longitud": -99.1332 }
+]

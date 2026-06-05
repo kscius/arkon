@@ -13,10 +13,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { createObra, fetchContratistas, fetchMunicipios, updateObra, type CreateObraInput } from '@/lib/api';
 import { ApiError } from '@/lib/api-client';
+import { getBrand } from '@/config/brand';
 import { getProgramaName, getTipoObraLabel } from '@/lib/utils';
 import type { Obra, User } from '@/types';
 
-const PROGRAMAS = ['FAPAA', 'CAM', 'FAIS', 'FORTAMUN', 'FOMAGUA', 'FOISE', 'PEF', 'SISPLADE'];
+const DEFAULT_PROGRAMAS = ['FAPAA', 'CAM', 'FAIS', 'FORTAMUN', 'FOMAGUA', 'FOISE', 'PEF', 'SISPLADE'];
 
 const TIPOS_OBRA = [
   'pavimentacion_urbana',
@@ -74,6 +75,7 @@ interface ObraFormModalProps {
 }
 
 export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: ObraFormModalProps) {
+  const programas = getBrand().programas ?? DEFAULT_PROGRAMAS;
   const isEdit = Boolean(obra);
   const isEstatal = user.role === 'estatal';
   const forcedMunicipioId = user.role === 'municipal' ? user.municipioId : undefined;
@@ -88,7 +90,7 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
       folio: '',
       nombre: '',
       localidad: '',
-      programa: PROGRAMAS[0],
+      programa: programas[0],
       dependencia: 'Secretaría de Obras Públicas',
       tipo_obra: 'pavimentacion_urbana',
       monto_autorizado: 1_000_000,
@@ -140,7 +142,7 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
         folio: '',
         nombre: '',
         localidad: '',
-        programa: PROGRAMAS[0],
+        programa: programas[0],
         dependencia: 'Secretaría de Obras Públicas',
         tipo_obra: 'pavimentacion_urbana',
         monto_autorizado: 1_000_000,
@@ -205,7 +207,7 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
             </Field>
             <Field label="Programa *">
               <select {...form.register('programa')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white">
-                {PROGRAMAS.map((p) => (
+                {programas.map((p) => (
                   <option key={p} value={p}>
                     {getProgramaName(p)}
                   </option>
