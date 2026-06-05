@@ -49,8 +49,8 @@ export function Sidebar() {
           <div className="flex items-center gap-2">
             <Shield className="w-7 h-7 text-[#E8913A]" />
             <div>
-              <div className="text-sm font-bold tracking-wide">SIGOPEM</div>
-              <div className="text-[10px] text-white/60">Gobierno de Puebla</div>
+              <div className="text-sm font-bold tracking-wide">ARKON</div>
+              <div className="text-[10px] text-white/60">Gestion de obras publicas</div>
             </div>
           </div>
         )}

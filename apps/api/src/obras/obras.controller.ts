@@ -1,5 +1,17 @@
-import { Body, Controller, Delete, Get, Param, Patch, Post, Query, UseGuards } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import {
+  Body,
+  Controller,
+  Delete,
+  Get,
+  Param,
+  Patch,
+  Post,
+  Query,
+  Res,
+  UseGuards,
+} from '@nestjs/common';
+import type { Response } from 'express';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Rol, Usuario } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
@@ -12,6 +24,31 @@ import { ObrasService } from './obras.service';
 @Controller('obras')
 export class ObrasController {
   constructor(private readonly obras: ObrasService) {}
+
+  @Get('export')
+  @ApiQuery({ name: 'format', required: false, enum: ['csv'] })
+  exportCsv(
+    @CurrentUser() user: Usuario,
+    @Res() res: Response,
+    @Query('format') format?: string,
+    @Query('estatus') estatus?: string,
+    @Query('programa') programa?: string,
+    @Query('municipio_id') municipio_id?: string,
+    @Query('contratista_id') contratista_id?: string,
+    @Query('search') search?: string,
+  ) {
+    const fmt = (format ?? 'csv').toLowerCase();
+    if (fmt !== 'csv') {
+      return res.status(400).json({ message: 'Only csv format is supported' });
+    }
+    return this.obras
+      .exportCsv(user, { estatus, programa, municipio_id, contratista_id, search })
+      .then((csv) => {
+        res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+        res.setHeader('Content-Disposition', 'attachment; filename="obras-export.csv"');
+        res.send(csv);
+      });
+  }
 
   @Get()
   list(

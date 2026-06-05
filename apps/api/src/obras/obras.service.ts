@@ -1,5 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { EstatusObra, Prisma, Rol, Usuario } from '@prisma/client';
+import { rowsToCsv } from '../common/csv.util';
 import { ScopeService } from '../common/scope.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateObraDto, UpdateObraDto } from './dto/obra.dto';
@@ -12,6 +13,10 @@ export class ObrasService {
   ) {}
 
   private mapObra(obra: Prisma.ObraGetPayload<{ include: { municipio: true; contratista: true } }>) {
+    const montoContratado = Number(obra.montoContratado);
+    const montoEjercido = Number(obra.montoEjercido);
+    const montoEjercidoExcedeContratado =
+      montoContratado > 0 && montoEjercido > montoContratado;
     return {
       id: obra.id,
       folio: obra.folio,
@@ -26,8 +31,12 @@ export class ObrasService {
       descripcion: obra.descripcion ?? '',
       poblacion_beneficiada: obra.poblacionBeneficiada,
       monto_autorizado: Number(obra.montoAutorizado),
-      monto_contratado: Number(obra.montoContratado),
-      monto_ejercido: Number(obra.montoEjercido),
+      monto_contratado: montoContratado,
+      monto_ejercido: montoEjercido,
+      monto_ejercido_excede_contratado: montoEjercidoExcedeContratado,
+      desviacion_financiera_monto: montoEjercidoExcedeContratado
+        ? Math.round((montoEjercido - montoContratado) * 100) / 100
+        : 0,
       supervisor: obra.supervisor ?? '',
       fecha_inicio: obra.fechaInicio ?? '',
       fecha_termino_programada: obra.fechaTerminoProgramada ?? '',
@@ -158,5 +167,35 @@ export class ObrasService {
     if (user.rol !== Rol.estatal) throw new ForbiddenException('Only estatal can delete obras');
     await this.prisma.obra.delete({ where: { id } });
     return { deleted: true };
+  }
+
+  async exportCsv(
+    user: Usuario,
+    filters: {
+      estatus?: string;
+      programa?: string;
+      municipio_id?: string;
+      contratista_id?: string;
+      search?: string;
+    },
+  ): Promise<string> {
+    const obras = await this.findAll(user, filters);
+    const rows = obras.map((o) => ({
+      folio: o.folio,
+      nombre: o.nombre,
+      municipio: o.municipio_nombre,
+      contratista: o.contratista_nombre,
+      programa: o.programa,
+      estatus: o.estatus,
+      monto_autorizado: o.monto_autorizado,
+      monto_contratado: o.monto_contratado,
+      monto_ejercido: o.monto_ejercido,
+      avance_fisico_real: o.avance_fisico_real,
+      avance_fisico_programado: o.avance_fisico_programado,
+      avance_financiero: o.avance_financiero,
+      latitud: o.latitud ?? '',
+      longitud: o.longitud ?? '',
+    }));
+    return rowsToCsv(rows);
   }
 }

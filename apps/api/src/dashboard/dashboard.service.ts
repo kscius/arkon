@@ -1,5 +1,6 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { EstatusObra, Prisma, Rol, Usuario } from '@prisma/client';
+import { toCsv } from '../common/csv.util';
 import { ScopeService } from '../common/scope.service';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -107,6 +108,119 @@ export class DashboardService {
       municipio: nameById.get(r.municipioId) ?? '',
       obras_count: r._count.id,
     }));
+  }
+
+  async exportSummary(user: Usuario, format: 'csv' | 'json' = 'json'): Promise<string | object> {
+    const kpis = await this.getKpis(user);
+    const porEstatus = await this.obrasPorEstatus(user);
+    const porPrograma = await this.obrasPorPrograma(user);
+
+    const payload = {
+      generated_at: new Date().toISOString(),
+      kpis,
+      obras_por_estatus: porEstatus,
+      obras_por_programa: porPrograma,
+    };
+
+    if (format === 'json') return payload;
+
+    const kpiRows = Object.entries(kpis).map(([metric, value]) => ({ metric, value }));
+    const sections = [
+      toCsv(kpiRows, [
+        { key: 'metric', header: 'Metrica' },
+        { key: 'value', header: 'Valor' },
+      ]),
+      '',
+      '# Obras por estatus',
+      toCsv(
+        porEstatus.map((r) => ({ estatus: r.estatus, count: r.count })),
+        [
+          { key: 'estatus', header: 'Estatus' },
+          { key: 'count', header: 'Cantidad' },
+        ],
+      ),
+      '',
+      '# Obras por programa',
+      toCsv(
+        porPrograma.map((r) => ({ programa: r.programa, count: r.count })),
+        [
+          { key: 'programa', header: 'Programa' },
+          { key: 'count', header: 'Cantidad' },
+        ],
+      ),
+    ];
+    return sections.join('\r\n');
+  }
+
+  async topContratistas(user: Usuario, programa?: string) {
+    if (user.rol === Rol.contratista) {
+      throw new ForbiddenException('Not available for contratista role');
+    }
+    const where: Prisma.ObraWhereInput = {
+      ...this.obraWhere(user),
+      contratistaId: { not: null },
+    };
+    if (programa) where.programa = programa;
+
+    const obras = await this.prisma.obra.findMany({
+      where,
+      include: { contratista: true },
+    });
+
+    const byContratista = new Map<
+      string,
+      {
+        contratista_id: string;
+        contratista: string;
+        programa: string;
+        obras_count: number;
+        avance_sum: number;
+        alertas_activas: number;
+      }
+    >();
+
+    for (const obra of obras) {
+      if (!obra.contratistaId || !obra.contratista) continue;
+      const key = `${obra.contratistaId}::${obra.programa}`;
+      const bucket = byContratista.get(key) ?? {
+        contratista_id: obra.contratistaId,
+        contratista: obra.contratista.nombre,
+        programa: obra.programa,
+        obras_count: 0,
+        avance_sum: 0,
+        alertas_activas: 0,
+      };
+      bucket.obras_count += 1;
+      bucket.avance_sum += Number(obra.avanceFisicoReal);
+      byContratista.set(key, bucket);
+    }
+
+    const alertas = await this.prisma.alerta.findMany({
+      where: { ...this.alertaWhere(user), atendida: false },
+      select: { obraId: true },
+    });
+    const obrasConAlerta = new Set(alertas.map((a) => a.obraId).filter(Boolean));
+
+    const rows = [...byContratista.values()].map((row) => {
+      const contratistaObras = obras.filter((o) => o.contratistaId === row.contratista_id);
+      const alertasActivas = contratistaObras.filter((o) => obrasConAlerta.has(o.id)).length;
+      const avancePromedio =
+        row.obras_count > 0 ? Math.round((row.avance_sum / row.obras_count) * 100) / 100 : 0;
+      return {
+        contratista_id: row.contratista_id,
+        contratista: row.contratista,
+        programa: row.programa,
+        obras_count: row.obras_count,
+        avance_promedio: avancePromedio,
+        alertas_activas: alertasActivas,
+        ranking_score: avancePromedio - alertasActivas * 5,
+      };
+    });
+
+    return rows
+      .sort((a, b) => b.ranking_score - a.ranking_score)
+      .slice(0, 15)
+      .map(({ ranking_score: _rs, ...rest }) => rest);
   }
 
   async avanceTimeline(user: Usuario) {

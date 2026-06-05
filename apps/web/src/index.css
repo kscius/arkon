@@ -36,16 +36,16 @@
     --sidebar-border: 211 40% 30%;
     --sidebar-ring: 30 78% 57%;
 
-    --sigopem-primary: #1B3A5C;
-    --sigopem-primary-light: #2C5282;
-    --sigopem-secondary: #0D7377;
-    --sigopem-accent: #E8913A;
-    --sigopem-surface: #F7F8FA;
-    --sigopem-surface-dark: #E2E8F0;
-    --sigopem-success: #38A169;
-    --sigopem-warning: #D69E2E;
-    --sigopem-danger: #DC2626;
-    --sigopem-info: #3182CE;
+    --arkon-primary: #1B3A5C;
+    --arkon-primary-light: #2C5282;
+    --arkon-secondary: #0D7377;
+    --arkon-accent: #E8913A;
+    --arkon-surface: #F7F8FA;
+    --arkon-surface-dark: #E2E8F0;
+    --arkon-success: #38A169;
+    --arkon-warning: #D69E2E;
+    --arkon-danger: #DC2626;
+    --arkon-info: #3182CE;
   }
 
   * {

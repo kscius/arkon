@@ -7,7 +7,7 @@ describe('ScopeService', () => {
   const baseUser = (overrides: Partial<Usuario>): Usuario =>
     ({
       id: 'user-id',
-      email: 'test@sigopem.gob.mx',
+      email: 'test@arkon.gob.mx',
       passwordHash: 'hash',
       fullName: 'Test User',
       rol: Rol.estatal,

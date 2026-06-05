@@ -2,7 +2,7 @@
   {
     "folio": "FAPAA-2024-001",
     "nombre": "Pavimentacion con concreto hidraulico de la calle 5 de Mayo",
-    "localidad": "San Baltazar Campeche",
+    "localidad": "Colonia Centro Historico",
     "programa": "FAPAA",
     "tipo_programa": "federal",
     "dependencia": "Secretaria de Infraestructura",
@@ -26,13 +26,13 @@
   },
   {
     "folio": "FAPAA-2024-002",
-    "nombre": "Construccion de puente vehicular Rio Atoyac",
-    "localidad": "Amozoc",
+    "nombre": "Construccion de puente vehicular sobre rio regional",
+    "localidad": "Zona Industrial Metropolitana",
     "programa": "FAPAA",
     "tipo_programa": "federal",
     "dependencia": "Secretaria de Infraestructura",
     "tipo_obra": "puentes_vialidades",
-    "descripcion": "Construccion de puente vehicular de 45 ml sobre el Rio Atoyac",
+    "descripcion": "Construccion de puente vehicular de 45 ml sobre cauce regional",
     "poblacion_beneficiada": 12000,
     "monto_autorizado": 12500000.0,
     "monto_contratado": 11800000.0,
@@ -52,7 +52,7 @@
   {
     "folio": "FAPAA-2024-003",
     "nombre": "Rehabilitacion de red de agua potable colonia Centro",
-    "localidad": "Atlixco",
+    "localidad": "Zona Agricola Norte",
     "programa": "FAPAA",
     "tipo_programa": "federal",
     "dependencia": "Comision de Agua Potable",
@@ -77,7 +77,7 @@
   {
     "folio": "FAPAA-2024-004",
     "nombre": "Construccion de primaria 'Justo Sierra' 3 aulas",
-    "localidad": "San Andres Cholula",
+    "localidad": "Zona Residencial Valle Este",
     "programa": "FAPAA",
     "tipo_programa": "federal",
     "dependencia": "Secretaria de Educacion",
@@ -102,7 +102,7 @@
   {
     "folio": "FAPAA-2024-005",
     "nombre": "Drenaje sanitario colonia La Loma",
-    "localidad": "Cuautlancingo",
+    "localidad": "Corredor Metropolitano",
     "programa": "FAPAA",
     "tipo_programa": "federal",
     "dependencia": "Comision de Agua Potable",
@@ -127,7 +127,7 @@
   {
     "folio": "FAPAA-2024-006",
     "nombre": "Electrificacion de la comunidad de San Mateo",
-    "localidad": "Huejotzingo",
+    "localidad": "Zona Comercial Sierra",
     "programa": "FAPAA",
     "tipo_programa": "federal",
     "dependencia": "Secretaria de Energia",
@@ -152,7 +152,7 @@
   {
     "folio": "CAM-2024-001",
     "nombre": "Construccion de camino rural San Juan-San Pablo",
-    "localidad": "Ocoyucan",
+    "localidad": "Fraccionamiento Llanos",
     "programa": "CAM",
     "tipo_programa": "federal",
     "dependencia": "Secretaria de Infraestructura",
@@ -177,7 +177,7 @@
   {
     "folio": "CAM-2024-002",
     "nombre": "Rehabilitacion de camino rancheria La Cañada",
-    "localidad": "Teziutlan",
+    "localidad": "Cabecera Regional Oriente",
     "programa": "CAM",
     "tipo_programa": "federal",
     "dependencia": "Secretaria de Infraestructura",
@@ -202,7 +202,7 @@
   {
     "folio": "CAM-2024-003",
     "nombre": "Camino de acceso a escuela primaria Benito Juarez",
-    "localidad": "Amozoc",
+    "localidad": "Zona Industrial Metropolitana",
     "programa": "CAM",
     "tipo_programa": "federal",
     "dependencia": "Secretaria de Educacion",
@@ -227,7 +227,7 @@
   {
     "folio": "FAIS-2024-001",
     "nombre": "Centro de desarrollo comunitario 'Lomas de Chapultepec'",
-    "localidad": "San Pedro Cholula",
+    "localidad": "Zona Patrimonial Valle Oeste",
     "programa": "FAIS",
     "tipo_programa": "federal",
     "dependencia": "Secretaria de Desarrollo Social",
@@ -252,7 +252,7 @@
   {
     "folio": "FAIS-2024-002",
     "nombre": "Rehabilitacion de clinica de salud",
-    "localidad": "San Martin Texmelucan",
+    "localidad": "Parque Industrial Occidente",
     "programa": "FAIS",
     "tipo_programa": "federal",
     "dependencia": "Secretaria de Salud",
@@ -277,7 +277,7 @@
   {
     "folio": "FAIS-2024-003",
     "nombre": "Alumbrado publico LED colonia Guadalupe",
-    "localidad": "Puebla",
+    "localidad": "Colonia Centro",
     "programa": "FAIS",
     "tipo_programa": "federal",
     "dependencia": "Secretaria de Energia",
@@ -302,7 +302,7 @@
   {
     "folio": "FORTAMUN-2024-001",
     "nombre": "Rehabilitacion de calles del centro historico",
-    "localidad": "Atlixco",
+    "localidad": "Zona Agricola Norte",
     "programa": "FORTAMUN",
     "tipo_programa": "federal",
     "dependencia": "Secretaria de Infraestructura",
@@ -327,7 +327,7 @@
   {
     "folio": "FORTAMUN-2024-002",
     "nombre": "Parque ecologico 'El Mirador'",
-    "localidad": "Puebla",
+    "localidad": "Colonia Centro",
     "programa": "FORTAMUN",
     "tipo_programa": "federal",
     "dependencia": "Secretaria del Medio Ambiente",
@@ -352,7 +352,7 @@
   {
     "folio": "FORTAMUN-2024-003",
     "nombre": "Rehabilitacion de la Casa de Cultura",
-    "localidad": "Cholula",
+    "localidad": "Zona Urbana Valle",
     "programa": "FORTAMUN",
     "tipo_programa": "federal",
     "dependencia": "Secretaria de Cultura",
@@ -377,7 +377,7 @@
   {
     "folio": "FOMAGUA-2024-001",
     "nombre": "Ampliacion de red de agua potable Ampliacion San Jose",
-    "localidad": "Tehuacan",
+    "localidad": "Centro Sur",
     "programa": "FOMAGUA",
     "tipo_programa": "estatal",
     "dependencia": "Comision de Agua Potable",
@@ -402,7 +402,7 @@
   {
     "folio": "FOMAGUA-2024-002",
     "nombre": "Tanque de regulacion de 500 m3",
-    "localidad": "Puebla",
+    "localidad": "Colonia Centro",
     "programa": "FOMAGUA",
     "tipo_programa": "estatal",
     "dependencia": "Comision de Agua Potable",
@@ -427,7 +427,7 @@
   {
     "folio": "FOISE-2024-001",
     "nombre": "Construccion de tejaban escuela primaria Miguel Hidalgo",
-    "localidad": "San Andres Cholula",
+    "localidad": "Zona Residencial Valle Este",
     "programa": "FOISE",
     "tipo_programa": "estatal",
     "dependencia": "Secretaria de Educacion",
@@ -452,7 +452,7 @@
   {
     "folio": "FOISE-2024-002",
     "nombre": "Aula de medios y laboratorio de computo",
-    "localidad": "Atlixco",
+    "localidad": "Zona Agricola Norte",
     "programa": "FOISE",
     "tipo_programa": "estatal",
     "dependencia": "Secretaria de Educacion",
@@ -477,7 +477,7 @@
   {
     "folio": "PEF-2024-001",
     "nombre": "Unidad deportiva 'El Carmen'",
-    "localidad": "Puebla",
+    "localidad": "Colonia Centro",
     "programa": "PEF",
     "tipo_programa": "estatal",
     "dependencia": "Secretaria de Cultura y Deporte",
@@ -502,7 +502,7 @@
   {
     "folio": "PEF-2024-002",
     "nombre": "Centro de salud con servicios ampliados",
-    "localidad": "Amozoc",
+    "localidad": "Zona Industrial Metropolitana",
     "programa": "PEF",
     "tipo_programa": "estatal",
     "dependencia": "Secretaria de Salud",
@@ -527,7 +527,7 @@
   {
     "folio": "PEF-2024-003",
     "nombre": "Centro de proteccion civil y capacitacion",
-    "localidad": "San Pedro Cholula",
+    "localidad": "Zona Patrimonial Valle Oeste",
     "programa": "PEF",
     "tipo_programa": "estatal",
     "dependencia": "Proteccion Civil Estatal",
@@ -552,7 +552,7 @@
   {
     "folio": "SISPLADE-2024-001",
     "nombre": "Pavimentacion con concreto asfaltico calle Principal",
-    "localidad": "Huejotzingo",
+    "localidad": "Zona Comercial Sierra",
     "programa": "SISPLADE",
     "tipo_programa": "estatal",
     "dependencia": "Secretaria de Infraestructura",
@@ -577,7 +577,7 @@
   {
     "folio": "SISPLADE-2024-002",
     "nombre": "Plaza civica y kiosco del centro",
-    "localidad": "Tehuacan",
+    "localidad": "Centro Sur",
     "programa": "SISPLADE",
     "tipo_programa": "estatal",
     "dependencia": "Secretaria de Desarrollo Social",
@@ -602,7 +602,7 @@
   {
     "folio": "SISPLADE-2024-003",
     "nombre": "Sistema de alcantarillado sanitario",
-    "localidad": "Ocoyucan",
+    "localidad": "Fraccionamiento Llanos",
     "programa": "SISPLADE",
     "tipo_programa": "estatal",
     "dependencia": "Comision de Agua Potable",
@@ -627,7 +627,7 @@
   {
     "folio": "SISPLADE-2024-004",
     "nombre": "Biblioteca publica municipal",
-    "localidad": "San Martin Texmelucan",
+    "localidad": "Parque Industrial Occidente",
     "programa": "SISPLADE",
     "tipo_programa": "estatal",
     "dependencia": "Secretaria de Cultura",

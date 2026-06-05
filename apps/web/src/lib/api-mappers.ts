@@ -7,6 +7,7 @@ import type {
   MunicipioData,
   Obra,
   Observacion,
+  TopContratistaChartRow,
   User,
   UserRole,
 } from '@/types';
@@ -187,6 +188,42 @@ export function mapObservacion(raw: Record<string, unknown>, obraId: string): Ob
     fechaCompromiso: raw.fechaCompromiso ? String(raw.fechaCompromiso) : raw.fecha_compromiso ? String(raw.fecha_compromiso) : null,
     estatus: String(raw.estatus).toLowerCase() as Observacion['estatus'],
     respuestas,
+  };
+}
+
+export function hasValidGeoCoords(latitud: number, longitud: number): boolean {
+  if (!Number.isFinite(latitud) || !Number.isFinite(longitud)) return false;
+  if (latitud === 0 && longitud === 0) return false;
+  return Math.abs(latitud) <= 90 && Math.abs(longitud) <= 180;
+}
+
+export function obraHasGeo(obra: Pick<Obra, 'latitud' | 'longitud'>): boolean {
+  return hasValidGeoCoords(obra.latitud, obra.longitud);
+}
+
+export function mapTopContratista(raw: Record<string, unknown>): TopContratistaChartRow {
+  return {
+    contratista: String(raw.contratista ?? raw.contratista_nombre ?? ''),
+    contratistaId:
+      raw.contratista_id != null
+        ? String(raw.contratista_id)
+        : raw.contratistaId != null
+          ? String(raw.contratistaId)
+          : undefined,
+    programa: raw.programa != null ? String(raw.programa) : undefined,
+    obrasCount: Number(raw.obras_count ?? raw.obrasCount ?? 0),
+    avancePromedio:
+      raw.avance_promedio != null
+        ? Number(raw.avance_promedio)
+        : raw.avancePromedio != null
+          ? Number(raw.avancePromedio)
+          : undefined,
+    montoTotal:
+      raw.monto_total != null
+        ? Number(raw.monto_total)
+        : raw.montoTotal != null
+          ? Number(raw.montoTotal)
+          : undefined,
   };
 }
 

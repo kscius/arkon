@@ -1,11 +1,11 @@
 import { type APIRequestContext, type Page, test } from '@playwright/test';
 
-export const DEMO_PASSWORD = 'Sigopem2024!';
+export const DEMO_PASSWORD = 'Arkon2024!';
 
 export const DEMO_USERS = {
-  estatal: 'estatal@sigopem.gob.mx',
-  municipal: 'puebla@sigopem.gob.mx',
-  contratista: 'cce@sigopem.gob.mx',
+  estatal: 'estatal@arkon.gob.mx',
+  municipal: 'municipal.centro@arkon.gob.mx',
+  contratista: 'cce@arkon.gob.mx',
 } as const;
 
 /** Skip tests when API health is not available (stack not started or not seeded). */

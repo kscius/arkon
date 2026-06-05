@@ -27,7 +27,7 @@ export default function AsistentePage() {
       id: 'welcome',
       role: 'assistant',
       content:
-        'Buen dia. Soy el Asistente Inteligente de SIGOPEM. Puedo ayudarte con consultas sobre obras, avances, programas y alertas segun su perfil.\n\nQue informacion necesitas?',
+        'Buen dia. Soy el Asistente Inteligente de ARKON. Puedo ayudarte con consultas sobre obras, avances, programas y alertas segun su perfil.\n\nQue informacion necesitas?',
       timestamp: new Date(),
     },
   ]);
@@ -89,7 +89,7 @@ export default function AsistentePage() {
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
               <Sparkles className="w-4 h-4 text-[#0D7377]" />
-              <CardTitle className="text-sm font-semibold">Asistente SIGOPEM</CardTitle>
+              <CardTitle className="text-sm font-semibold">Asistente ARKON</CardTitle>
               <Badge className="bg-[#0D7377] text-[10px]">API</Badge>
             </div>
           </CardHeader>

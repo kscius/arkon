@@ -1,9 +1,10 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { RankingContratistasChart } from '@/components/dashboard/RankingContratistasChart';
 import { PageState } from '@/components/PageState';
 import { useApp } from '@/context/AppContext';
 import { useAsyncData } from '@/hooks/use-async-data';
-import { fetchContratista, fetchContratistas, fetchObras } from '@/lib/api';
+import { fetchChartTopContratistas, fetchContratista, fetchContratistas, fetchObras } from '@/lib/api';
 import { formatCurrencyM, formatPercentage, getObraStatusColor, getObraStatusLabel, getProgramaName } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -14,6 +15,8 @@ export default function ContratistaPanelPage() {
   const navigate = useNavigate();
   const { user } = useApp();
   const [selectedId, setSelectedId] = useState(contratistaId ?? user?.contratistaId ?? '');
+  const [programaFilter, setProgramaFilter] = useState('__all__');
+  const showRanking = user?.role === 'estatal' || user?.role === 'municipal';
 
   useEffect(() => {
     if (contratistaId) setSelectedId(contratistaId);
@@ -21,7 +24,15 @@ export default function ContratistaPanelPage() {
   }, [contratistaId, user?.contratistaId]);
 
   const load = useCallback(async () => {
-    const [contratistas, obras] = await Promise.all([fetchContratistas(), fetchObras()]);
+    const [contratistas, obras, topContratistas] = await Promise.all([
+      fetchContratistas(),
+      fetchObras(),
+      showRanking
+        ? fetchChartTopContratistas(
+            programaFilter === '__all__' ? undefined : programaFilter,
+          ).catch(() => [])
+        : Promise.resolve([]),
+    ]);
     const id = selectedId || contratistas[0]?.id;
     const contratista = id
       ? contratistas.find((c) => c.id === id) ?? (await fetchContratista(id))
@@ -29,16 +40,22 @@ export default function ContratistaPanelPage() {
     const contratistaObras = contratista
       ? obras.filter((o) => o.contratistaId === contratista.id)
       : [];
-    return { contratistas, contratista, contratistaObras };
-  }, [selectedId]);
+    return { contratistas, contratista, contratistaObras, obras, topContratistas };
+  }, [selectedId, showRanking, programaFilter]);
 
   const { data, loading, error, reload } = useAsyncData(load, [load]);
+
+  const obras = data?.obras ?? [];
+  const programaOptions = useMemo(() => {
+    const ids = [...new Set(obras.map((o) => o.programa).filter(Boolean))];
+    return ids.map((id) => ({ id, label: getProgramaName(id) }));
+  }, [obras]);
 
   if (!data?.contratista) {
     return <PageState loading={loading} error={error} onRetry={reload}><span /></PageState>;
   }
 
-  const { contratistas, contratista, contratistaObras } = data;
+  const { contratistas, contratista, contratistaObras, topContratistas } = data;
   const canPickContratista = user?.role === 'estatal' || user?.role === 'municipal';
 
   return (
@@ -93,6 +110,15 @@ export default function ContratistaPanelPage() {
           </div>
         </div>
       </div>
+
+      {showRanking && (
+        <RankingContratistasChart
+          rows={topContratistas}
+          programas={programaOptions}
+          programaFilter={programaFilter}
+          onProgramaFilterChange={setProgramaFilter}
+        />
+      )}
 
       <Card>
         <CardHeader className="pb-2">

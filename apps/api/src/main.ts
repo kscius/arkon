@@ -19,7 +19,7 @@ async function bootstrap() {
   app.enableCors({ origin: corsOrigins, credentials: true });
 
   const config = new DocumentBuilder()
-    .setTitle('SIGOPEM API')
+    .setTitle('ARKON API')
     .setDescription('Sistema Integral de Gestion de Obras Publicas')
     .setVersion('1.0')
     .addBearerAuth()
@@ -28,7 +28,7 @@ async function bootstrap() {
 
   const port = Number(process.env.PORT ?? 8000);
   await app.listen(port);
-  console.log(`SIGOPEM API listening on http://localhost:${port}/api`);
+  console.log(`ARKON API listening on http://localhost:${port}/api`);
 }
 
 bootstrap();

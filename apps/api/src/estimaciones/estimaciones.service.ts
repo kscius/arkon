@@ -3,6 +3,11 @@ import { EstatusEstimacion, Rol, Usuario } from '@prisma/client';
 import { ScopeService } from '../common/scope.service';
 import { PrismaService } from '../prisma/prisma.service';
 
+const APPROVED_STATUSES: EstatusEstimacion[] = [
+  EstatusEstimacion.autorizada,
+  EstatusEstimacion.pagada,
+];
+
 @Injectable()
 export class EstimacionesService {
   constructor(
@@ -42,6 +47,68 @@ export class EstimacionesService {
     };
   }
 
+  private async sumApprovedMontoEjercido(
+    obraId: string,
+    includeEstimacionId?: string,
+  ): Promise<number> {
+    const approved = await this.prisma.estimacion.findMany({
+      where: {
+        obraId,
+        validacionEstatal: true,
+        estatus: { in: APPROVED_STATUSES },
+        ...(includeEstimacionId ? { id: { not: includeEstimacionId } } : {}),
+      },
+      select: { montoEstimado: true },
+    });
+    let total = approved.reduce((s, e) => s + Number(e.montoEstimado), 0);
+    if (includeEstimacionId) {
+      const pending = await this.prisma.estimacion.findUnique({
+        where: { id: includeEstimacionId },
+      });
+      if (pending) total += Number(pending.montoEstimado);
+    }
+    return total;
+  }
+
+  private async syncMontoEjercidoFromEstimaciones(obraId: string): Promise<void> {
+    const total = await this.sumApprovedMontoEjercido(obraId);
+    const obra = await this.prisma.obra.findUnique({ where: { id: obraId } });
+    if (!obra) return;
+
+    const montoContratado = Number(obra.montoContratado);
+    const avanceFinanciero =
+      montoContratado > 0 ? Math.round((total / montoContratado) * 10000) / 100 : 0;
+
+    await this.prisma.obra.update({
+      where: { id: obraId },
+      data: { montoEjercido: total, avanceFinanciero },
+    });
+
+    if (montoContratado > 0 && total > montoContratado) {
+      const existing = await this.prisma.alerta.findFirst({
+        where: { obraId, tipo: 'desvio_financiero', atendida: false },
+      });
+      if (!existing) {
+        await this.prisma.alerta.create({
+          data: {
+            obraId,
+            municipio: (await this.prisma.municipio.findUnique({ where: { id: obra.municipioId } }))
+              ?.nombre ?? obra.municipioId,
+            municipioId: obra.municipioId,
+            titulo: `Monto ejercido excede contrato: ${obra.folio}`,
+            descripcion:
+              `Monto ejercido $${total.toLocaleString('es-MX')} supera monto contratado ` +
+              `$${montoContratado.toLocaleString('es-MX')} tras autorización de estimación.`,
+            tipo: 'desvio_financiero',
+            severidad: 'critica',
+            fechaGeneracion: new Date().toISOString().slice(0, 10),
+            atendida: false,
+          },
+        });
+      }
+    }
+  }
+
   async listByObra(obraId: string, user: Usuario) {
     await this.scope.getObraOrThrow(obraId, user);
     const rows = await this.prisma.estimacion.findMany({
@@ -79,7 +146,7 @@ export class EstimacionesService {
   ) {
     const est = await this.prisma.estimacion.findUnique({ where: { id } });
     if (!est) throw new NotFoundException();
-    await this.scope.getObraOrThrow(est.obraId, user);
+    const obra = await this.scope.getObraOrThrow(est.obraId, user);
     if (user.rol === Rol.contratista) throw new ForbiddenException();
 
     if (nivel === 'municipal') {
@@ -98,6 +165,18 @@ export class EstimacionesService {
     if (!current?.validacionMunicipal) {
       throw new BadRequestException('Municipal validation required first');
     }
+
+    if (aprobar) {
+      const projected = await this.sumApprovedMontoEjercido(est.obraId, id);
+      const montoContratado = Number(obra.montoContratado);
+      if (montoContratado > 0 && projected > montoContratado) {
+        throw new BadRequestException(
+          `La autorización excedería el monto contratado ($${montoContratado.toLocaleString('es-MX')}). ` +
+            `Monto ejercido proyectado: $${projected.toLocaleString('es-MX')}.`,
+        );
+      }
+    }
+
     const updated = await this.prisma.estimacion.update({
       where: { id },
       data: {
@@ -106,6 +185,11 @@ export class EstimacionesService {
         fechaAutorizacion: aprobar ? new Date().toISOString().slice(0, 10) : null,
       },
     });
+
+    if (aprobar) {
+      await this.syncMontoEjercidoFromEstimaciones(est.obraId);
+    }
+
     return this.map(updated);
   }
 }

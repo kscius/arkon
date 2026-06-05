@@ -1,16 +1,16 @@
 {
-  "name": "sigopem",
+  "name": "arkon",
   "private": true,
   "version": "1.0.0",
-  "description": "SIGOPEM - Sistema Integral de Gestion de Obras Publicas",
+  "description": "ARKON - Sistema Integral de Gestion de Obras Publicas",
   "scripts": {
     "dev": "pnpm -r --parallel run dev",
-    "dev:web": "pnpm --filter @sigopem/web dev",
-    "dev:api": "pnpm --filter @sigopem/api dev",
+    "dev:web": "pnpm --filter @arkon/web dev",
+    "dev:api": "pnpm --filter @arkon/api dev",
     "build": "pnpm -r run build",
     "lint": "pnpm -r run lint",
-    "test": "pnpm --filter @sigopem/api test && pnpm --filter @sigopem/web test",
-    "test:e2e": "pnpm --filter @sigopem/web test:e2e"
+    "test": "pnpm --filter @arkon/api test && pnpm --filter @arkon/web test",
+    "test:e2e": "pnpm --filter @arkon/web test:e2e"
   },
   "engines": {
     "node": ">=20"

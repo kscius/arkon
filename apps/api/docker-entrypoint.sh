@@ -5,7 +5,7 @@ cd /app/apps/api
 
 echo "Waiting for PostgreSQL..."
 for i in $(seq 1 60); do
-  if pg_isready -h "${DB_HOST:-db}" -p "${DB_PORT:-5432}" -U "${POSTGRES_USER:-sigopem}" -d "${POSTGRES_DB:-sigopem_db}" >/dev/null 2>&1; then
+  if pg_isready -h "${DB_HOST:-db}" -p "${DB_PORT:-5432}" -U "${POSTGRES_USER:-arkon}" -d "${POSTGRES_DB:-arkon_db}" >/dev/null 2>&1; then
     echo "Database is ready."
     break
   fi
@@ -15,6 +15,9 @@ for i in $(seq 1 60); do
   fi
   sleep 2
 done
+
+echo "Generating Prisma Client..."
+npx prisma generate
 
 echo "Applying database schema..."
 if [ -d "prisma/migrations" ] && [ -n "$(ls -A prisma/migrations 2>/dev/null)" ]; then
@@ -31,5 +34,5 @@ else
   echo "prisma/seed.ts not found; skipping seed."
 fi
 
-echo "Starting SIGOPEM API..."
+echo "Starting ARKON API..."
 exec node dist/main.js

@@ -39,7 +39,7 @@ describe('AuthService', () => {
       prisma.usuario.findUnique.mockResolvedValue(null);
       prisma.usuario.create.mockResolvedValue({
         id: 'new-id',
-        email: 'new@sigopem.gob.mx',
+        email: 'new@arkon.gob.mx',
         passwordHash: 'hash',
         fullName: 'Nuevo',
         rol: Rol.contratista,
@@ -53,7 +53,7 @@ describe('AuthService', () => {
       });
 
       await service.register({
-        email: 'new@sigopem.gob.mx',
+        email: 'new@arkon.gob.mx',
         password: 'Secret123!',
         fullName: 'Nuevo',
       });
@@ -61,7 +61,7 @@ describe('AuthService', () => {
       expect(prisma.usuario.create).toHaveBeenCalledWith({
         data: expect.objectContaining({
           rol: Rol.contratista,
-          email: 'new@sigopem.gob.mx',
+          email: 'new@arkon.gob.mx',
         }),
       });
     });
@@ -74,7 +74,7 @@ describe('AuthService', () => {
 
       await expect(
         service.register({
-          email: 'x@sigopem.gob.mx',
+          email: 'x@arkon.gob.mx',
           password: 'Secret123!',
           fullName: 'X',
         }),

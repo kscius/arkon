@@ -1,7 +1,7 @@
 [
   {
     "obra_id": null,
-    "municipio": "Puebla",
+    "municipio": "Centro",
     "titulo": "Asignacion de presupuesto pendiente para Q3",
     "descripcion": "Las obras FORTAMUN-2024-002 y PEF-2024-001 requieren liberacion de recursos adicionales para continuar en tiempo.",
     "tipo": "presupuestaria",
@@ -11,7 +11,7 @@
   },
   {
     "obra_id": null,
-    "municipio": "Tehuacan",
+    "municipio": "Sur",
     "titulo": "Reprogramacion de visita de supervision",
     "descripcion": "La visita de supervision del 20 de mayo fue pospuesta. Se requiere nueva fecha para validacion de estimacion No. 2.",
     "tipo": "operativa",
@@ -21,7 +21,7 @@
   },
   {
     "obra_id": null,
-    "municipio": "Atlixco",
+    "municipio": "Norte",
     "titulo": "Retraso en entrega de materiales",
     "descripcion": "El proveedor de cemento reporta retraso de 2 semanas. Impacto potencial en obra FORTAMUN-2024-001.",
     "tipo": "logistica",
@@ -32,7 +32,7 @@
   },
   {
     "obra_id": null,
-    "municipio": "Cholula",
+    "municipio": "Valle",
     "titulo": "Permiso de proteccion civil vencido",
     "descripcion": "El permiso de proteccion civil de la obra FORTAMUN-2024-003 vencio el 30 de abril. Se requiere renovacion.",
     "tipo": "regulatoria",
@@ -42,7 +42,7 @@
   },
   {
     "obra_id": null,
-    "municipio": "San Andres Cholula",
+    "municipio": "Valle Este",
     "titulo": "Validacion de estimacion municipal pendiente",
     "descripcion": "Estimacion No. 3 de FOISE-2024-001 lleva 15 dias sin validacion municipal.",
     "tipo": "administrativa",
@@ -52,7 +52,7 @@
   },
   {
     "obra_id": null,
-    "municipio": "Puebla",
+    "municipio": "Centro",
     "titulo": "Alerta climatica - Temporada de lluvias",
     "descripcion": "Inicio de temporada de lluvias pronosticado para la primera semana de junio. Verificar proteccion de obras abiertas.",
     "tipo": "climatica",
@@ -62,7 +62,7 @@
   },
   {
     "obra_id": null,
-    "municipio": "Amozoc",
+    "municipio": "Metropolitana",
     "titulo": "Cambio de director de obra",
     "descripcion": "El Ing. Carlos Mendez reporta cambio de residente de obra. Se requiere actualizacion de documentacion.",
     "tipo": "administrativa",
@@ -73,7 +73,7 @@
   },
   {
     "obra_id": null,
-    "municipio": "Huejotzingo",
+    "municipio": "Sierra",
     "titulo": "Desvio de avance mayor al 10%",
     "descripcion": "La obra SISPLADE-2024-001 presenta desvio de 12% en avance fisico vs programado.",
     "tipo": "tecnica",

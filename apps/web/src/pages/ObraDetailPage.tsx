@@ -248,7 +248,7 @@ export default function ObraDetailPage() {
                 {getProgramaName(obra.programa)}
               </Badge>
             </div>
-            <p className="text-sm text-gray-500">{obra.municipio}, Puebla — {obra.localidad}</p>
+            <p className="text-sm text-gray-500">{obra.municipio} — {obra.localidad}</p>
             <p className="text-xs text-gray-400 mt-1">Folio: {obra.folio}</p>
           </div>
           <div className="flex flex-wrap items-center gap-2">

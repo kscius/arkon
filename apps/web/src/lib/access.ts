@@ -8,7 +8,10 @@ export function canAccessRoute(
 ): boolean {
   if (!isAuthenticated || !role) return route === '/';
 
-  if (route === '/asistente' || route === '/alertas') return true;
+  if (route === '/alertas') return true;
+  if (route === '/asistente') {
+    return role === 'estatal' || role === 'municipal';
+  }
   if (route.startsWith('/obras/')) return true;
 
   if (role === 'estatal') {

@@ -157,7 +157,7 @@ const PROGRAMAS_CANONICOS = [
 ] as const;
 
 async function main() {
-  console.log('SIGOPEM Database Seeder');
+  console.log('ARKON Database Seeder');
   console.log('='.repeat(60));
 
   await prisma.$transaction([
@@ -222,10 +222,10 @@ async function main() {
   );
   console.log(`  Seeded ${contratistas.length} contratistas`);
 
-  const passwordHash = await bcrypt.hash('Sigopem2024!', 10);
+  const passwordHash = await bcrypt.hash('Arkon2024!', 10);
   const usersData = [
     {
-      email: 'estatal@sigopem.gob.mx',
+      email: 'estatal@arkon.gob.mx',
       fullName: 'Lic. Martha Elena Vazquez',
       rol: Rol.estatal,
       avatarInitials: 'MV',
@@ -233,7 +233,7 @@ async function main() {
       contratistaId: null as string | null,
     },
     {
-      email: 'coordinador@sigopem.gob.mx',
+      email: 'coordinador@arkon.gob.mx',
       fullName: 'Ing. Jorge Luis Martinez',
       rol: Rol.estatal,
       avatarInitials: 'JM',
@@ -241,39 +241,39 @@ async function main() {
       contratistaId: null,
     },
     {
-      email: 'puebla@sigopem.gob.mx',
+      email: 'municipal.centro@arkon.gob.mx',
       fullName: 'Arq. Laura Patricia Mendez',
       rol: Rol.municipal,
       avatarInitials: 'LM',
-      municipioId: municipios[0].id,
+      municipioId: municipioByName.get('Centro')!.id,
       contratistaId: null,
     },
     {
-      email: 'atlixco@sigopem.gob.mx',
+      email: 'municipal.norte@arkon.gob.mx',
       fullName: 'Ing. Roberto Carlos Diaz',
       rol: Rol.municipal,
       avatarInitials: 'RD',
-      municipioId: municipios[2].id,
+      municipioId: municipioByName.get('Norte')!.id,
       contratistaId: null,
     },
     {
-      email: 'cholula@sigopem.gob.mx',
+      email: 'municipal.valle@arkon.gob.mx',
       fullName: 'Lic. Maria Fernanda Ruiz',
       rol: Rol.municipal,
       avatarInitials: 'MR',
-      municipioId: municipios[3].id,
+      municipioId: municipioByName.get('Valle')!.id,
       contratistaId: null,
     },
     {
-      email: 'tehuacan@sigopem.gob.mx',
+      email: 'municipal.sur@arkon.gob.mx',
       fullName: 'Ing. Jose Antonio Flores',
       rol: Rol.municipal,
       avatarInitials: 'JF',
-      municipioId: municipios[10].id,
+      municipioId: municipioByName.get('Sur')!.id,
       contratistaId: null,
     },
     {
-      email: 'cce@sigopem.gob.mx',
+      email: 'cce@arkon.gob.mx',
       fullName: 'Ing. Carlos Mendez Rodriguez',
       rol: Rol.contratista,
       avatarInitials: 'CM',
@@ -281,7 +281,7 @@ async function main() {
       contratistaId: contratistas[0].id,
     },
     {
-      email: 'gdp@sigopem.gob.mx',
+      email: 'gdp@arkon.gob.mx',
       fullName: 'Arq. Maria Elena Torres',
       rol: Rol.contratista,
       avatarInitials: 'MT',
@@ -289,7 +289,7 @@ async function main() {
       contratistaId: contratistas[1].id,
     },
     {
-      email: 'ies@sigopem.gob.mx',
+      email: 'ies@arkon.gob.mx',
       fullName: 'Ing. Roberto Hernandez Lopez',
       rol: Rol.contratista,
       avatarInitials: 'RH',
@@ -477,7 +477,7 @@ async function main() {
 
   console.log('='.repeat(60));
   console.log('Seed completed successfully!');
-  console.log('Default login: estatal@sigopem.gob.mx / Sigopem2024!');
+  console.log('Default login: estatal@arkon.gob.mx / Arkon2024!');
 }
 
 main()

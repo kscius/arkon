@@ -134,6 +134,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         },
         { path: '/contratistas', label: 'Contratistas', icon: 'Users' },
         { path: '/alertas', label: 'Alertas', icon: 'Bell' },
+        { path: '/asistente', label: 'Asistente IA', icon: 'Sparkles' },
       ];
     }
 

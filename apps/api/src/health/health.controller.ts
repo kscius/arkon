@@ -8,6 +8,6 @@ export class HealthController {
   @Public()
   @Get()
   check() {
-    return { status: 'ok', service: 'sigopem-api' };
+    return { status: 'ok', service: 'arkon-api' };
   }
 }

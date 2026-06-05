@@ -176,6 +176,16 @@ export interface Programa {
   color: string;
 }
 
+/** Row from GET /dashboard/chart/top-contratistas */
+export interface TopContratistaChartRow {
+  contratista: string;
+  contratistaId?: string;
+  programa?: string;
+  obrasCount: number;
+  avancePromedio?: number;
+  montoTotal?: number;
+}
+
 export interface ChatMessage {
   id: string;
   role: 'user' | 'assistant';

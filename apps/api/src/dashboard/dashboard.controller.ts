@@ -1,5 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
-import { ApiBearerAuth, ApiTags } from '@nestjs/swagger';
+import { Controller, Get, Query, Res } from '@nestjs/common';
+import type { Response } from 'express';
+import { ApiBearerAuth, ApiQuery, ApiTags } from '@nestjs/swagger';
 import { Usuario } from '@prisma/client';
 import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { DashboardService } from './dashboard.service';
@@ -28,6 +29,29 @@ export class DashboardController {
   @Get('chart/top-municipios')
   topMunicipios(@CurrentUser() user: Usuario) {
     return this.service.topMunicipios(user);
+  }
+
+  @Get('chart/top-contratistas')
+  @ApiQuery({ name: 'programa', required: false })
+  topContratistas(@CurrentUser() user: Usuario, @Query('programa') programa?: string) {
+    return this.service.topContratistas(user, programa);
+  }
+
+  @Get('export/summary')
+  @ApiQuery({ name: 'format', required: false, enum: ['csv', 'json'] })
+  async exportSummary(
+    @CurrentUser() user: Usuario,
+    @Res() res: Response,
+    @Query('format') format?: string,
+  ) {
+    const fmt = format === 'csv' ? 'csv' : 'json';
+    const data = await this.service.exportSummary(user, fmt);
+    if (fmt === 'json') {
+      return res.json(data);
+    }
+    res.setHeader('Content-Type', 'text/csv; charset=utf-8');
+    res.setHeader('Content-Disposition', 'attachment; filename="dashboard-summary.csv"');
+    return res.send(data);
   }
 
   @Get('chart/avance-timeline')

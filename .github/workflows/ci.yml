@@ -13,19 +13,19 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_USER: sigopem
-          POSTGRES_PASSWORD: sigopem_password
-          POSTGRES_DB: sigopem_db
+          POSTGRES_USER: arkon
+          POSTGRES_PASSWORD: arkon_password
+          POSTGRES_DB: arkon_db
         ports:
           - 5432:5432
         options: >-
-          --health-cmd "pg_isready -U sigopem -d sigopem_db"
+          --health-cmd "pg_isready -U arkon -d arkon_db"
           --health-interval 5s
           --health-timeout 5s
           --health-retries 10
 
     env:
-      DATABASE_URL: postgresql://sigopem:sigopem_password@localhost:5432/sigopem_db
+      DATABASE_URL: postgresql://arkon:arkon_password@localhost:5432/arkon_db
       SECRET_KEY: ci-test-secret-key-min-32-chars-long
       JWT_EXPIRES_MINUTES: '480'
       ALLOW_PUBLIC_REGISTER: 'true'
@@ -47,13 +47,13 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma client
-        run: pnpm --filter @sigopem/api exec prisma generate
+        run: pnpm --filter @arkon/api exec prisma generate
 
       - name: Migrate database
-        run: pnpm --filter @sigopem/api exec prisma migrate deploy
+        run: pnpm --filter @arkon/api exec prisma migrate deploy
 
       - name: Seed database
-        run: pnpm --filter @sigopem/api exec prisma db seed
+        run: pnpm --filter @arkon/api exec prisma db seed
 
       - name: Lint
         run: pnpm lint

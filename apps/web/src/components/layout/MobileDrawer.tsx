@@ -46,8 +46,8 @@ export function MobileDrawer({ onClose }: { onClose: () => void }) {
           <div className="flex items-center gap-2">
             <Shield className="w-6 h-6 text-[#E8913A]" />
             <div>
-              <div className="text-sm font-bold">SIGOPEM</div>
-              <div className="text-[10px] text-white/60">Gobierno de Puebla</div>
+              <div className="text-sm font-bold">ARKON</div>
+              <div className="text-[10px] text-white/60">Gestion de obras publicas</div>
             </div>
           </div>
           <button onClick={onClose} className="text-white/60 hover:text-white"><X className="w-5 h-5" /></button>

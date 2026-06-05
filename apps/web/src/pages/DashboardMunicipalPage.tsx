@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { DashboardExportActions } from '@/components/dashboard/DashboardExportActions';
 import { EstimacionesPendientesList } from '@/components/EstimacionesPendientesList';
 import { PageState } from '@/components/PageState';
 import { useApp } from '@/context/AppContext';
@@ -219,20 +220,15 @@ export default function DashboardMunicipalPage() {
           <h1 className="text-lg font-bold text-[#1B3A5C]">Dashboard Municipal — {municipioNombre}</h1>
           <p className="text-xs text-gray-500 mt-1">Gestion de obras, contratistas y avances de su municipio</p>
         </div>
-        {user && (
-          <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2 items-center">
+          <DashboardExportActions />
+          {user && (
             <Button type="button" size="sm" className="gap-2" onClick={() => setObraModalOpen(true)}>
               <Plus className="w-4 h-4" />
               Nueva obra
             </Button>
-            <ObraFormModal
-              open={obraModalOpen}
-              onOpenChange={setObraModalOpen}
-              user={user}
-              onSuccess={reload}
-            />
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* KPIs */}
@@ -546,6 +542,14 @@ export default function DashboardMunicipalPage() {
         </form>
       </DialogContent>
     </Dialog>
+    {user && (
+      <ObraFormModal
+        open={obraModalOpen}
+        onOpenChange={setObraModalOpen}
+        user={user}
+        onSuccess={reload}
+      />
+    )}
     </PageState>
   );
 }

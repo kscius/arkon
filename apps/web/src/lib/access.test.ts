@@ -27,5 +27,7 @@ describe('canAccessRoute', () => {
     expect(canAccessRoute('contratista', '/alertas', true)).toBe(true);
     expect(canAccessRoute('contratista', '/obras/1', true)).toBe(true);
     expect(canAccessRoute('contratista', '/municipios', true)).toBe(false);
+    expect(canAccessRoute('contratista', '/asistente', true)).toBe(false);
+    expect(canAccessRoute('contratista', '/admin/usuarios', true)).toBe(false);
   });
 });

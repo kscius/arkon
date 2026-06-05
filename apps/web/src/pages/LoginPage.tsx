@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Shield, Mail, Lock, AlertCircle } from 'lucide-react';
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('estatal@sigopem.gob.mx');
+  const [email, setEmail] = useState('estatal@arkon.gob.mx');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
@@ -46,9 +46,9 @@ export default function LoginPage() {
             <div className="w-16 h-16 mx-auto mb-4 bg-[#1B3A5C] rounded-xl flex items-center justify-center">
               <Shield className="w-8 h-8 text-[#E8913A]" />
             </div>
-            <h1 className="text-2xl font-bold text-[#1B3A5C]">SIGOPEM</h1>
+            <h1 className="text-2xl font-bold text-[#1B3A5C]">ARKON</h1>
             <p className="text-sm text-gray-500 mt-1">Sistema Integral de Gestion de Obras Publicas</p>
-            <p className="text-xs text-gray-400">Gobierno del Estado de Puebla</p>
+            <p className="text-xs text-gray-400">Plataforma multi-nivel para gobiernos estatales y municipales</p>
           </div>
 
           {error && (
@@ -68,7 +68,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="pl-10 h-11"
-                  placeholder="usuario@gobierno.puebla.gob.mx"
+                  placeholder="usuario@institucion.gob.mx"
                   autoComplete="email"
                 />
               </div>
@@ -97,7 +97,7 @@ export default function LoginPage() {
           </form>
 
           <p className="text-center text-[11px] text-gray-400 mt-4">
-            Demo: estatal@sigopem.gob.mx / Sigopem2024!
+            Demo: estatal@arkon.gob.mx / Arkon2024!
           </p>
         </div>
       </div>

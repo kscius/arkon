@@ -1,8 +1,10 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { PageState } from '@/components/PageState';
-import { MapaPuebla } from '@/components/dashboard/MapaPuebla';
+import { DashboardExportActions } from '@/components/dashboard/DashboardExportActions';
+import { MapaTerritorial } from '@/components/dashboard/MapaTerritorial';
+import { RankingContratistasChart } from '@/components/dashboard/RankingContratistasChart';
 import { useApp } from '@/context/AppContext';
 import { ObraFormModal } from '@/components/ObraFormModal';
 import { Button } from '@/components/ui/button';
@@ -14,13 +16,14 @@ import {
   fetchChartObrasPorEstatus,
   fetchChartObrasPorPrograma,
   fetchChartTopMunicipios,
+  fetchChartTopContratistas,
   fetchDashboardKpis,
   fetchMunicipios,
   fetchObras,
 } from '@/lib/api';
 import { mapProgramaChartFromApi } from '@/lib/programa-chart';
 import { normalizeName } from '@/lib/api-mappers';
-import { formatCurrencyM, formatPercentage, getObraStatusColor, getObraStatusLabel, getSeverityColor, getSeverityLabel, getProgramaName } from '@/lib/utils';
+import { formatCurrencyM, formatPercentage, getObraStatusColor, getObraStatusLabel, getSeverityColor, getSeverityLabel, getProgramaColor, getProgramaName } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -39,9 +42,10 @@ export default function DashboardPage() {
   const navigate = useNavigate();
   const { user, setNotifications, setSelectedMunicipio } = useApp();
   const [obraModalOpen, setObraModalOpen] = useState(false);
+  const [programaFilter, setProgramaFilter] = useState('__all__');
 
   const load = useCallback(async () => {
-    const [obras, municipios, alertas, kpis, topMunicipios, avanceTimeline, chartPrograma, obrasPorEstatus] =
+    const [obras, municipios, alertas, kpis, topMunicipios, avanceTimeline, chartPrograma, obrasPorEstatus, topContratistas] =
       await Promise.all([
         fetchObras(),
         fetchMunicipios(),
@@ -51,6 +55,9 @@ export default function DashboardPage() {
         fetchChartAvanceTimeline().catch(() => []),
         fetchChartObrasPorPrograma().catch(() => []),
         fetchChartObrasPorEstatus().catch(() => []),
+        fetchChartTopContratistas(
+          programaFilter === '__all__' ? undefined : programaFilter,
+        ).catch(() => []),
       ]);
     const programas = mapProgramaChartFromApi(chartPrograma, obras);
     return {
@@ -62,10 +69,17 @@ export default function DashboardPage() {
       topMunicipios,
       avanceTimeline,
       obrasPorEstatus,
+      topContratistas,
     };
-  }, []);
+  }, [programaFilter]);
 
   const { data, loading, error, reload } = useAsyncData(load, [load]);
+
+  const programaOptions = useMemo(() => {
+    if (!data?.obras) return [];
+    const ids = [...new Set(data.obras.map((o) => o.programa).filter(Boolean))];
+    return ids.map((id) => ({ id, label: getProgramaName(id) }));
+  }, [data?.obras]);
 
   useEffect(() => {
     if (data?.alertas) {
@@ -80,7 +94,7 @@ export default function DashboardPage() {
     return <PageState loading={loading} error={error} onRetry={reload}><span /></PageState>;
   }
 
-  const { obras, municipios, alertas, kpis, programas, topMunicipios, avanceTimeline, obrasPorEstatus } = data;
+  const { obras, municipios, alertas, kpis, programas, topMunicipios, avanceTimeline, obrasPorEstatus, topContratistas } = data;
 
   const estatusChartData = obrasPorEstatus
     .filter((row) => row.estatus && (row.count ?? 0) > 0)
@@ -124,7 +138,8 @@ export default function DashboardPage() {
   return (
     <PageState loading={loading} error={error} onRetry={reload}>
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
-      <div className="flex justify-end">
+      <div className="flex flex-wrap justify-end items-center gap-2">
+        <DashboardExportActions />
         {user && (
           <Button type="button" size="sm" className="gap-2" onClick={() => setObraModalOpen(true)}>
             <Plus className="w-4 h-4" />
@@ -371,6 +386,15 @@ export default function DashboardPage() {
         </motion.div>
       </div>
 
+      <motion.div variants={item}>
+        <RankingContratistasChart
+          rows={topContratistas}
+          programas={programaOptions}
+          programaFilter={programaFilter}
+          onProgramaFilterChange={setProgramaFilter}
+        />
+      </motion.div>
+
       {/* Ranking Municipal */}
       <motion.div variants={item}>
         <Card>
@@ -427,13 +451,67 @@ export default function DashboardPage() {
         </Card>
       </motion.div>
 
+      {obras.length > 0 && (
+        <motion.div variants={item}>
+          <Card>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-base font-semibold text-gray-900">Obras del portafolio</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="overflow-x-auto">
+                <table className="w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-gray-200">
+                      <th className="text-left py-2 px-2 font-medium text-gray-500">Obra</th>
+                      <th className="text-left py-2 px-2 font-medium text-gray-500">Municipio</th>
+                      <th className="text-left py-2 px-2 font-medium text-gray-500">Programa</th>
+                      <th className="text-center py-2 px-2 font-medium text-gray-500">Avance</th>
+                      <th className="text-center py-2 px-2 font-medium text-gray-500">Estatus</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {obras.slice(0, 10).map((obra) => (
+                      <tr
+                        key={obra.id}
+                        className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
+                        onClick={() => navigate(`/obras/${obra.id}`)}
+                      >
+                        <td className="py-2 px-2 font-medium text-gray-900 max-w-[200px] truncate">{obra.nombre}</td>
+                        <td className="py-2 px-2 text-gray-600 max-w-[120px] truncate">{obra.municipio}</td>
+                        <td className="py-2 px-2">
+                          <span
+                            className="px-2 py-0.5 rounded-full text-[10px] font-medium text-white"
+                            style={{ backgroundColor: getProgramaColor(obra.programa) }}
+                          >
+                            {getProgramaName(obra.programa)}
+                          </span>
+                        </td>
+                        <td className="py-2 px-2 text-center text-[10px]">{formatPercentage(obra.avanceFisicoReal)}</td>
+                        <td className="py-2 px-2 text-center">
+                          <span
+                            className="px-2 py-0.5 rounded-full text-[10px] font-medium text-white"
+                            style={{ backgroundColor: getObraStatusColor(obra.estatus) }}
+                          >
+                            {getObraStatusLabel(obra.estatus)}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
       <motion.div variants={item}>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold text-gray-900">Mapa de Obras por Municipio</CardTitle>
+            <CardTitle className="text-base font-semibold text-gray-900">Mapa georreferenciado de obras</CardTitle>
           </CardHeader>
           <CardContent>
-            <MapaPuebla municipios={municipios} obras={obras} />
+            <MapaTerritorial municipios={municipios} obras={obras} />
           </CardContent>
         </Card>
       </motion.div>

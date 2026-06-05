@@ -1,62 +1,14 @@
 [
-  {
-    "nombre": "Puebla",
-    "latitud": 19.0413,
-    "longitud": -98.2062
-  },
-  {
-    "nombre": "Amozoc",
-    "latitud": 19.0458,
-    "longitud": -98.045
-  },
-  {
-    "nombre": "Atlixco",
-    "latitud": 18.9081,
-    "longitud": -98.4311
-  },
-  {
-    "nombre": "Cholula",
-    "latitud": 19.0632,
-    "longitud": -98.2834
-  },
-  {
-    "nombre": "Cuautlancingo",
-    "latitud": 19.0896,
-    "longitud": -98.2735
-  },
-  {
-    "nombre": "Huejotzingo",
-    "latitud": 19.1603,
-    "longitud": -98.4146
-  },
-  {
-    "nombre": "Ocoyucan",
-    "latitud": 18.9669,
-    "longitud": -98.298
-  },
-  {
-    "nombre": "San Andres Cholula",
-    "latitud": 19.0487,
-    "longitud": -98.299
-  },
-  {
-    "nombre": "San Martin Texmelucan",
-    "latitud": 19.2834,
-    "longitud": -98.4389
-  },
-  {
-    "nombre": "San Pedro Cholula",
-    "latitud": 19.0614,
-    "longitud": -98.3073
-  },
-  {
-    "nombre": "Tehuacan",
-    "latitud": 18.4659,
-    "longitud": -97.3957
-  },
-  {
-    "nombre": "Teziutlan",
-    "latitud": 19.8179,
-    "longitud": -97.3593
-  }
+  { "nombre": "Centro", "latitud": 19.0413, "longitud": -98.2062 },
+  { "nombre": "Metropolitana", "latitud": 19.0458, "longitud": -98.045 },
+  { "nombre": "Norte", "latitud": 18.9081, "longitud": -98.4311 },
+  { "nombre": "Valle", "latitud": 19.0632, "longitud": -98.2834 },
+  { "nombre": "Ribera", "latitud": 19.0896, "longitud": -98.2735 },
+  { "nombre": "Sierra", "latitud": 19.1603, "longitud": -98.4146 },
+  { "nombre": "Llanos", "latitud": 18.9669, "longitud": -98.298 },
+  { "nombre": "Valle Este", "latitud": 19.0487, "longitud": -98.299 },
+  { "nombre": "Occidente", "latitud": 19.2834, "longitud": -98.4389 },
+  { "nombre": "Valle Oeste", "latitud": 19.0614, "longitud": -98.3073 },
+  { "nombre": "Sur", "latitud": 18.4659, "longitud": -97.3957 },
+  { "nombre": "Oriente", "latitud": 19.8179, "longitud": -97.3593 }
 ]

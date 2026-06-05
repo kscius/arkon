@@ -1,4 +1,4 @@
-# SIGOPEM
+# ARKON
 
 Sistema Integral de Gestión de Obras Públicas — monorepo MVP (React + NestJS + PostgreSQL).
 
@@ -10,12 +10,20 @@ Sistema Integral de Gestión de Obras Públicas — monorepo MVP (React + NestJS
 
 ## Arranque con Docker (recomendado)
 
-Desde la raíz de este directorio (`SIGOPEM/`):
+Stack **aislado** en un solo `docker-compose.yml` (red interna `arkon_internal`, proyecto `arkon`, volúmenes nombrados). No depende de otros servicios del monorepo padre.
+
+Desde la raíz de este directorio (`ARKON/`):
 
 ```bash
 cp .env.example .env
 docker compose config    # validar compose
-docker compose up --build
+docker compose up --build -d
+```
+
+Windows (script):
+
+```powershell
+.\scripts\docker-up.ps1
 ```
 
 | Servicio | URL |
@@ -23,7 +31,7 @@ docker compose up --build
 | Web (SPA + proxy API) | http://localhost:8080 |
 | API directa | http://localhost:8000/api |
 | Swagger | http://localhost:8000/api/docs |
-| PostgreSQL | `localhost:5432` |
+| PostgreSQL (desde el host) | `localhost:5433` (puerto interno del contenedor: 5432) |
 
 El contenedor **api** al arrancar:
 
@@ -65,29 +73,29 @@ Variables útiles en `.env`:
 
 ## Usuarios demo
 
-Contraseña para todos: **`Sigopem2024!`**
+Contraseña para todos: **`Arkon2024!`**
 
 | Rol | Email |
 |-----|--------|
-| Estatal | `estatal@sigopem.gob.mx` |
-| Estatal | `coordinador@sigopem.gob.mx` |
-| Municipal | `puebla@sigopem.gob.mx` |
-| Municipal | `atlixco@sigopem.gob.mx` |
-| Municipal | `cholula@sigopem.gob.mx` |
-| Municipal | `tehuacan@sigopem.gob.mx` |
-| Contratista | `cce@sigopem.gob.mx` |
-| Contratista | `gdp@sigopem.gob.mx` |
-| Contratista | `ies@sigopem.gob.mx` |
+| Estatal | `estatal@arkon.gob.mx` |
+| Estatal | `coordinador@arkon.gob.mx` |
+| Municipal | `municipal.centro@arkon.gob.mx` |
+| Municipal | `municipal.norte@arkon.gob.mx` |
+| Municipal | `municipal.valle@arkon.gob.mx` |
+| Municipal | `municipal.sur@arkon.gob.mx` |
+| Contratista | `cce@arkon.gob.mx` |
+| Contratista | `gdp@arkon.gob.mx` |
+| Contratista | `ies@arkon.gob.mx` |
 
 > Si el seed aún no está en el repo, cree usuarios con `POST /api/auth/register` (solo entornos de desarrollo) o espere a `prisma/seed.ts`.
 
 ## Flujos demo (MVP)
 
-Contraseña demo: **`Sigopem2024!`**
+Contraseña demo: **`Arkon2024!`**
 
-1. **Contratista** (`cce@sigopem.gob.mx`): Dashboard → pestaña *Reportar Avance* → enviar avance en obra asignada.
-2. **Municipal** (`puebla@sigopem.gob.mx`): *Validar Avances* → aprobar u observar; *Estimaciones* → presentar y validar municipal.
-3. **Estatal** (`estatal@sigopem.gob.mx`): Detalle de obra → pestaña *Estimaciones* → autorizar validación estatal; *Alertas* → atender con acción tomada.
+1. **Contratista** (`cce@arkon.gob.mx`): Dashboard → pestaña *Reportar Avance* → enviar avance en obra asignada.
+2. **Municipal** (`municipal.centro@arkon.gob.mx`): *Validar Avances* → aprobar u observar; *Estimaciones* → presentar y validar municipal.
+3. **Estatal** (`estatal@arkon.gob.mx`): Detalle de obra → pestaña *Estimaciones* → autorizar validación estatal; *Alertas* → atender con acción tomada.
 4. **Expediente**: Detalle de obra → *Expediente* → subir PDF/imagen y descargar con JWT.
 5. **Asistente**: menú *Asistente* con datos reales del API (`POST /api/chat/ask`).
 
@@ -112,17 +120,17 @@ Con el stack levantado:
 ### Checklist manual
 
 - [ ] `GET http://localhost:8080` — carga la SPA (login)
-- [ ] `GET http://localhost:8080/api/health` — `{"status":"ok","service":"sigopem-api"}`
+- [ ] `GET http://localhost:8080/api/health` — `{"status":"ok","service":"arkon-api"}`
 - [ ] `GET http://localhost:8000/api/health` — mismo JSON (API directa)
 - [ ] `POST http://localhost:8080/api/auth/login` — JSON con `access_token` (usuario demo)
 - [ ] `GET http://localhost:8080/api/auth/me` con `Authorization: Bearer <token>`
-- [ ] Login en la UI con `estatal@sigopem.gob.mx` / `Sigopem2024!`
+- [ ] Login en la UI con `estatal@arkon.gob.mx` / `Arkon2024!`
 - [ ] Dashboard estatal carga KPIs sin error de red en consola
 
 ## Estructura
 
 ```
-SIGOPEM/
+ARKON/
 ├── apps/
 │   ├── api/          # NestJS + Prisma
 │   └── web/          # Vite + React

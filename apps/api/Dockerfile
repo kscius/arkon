@@ -1,4 +1,4 @@
-# SIGOPEM API — multi-stage (pnpm monorepo → NestJS + Prisma)
+# ARKON API — multi-stage (pnpm monorepo → NestJS + Prisma)
 FROM node:20-alpine AS base
 RUN apk add --no-cache openssl postgresql-client
 RUN corepack enable && corepack prepare pnpm@9.15.0 --activate
@@ -8,13 +8,14 @@ FROM base AS deps
 COPY package.json pnpm-workspace.yaml ./
 COPY apps/api/package.json ./apps/api/
 COPY apps/web/package.json ./apps/web/
-RUN pnpm install --filter @sigopem/api... --no-frozen-lockfile
+RUN pnpm install --filter @arkon/api... --no-frozen-lockfile
 
 FROM deps AS build
 COPY apps/api ./apps/api
 WORKDIR /app/apps/api
 RUN pnpm exec prisma generate
 RUN pnpm run build
+RUN test -f dist/main.js || (echo "Expected dist/main.js after build" && ls -la dist && exit 1)
 
 FROM base AS runner
 ENV NODE_ENV=production
@@ -31,6 +32,7 @@ COPY apps/api/docker-entrypoint.sh /app/docker-entrypoint.sh
 RUN chmod +x /app/docker-entrypoint.sh && mkdir -p /app/uploads
 
 WORKDIR /app/apps/api
+RUN npx prisma generate
 EXPOSE 8000
 
 ENTRYPOINT ["/app/docker-entrypoint.sh"]

@@ -4,7 +4,7 @@ import request from 'supertest';
 import type { Response } from 'supertest';
 import { AppModule } from '../src/app.module';
 
-const PASSWORD = 'Sigopem2024!';
+const PASSWORD = 'Arkon2024!';
 const skipE2e = !process.env.DATABASE_URL || process.env.SKIP_E2E === '1';
 
 async function login(
@@ -22,7 +22,7 @@ async function login(
   return res.body.access_token as string;
 }
 
-describe('SIGOPEM API (e2e)', () => {
+describe('ARKON API (e2e)', () => {
   let app: INestApplication;
 
   beforeAll(async () => {
@@ -51,9 +51,9 @@ describe('SIGOPEM API (e2e)', () => {
   it('login returns token for estatal, municipal and contratista roles', async () => {
     if (skipE2e) return;
     for (const email of [
-      'estatal@sigopem.gob.mx',
-      'puebla@sigopem.gob.mx',
-      'cce@sigopem.gob.mx',
+      'estatal@arkon.gob.mx',
+      'municipal.centro@arkon.gob.mx',
+      'cce@arkon.gob.mx',
     ]) {
       const token = await login(app, email);
       expect(token).toBeTruthy();
@@ -67,8 +67,8 @@ describe('SIGOPEM API (e2e)', () => {
 
   it('GET /obras is scoped by role', async () => {
     if (skipE2e) return;
-    const estatalToken = await login(app, 'estatal@sigopem.gob.mx');
-    const municipalToken = await login(app, 'puebla@sigopem.gob.mx');
+    const estatalToken = await login(app, 'estatal@arkon.gob.mx');
+    const municipalToken = await login(app, 'municipal.centro@arkon.gob.mx');
     const estatal = await request(app.getHttpServer())
       .get('/api/obras')
       .set('Authorization', `Bearer ${estatalToken}`)
@@ -85,8 +85,8 @@ describe('SIGOPEM API (e2e)', () => {
 
   it('contratista can POST avance and municipal can PATCH validate', async () => {
     if (skipE2e) return;
-    const contratistaToken = await login(app, 'cce@sigopem.gob.mx');
-    const municipalToken = await login(app, 'puebla@sigopem.gob.mx');
+    const contratistaToken = await login(app, 'cce@arkon.gob.mx');
+    const municipalToken = await login(app, 'municipal.centro@arkon.gob.mx');
     const obrasRes = await request(app.getHttpServer())
       .get('/api/obras')
       .set('Authorization', `Bearer ${contratistaToken}`)
@@ -119,8 +119,8 @@ describe('SIGOPEM API (e2e)', () => {
 
   it('dual estimacion validation municipal then estatal', async () => {
     if (skipE2e) return;
-    const municipalToken = await login(app, 'puebla@sigopem.gob.mx');
-    const estatalToken = await login(app, 'estatal@sigopem.gob.mx');
+    const municipalToken = await login(app, 'municipal.centro@arkon.gob.mx');
+    const estatalToken = await login(app, 'estatal@arkon.gob.mx');
     const obrasRes = await request(app.getHttpServer())
       .get('/api/obras')
       .set('Authorization', `Bearer ${municipalToken}`)
@@ -159,7 +159,7 @@ describe('SIGOPEM API (e2e)', () => {
 
   it('public register always creates contratista and rejects unknown fields', async () => {
     if (skipE2e) return;
-    const email = `e2e-register-${Date.now()}@sigopem.test`;
+    const email = `e2e-register-${Date.now()}@arkon.test`;
     const res = await request(app.getHttpServer())
       .post('/api/auth/register')
       .send({
@@ -193,7 +193,7 @@ describe('SIGOPEM API (e2e)', () => {
       .send({ message: 'hola' })
       .expect(401);
 
-    const token = await login(app, 'estatal@sigopem.gob.mx');
+    const token = await login(app, 'estatal@arkon.gob.mx');
     const res = await request(app.getHttpServer())
       .post('/api/chat/ask')
       .set('Authorization', `Bearer ${token}`)

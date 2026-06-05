@@ -1,4 +1,12 @@
-import { apiFetch, apiFetchFormData, documentoFileUrl, getToken, setToken } from '@/lib/api-client';
+import {
+  apiFetch,
+  apiFetchBlob,
+  apiFetchFormData,
+  documentoFileUrl,
+  getToken,
+  setToken,
+  triggerBlobDownload,
+} from '@/lib/api-client';
 import {
   mapAlerta,
   mapAvance,
@@ -8,6 +16,7 @@ import {
   mapMunicipio,
   mapObra,
   mapObservacion,
+  mapTopContratista,
   mapUser,
 } from '@/lib/api-mappers';
 import type {
@@ -16,6 +25,7 @@ import type {
   Documento,
   MunicipioData,
   Obra,
+  TopContratistaChartRow,
   User,
 } from '@/types';
 
@@ -388,6 +398,56 @@ export async function fetchChartObrasPorPrograma() {
 
 export async function fetchChartTopMunicipios() {
   return apiFetch<ChartPoint[]>('/dashboard/chart/top-municipios');
+}
+
+export async function fetchChartTopContratistas(programaId?: string): Promise<TopContratistaChartRow[]> {
+  const qs = programaId ? `?programa=${encodeURIComponent(programaId)}` : '';
+  try {
+    const rows = await apiFetch<Record<string, unknown>[]>(
+      `/dashboard/chart/top-contratistas${qs}`,
+    );
+    return rows.map(mapTopContratista);
+  } catch {
+    const obras = await fetchObras();
+    const filtered = programaId
+      ? obras.filter((o) => o.programa === programaId)
+      : obras;
+    const byContratista = new Map<string, { obras: Obra[]; nombre: string }>();
+    for (const obra of filtered) {
+      if (!obra.contratistaId) continue;
+      const bucket = byContratista.get(obra.contratistaId) ?? {
+        obras: [],
+        nombre: obra.contratista || obra.contratistaId,
+      };
+      bucket.obras.push(obra);
+      byContratista.set(obra.contratistaId, bucket);
+    }
+    return [...byContratista.entries()]
+      .map(([contratistaId, { obras: list, nombre }]) => ({
+        contratista: nombre,
+        contratistaId,
+        programa: programaId,
+        obrasCount: list.length,
+        avancePromedio:
+          list.length > 0
+            ? list.reduce((s, o) => s + o.avanceFisicoReal, 0) / list.length
+            : 0,
+        montoTotal: list.reduce((s, o) => s + o.montoAutorizado, 0),
+      }))
+      .sort((a, b) => b.obrasCount - a.obrasCount)
+      .slice(0, 10);
+  }
+}
+
+export async function downloadObrasExport(format: 'csv' = 'csv'): Promise<void> {
+  const { blob, filename } = await apiFetchBlob(`/obras/export?format=${format}`);
+  triggerBlobDownload(blob, filename ?? `obras.${format}`);
+}
+
+export async function downloadDashboardSummaryExport(): Promise<void> {
+  const { blob, filename } = await apiFetchBlob('/dashboard/export/summary?format=csv');
+  const defaultName = blob.type.includes('pdf') ? 'resumen-dashboard.pdf' : 'resumen-dashboard.csv';
+  triggerBlobDownload(blob, filename ?? defaultName);
 }
 
 export async function fetchChartAvanceTimeline() {

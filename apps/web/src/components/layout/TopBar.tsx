@@ -14,7 +14,7 @@ export function TopBar() {
     if (path.startsWith('/contratistas/')) return 'Panel del Contratista';
     if (path === '/asistente') return 'Asistente de IA';
     if (path === '/alertas') return 'Centro de Alertas';
-    return 'SIGOPEM';
+    return 'ARKON';
   };
 
   return (
@@ -34,7 +34,7 @@ export function TopBar() {
         </button>
         <div>
           <h1 className="text-sm font-semibold text-gray-900">{getTitle()}</h1>
-          <p className="text-[10px] text-gray-500 hidden sm:block">Programas federales y estatales trabajando para Puebla</p>
+          <p className="text-[10px] text-gray-500 hidden sm:block">Programas federales, estatales y municipales en un solo tablero</p>
         </div>
       </div>
       <div className="flex items-center gap-3">
