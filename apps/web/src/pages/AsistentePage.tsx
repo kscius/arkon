@@ -27,7 +27,7 @@ export default function AsistentePage() {
       id: 'welcome',
       role: 'assistant',
       content:
-        'Buen dia. Soy el Asistente Inteligente de ARKON. Puedo ayudarte con consultas sobre obras, avances, programas y alertas segun su perfil.\n\nQue informacion necesitas?',
+        'Buen dia. Soy el Asistente Inteligente de CEASPUE. Puedo ayudarte con consultas sobre obras, avances, programas y alertas segun su perfil.\n\nQue informacion necesitas?',
       timestamp: new Date(),
     },
   ]);
@@ -88,9 +88,9 @@ export default function AsistentePage() {
         <Card>
           <CardHeader className="pb-2">
             <div className="flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-[#0D7377]" />
-              <CardTitle className="text-sm font-semibold">Asistente ARKON</CardTitle>
-              <Badge className="bg-[#0D7377] text-[10px]">API</Badge>
+              <Sparkles className="w-4 h-4 text-[#8B1538]" />
+              <CardTitle className="text-sm font-semibold">Asistente CEASPUE</CardTitle>
+              <Badge className="bg-[#8B1538] text-[10px]">API</Badge>
             </div>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -125,7 +125,7 @@ export default function AsistentePage() {
 
       <div className="lg:col-span-3 flex flex-col bg-white rounded-lg border border-gray-200 overflow-hidden">
         <div className="p-3 border-b border-gray-200 flex items-center gap-2">
-          <Sparkles className="w-4 h-4 text-[#0D7377]" />
+          <Sparkles className="w-4 h-4 text-[#8B1538]" />
           <span className="text-sm font-semibold text-gray-900">Chat</span>
           <span className="flex items-center gap-1 ml-auto">
             <span className="w-2 h-2 rounded-full bg-green-500" />
@@ -144,7 +144,7 @@ export default function AsistentePage() {
               <div className={`flex gap-2 max-w-[85%] ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
                 <div
                   className={`w-7 h-7 rounded-full flex items-center justify-center flex-shrink-0 ${
-                    msg.role === 'user' ? 'bg-[#1B3A5C]' : 'bg-[#0D7377]'
+                    msg.role === 'user' ? 'bg-[#8B1538]' : 'bg-[#8B1538]'
                   }`}
                 >
                   {msg.role === 'user' ? (
@@ -156,7 +156,7 @@ export default function AsistentePage() {
                 <div
                   className={`p-3 rounded-2xl text-xs leading-relaxed whitespace-pre-line ${
                     msg.role === 'user'
-                      ? 'bg-[#1B3A5C] text-white rounded-br-md'
+                      ? 'bg-[#8B1538] text-white rounded-br-md'
                       : 'bg-gray-50 border border-gray-200 text-gray-800 rounded-bl-md'
                   }`}
                 >
@@ -168,7 +168,7 @@ export default function AsistentePage() {
 
           {isTyping && (
             <div className="flex gap-2">
-              <div className="w-7 h-7 rounded-full bg-[#0D7377] flex items-center justify-center flex-shrink-0">
+              <div className="w-7 h-7 rounded-full bg-[#8B1538] flex items-center justify-center flex-shrink-0">
                 <Bot className="w-3.5 h-3.5 text-white" />
               </div>
               <div className="p-3 bg-gray-50 border border-gray-200 rounded-2xl rounded-bl-md">
@@ -198,7 +198,7 @@ export default function AsistentePage() {
               onClick={() => handleSend()}
               disabled={!input.trim() || isTyping}
               className={`w-8 h-8 rounded-full flex items-center justify-center transition-all ${
-                input.trim() ? 'bg-[#1B3A5C] text-white' : 'bg-gray-200 text-gray-400'
+                input.trim() ? 'bg-[#8B1538] text-white' : 'bg-gray-200 text-gray-400'
               }`}
             >
               <Send className="w-3.5 h-3.5" />
