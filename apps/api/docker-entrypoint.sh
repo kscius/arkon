@@ -3,6 +3,12 @@ set -e
 
 cd /app/apps/api
 
+# Derive DB_HOST/DB_PORT from DATABASE_URL if not set explicitly
+if [ -z "$DB_HOST" ] && [ -n "$DATABASE_URL" ]; then
+  DB_HOST=$(printf '%s' "$DATABASE_URL" | sed 's|.*@\([^:/?]*\).*|\1|')
+  DB_PORT=$(printf '%s' "$DATABASE_URL" | sed 's|.*@[^:]*:\([0-9]*\)/.*|\1|')
+fi
+
 echo "Waiting for PostgreSQL..."
 for i in $(seq 1 60); do
   if pg_isready -h "${DB_HOST:-db}" -p "${DB_PORT:-5432}" -U "${POSTGRES_USER:-arkon}" -d "${POSTGRES_DB:-arkon_db}" >/dev/null 2>&1; then
