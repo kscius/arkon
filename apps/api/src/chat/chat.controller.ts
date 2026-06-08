@@ -11,7 +11,14 @@ export class ChatController {
   constructor(private readonly service: ChatService) {}
 
   @Post('ask')
-  ask(@Body() body: { message: string }, @CurrentUser() user: Usuario) {
-    return this.service.ask(body.message ?? '', user);
+  ask(
+    @Body()
+    body: {
+      message: string;
+      history?: { role: 'user' | 'assistant'; content: string }[];
+    },
+    @CurrentUser() user: Usuario,
+  ) {
+    return this.service.ask(body.message ?? '', user, body.history ?? []);
   }
 }

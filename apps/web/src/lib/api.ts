@@ -360,10 +360,13 @@ export async function fetchObservacionesByObra(obraId: string) {
   return rows.map((r) => mapObservacion(r, obraId));
 }
 
-export async function askChat(message: string): Promise<{ response: string; suggestions: string[] }> {
+export async function askChat(
+  message: string,
+  history: { role: 'user' | 'assistant'; content: string }[] = [],
+): Promise<{ response: string; suggestions: string[] }> {
   return apiFetch('/chat/ask', {
     method: 'POST',
-    body: JSON.stringify({ message }),
+    body: JSON.stringify({ message, history }),
   });
 }
 
