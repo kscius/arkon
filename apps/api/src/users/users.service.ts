@@ -12,9 +12,33 @@ export class UsersService {
   ) {}
 
   async findAll(user: Usuario) {
-    if (user.rol !== Rol.estatal) throw new ForbiddenException('Only estatal');
-    const users = await this.prisma.usuario.findMany({ orderBy: { email: 'asc' } });
-    return users.map((u) => this.auth.toUserResponse(u));
+    if (user.rol === Rol.contratista) throw new ForbiddenException('Access denied');
+    let where = {};
+    if (user.rol === Rol.municipal && user.municipioId) {
+      where = {
+        OR: [{ municipioId: user.municipioId }, { rol: Rol.estatal }],
+      };
+    }
+    const users = await this.prisma.usuario.findMany({
+      where,
+      orderBy: { email: 'asc' },
+    });
+    return users.map((u) => this.toSnakeUserResponse(u));
+  }
+
+  private toSnakeUserResponse(user: Usuario) {
+    const base = this.auth.toUserResponse(user);
+    return {
+      id: base.id,
+      email: base.email,
+      full_name: base.fullName,
+      role: base.role,
+      avatar_initials: base.avatarInitials,
+      is_active: base.isActive,
+      municipio_id: base.municipioId,
+      contratista_id: base.contratistaId,
+      telefono: base.telefono ?? null,
+    };
   }
 
   async findOne(id: string, user: Usuario) {
@@ -35,6 +59,7 @@ export class UsersService {
       avatar_initials?: string;
       municipio_id?: string;
       contratista_id?: string;
+      telefono?: string;
     },
     user: Usuario,
   ) {
@@ -48,18 +73,23 @@ export class UsersService {
         avatarInitials: data.avatar_initials ?? 'US',
         municipioId: data.municipio_id,
         contratistaId: data.contratista_id,
+        telefono: data.telefono?.trim() || null,
       },
     });
-    return this.auth.toUserResponse(created);
+    return this.toSnakeUserResponse(created);
   }
 
   async update(
     id: string,
-    data: { is_active?: boolean; full_name?: string },
+    data: { is_active?: boolean; full_name?: string; telefono?: string },
     user: Usuario,
   ) {
     if (user.rol !== Rol.estatal) throw new ForbiddenException('Only estatal');
-    if (data.is_active === undefined && data.full_name === undefined) {
+    if (
+      data.is_active === undefined &&
+      data.full_name === undefined &&
+      data.telefono === undefined
+    ) {
       throw new BadRequestException('At least one field is required');
     }
     if (data.full_name !== undefined && !data.full_name.trim()) {
@@ -72,9 +102,10 @@ export class UsersService {
       data: {
         ...(data.is_active !== undefined && { isActive: data.is_active }),
         ...(data.full_name !== undefined && { fullName: data.full_name.trim() }),
+        ...(data.telefono !== undefined && { telefono: data.telefono.trim() || null }),
       },
     });
-    return this.auth.toUserResponse(updated);
+    return this.toSnakeUserResponse(updated);
   }
 
   async remove(id: string, user: Usuario) {

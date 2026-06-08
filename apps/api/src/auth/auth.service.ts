@@ -29,6 +29,7 @@ export class AuthService {
       isActive: user.isActive,
       municipioId: user.municipioId,
       contratistaId: user.contratistaId,
+      telefono: user.telefono,
     };
   }
 

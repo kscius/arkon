@@ -22,6 +22,7 @@ describe('canAccessRoute', () => {
     expect(canAccessRoute('municipal', '/municipios/x', true)).toBe(true);
     expect(canAccessRoute('municipal', '/contratistas', true)).toBe(true);
     expect(canAccessRoute('municipal', '/asistente', true)).toBe(true);
+    expect(canAccessRoute('municipal', '/configurador-alertas', true)).toBe(true);
     expect(canAccessRoute('municipal', '/admin/usuarios', true)).toBe(false);
   });
 
@@ -33,6 +34,7 @@ describe('canAccessRoute', () => {
     expect(canAccessRoute('contratista', '/obras/1', true)).toBe(true);
     expect(canAccessRoute('contratista', '/municipios', true)).toBe(false);
     expect(canAccessRoute('contratista', '/asistente', true)).toBe(false);
+    expect(canAccessRoute('contratista', '/configurador-alertas', true)).toBe(false);
     expect(canAccessRoute('contratista', '/admin/usuarios', true)).toBe(false);
   });
 });

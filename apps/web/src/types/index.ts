@@ -142,6 +142,54 @@ export interface Alerta {
   accionTomada?: string | null;
 }
 
+export type AlertaConfigTipo =
+  | 'sin_actualizaciones'
+  | 'exceso_presupuesto'
+  | 'retraso_fisico'
+  | 'sin_estimaciones'
+  | 'documentacion_incompleta';
+
+export interface AlertaConfigDestinatario {
+  userId: string;
+  nombre: string;
+  telefono: string;
+}
+
+export interface AlertaConfig {
+  id: string;
+  nombre: string;
+  descripcion?: string | null;
+  activa: boolean;
+  tipo: AlertaConfigTipo;
+  severidad: Severidad;
+  programaFiltro?: string | null;
+  municipioId?: string | null;
+  municipioNombre?: string | null;
+  obraId?: string | null;
+  obraNombre?: string | null;
+  obraFolio?: string | null;
+  umbralDias?: number | null;
+  umbralPorcentaje?: number | null;
+  umbralMonto?: number | null;
+  destinatarios: AlertaConfigDestinatario[];
+  creadoPor: string;
+  creadorNombre?: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  fullName: string;
+  role: UserRole;
+  avatarInitials: string;
+  municipioId?: string;
+  contratistaId?: string;
+  isActive: boolean;
+  telefono?: string | null;
+}
+
 export interface Contratista {
   id: string;
   nombre: string;

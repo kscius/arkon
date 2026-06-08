@@ -94,9 +94,10 @@ model Municipio {
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  users         Usuario[]
-  obras         Obra[]
-  alertas       Alerta[]
+  users          Usuario[]
+  obras          Obra[]
+  alertas        Alerta[]
+  alertaConfigs  AlertaConfig[]
 
   @@map("municipios")
 }
@@ -123,6 +124,7 @@ model Usuario {
   email          String    @unique
   passwordHash   String    @map("password_hash")
   fullName       String    @map("full_name")
+  telefono       String?
   rol            Rol
   avatarInitials String    @default("US") @map("avatar_initials")
   isActive       Boolean   @default(true) @map("is_active")
@@ -132,8 +134,9 @@ model Usuario {
   createdAt      DateTime  @default(now()) @map("created_at")
   updatedAt      DateTime  @updatedAt @map("updated_at")
 
-  municipio   Municipio?   @relation(fields: [municipioId], references: [id])
-  contratista Contratista? @relation(fields: [contratistaId], references: [id])
+  municipio     Municipio?     @relation(fields: [municipioId], references: [id])
+  contratista   Contratista?   @relation(fields: [contratistaId], references: [id])
+  alertaConfigs AlertaConfig[]
 
   @@index([municipioId])
   @@index([contratistaId])
@@ -191,11 +194,41 @@ model Obra {
   documentos    Documento[]
   observaciones Observacion[]
   alertas       Alerta[]
+  alertaConfigs AlertaConfig[]
 
   @@index([municipioId])
   @@index([contratistaId])
   @@index([estatus])
   @@map("obras")
+}
+
+model AlertaConfig {
+  id                String   @id @default(uuid()) @db.Uuid
+  nombre            String
+  descripcion       String?
+  activa            Boolean  @default(true)
+  tipo              String
+  severidad         String   @default("media")
+  programaFiltro    String?  @map("programa_filtro")
+  municipioId       String?  @map("municipio_id") @db.Uuid
+  obraId            String?  @map("obra_id") @db.Uuid
+  umbralDias        Int?     @map("umbral_dias")
+  umbralPorcentaje  Decimal? @map("umbral_porcentaje") @db.Decimal(5, 2)
+  umbralMonto       Decimal? @map("umbral_monto") @db.Decimal(14, 2)
+  destinatariosJson Json     @default("[]") @map("destinatarios_json")
+  creadoPor         String   @map("creado_por") @db.Uuid
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  municipio Municipio? @relation(fields: [municipioId], references: [id], onDelete: SetNull)
+  obra      Obra?      @relation(fields: [obraId], references: [id], onDelete: SetNull)
+  creador   Usuario    @relation(fields: [creadoPor], references: [id])
+
+  @@index([activa])
+  @@index([municipioId])
+  @@index([obraId])
+  @@index([creadoPor])
+  @@map("alerta_configs")
 }
 
 model AvanceMensual {
