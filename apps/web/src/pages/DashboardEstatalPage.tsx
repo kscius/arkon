@@ -129,7 +129,7 @@ export default function DashboardPage() {
   }));
 
   const kpiCards = [
-    { label: 'Total de Obras', value: totalObras.toString(), sub: `${obrasEjecucion} en ejecucion`, icon: Building2, color: brand.colors.primary, trend: null },
+    { label: 'Total de Obras', value: totalObras.toString(), sub: 'Registradas en el sistema', icon: Building2, color: brand.colors.primary, trend: null },
     { label: 'Inversion Autorizada', value: formatCurrencyM(montoAutorizado), sub: 'Presupuesto total', icon: DollarSign, color: brand.colors.accent, trend: null },
     { label: 'Obras en Ejecucion', value: obrasEjecucion.toString(), sub: `${Math.round((obrasEjecucion/totalObras)*100)}% del total`, icon: Activity, color: '#38A169', trend: Math.round((obrasEjecucion/totalObras)*100) },
     { label: 'Obras con Retraso', value: obrasRetraso.toString(), sub: `${Math.round((obrasRetraso/totalObras)*100)}% del total`, icon: AlertTriangle, color: '#DC2626', trend: null },
@@ -235,10 +235,25 @@ export default function DashboardPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
-                {(topMunicipios.length ? topMunicipios : municipios.map((m) => ({
-                  municipio: m.nombre,
-                  obras_count: m.obras,
-                }))).slice(0, 10).map((row, i) => {
+                {(topMunicipios.length
+                  ? topMunicipios
+                  : [...municipios]
+                      .sort((a, b) => {
+                        if (b.programasActivos !== a.programasActivos) {
+                          return b.programasActivos - a.programasActivos;
+                        }
+                        if (b.obras !== a.obras) return b.obras - a.obras;
+                        if (b.inversionTotal !== a.inversionTotal) {
+                          return b.inversionTotal - a.inversionTotal;
+                        }
+                        return a.nombre.localeCompare(b.nombre, 'es');
+                      })
+                      .map((m) => ({
+                        municipio: m.nombre,
+                        programas_count: m.programasActivos,
+                        obras_count: m.obras,
+                      }))
+                ).slice(0, 10).map((row, i) => {
                   const m = municipios.find(
                     (mun) => normalizeName(mun.nombre) === normalizeName(row.municipio ?? ''),
                   );
@@ -249,7 +264,8 @@ export default function DashboardPage() {
                   );
                   const progSet = new Set(munObras.map((o) => o.programa));
                   const progNames = [...progSet].slice(0, 3).map((p) => getProgramaName(p));
-                  const count = row.obras_count ?? m?.obras ?? 0;
+                  const programasCount = row.programas_count ?? m?.programasActivos ?? progSet.size;
+                  const obrasCount = row.obras_count ?? m?.obras ?? munObras.length;
                   return (
                     <div
                       key={row.municipio ?? i}
@@ -262,7 +278,12 @@ export default function DashboardPage() {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
                           <span className="text-sm font-semibold text-gray-900 truncate">{row.municipio}</span>
-                          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-brand-secondary text-white">{count} obras</span>
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-brand-secondary text-white">
+                            {programasCount} {programasCount === 1 ? 'programa' : 'programas'}
+                          </span>
+                          <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600">
+                            {obrasCount} {obrasCount === 1 ? 'obra' : 'obras'}
+                          </span>
                         </div>
                         {m && (
                           <div className="flex items-center gap-3 mt-1">

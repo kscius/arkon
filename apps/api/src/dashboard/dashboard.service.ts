@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable } from '@nestjs/common';
 import { EstatusObra, Prisma, Rol, Usuario } from '@prisma/client';
 import { toCsv } from '../common/csv.util';
+import { comparePeriodo } from '../common/periodo.util';
 import { ScopeService } from '../common/scope.service';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -25,17 +26,11 @@ export class DashboardService {
 
     const totalObras = obras.length;
     const obrasEjecucion = obras.filter(
-      (o) =>
-        o.estatus === EstatusObra.en_ejecucion_a_tiempo ||
-        o.estatus === EstatusObra.en_ejecucion_retraso,
+      (o) => o.estatus === EstatusObra.en_ejecucion_a_tiempo,
     ).length;
     const obrasRetraso = obras.filter((o) => o.estatus === EstatusObra.en_ejecucion_retraso).length;
     const obrasConcluidas = obras.filter((o) => o.estatus === EstatusObra.concluida).length;
-    const obrasRiesgo = obras.filter(
-      (o) =>
-        o.estatus === EstatusObra.en_riesgo ||
-        o.estatus === EstatusObra.en_ejecucion_retraso,
-    ).length;
+    const obrasRiesgo = obras.filter((o) => o.estatus === EstatusObra.en_riesgo).length;
     const montoAutorizado = obras.reduce((s, o) => s + Number(o.montoAutorizado), 0);
     const montoEjercido = obras.reduce((s, o) => s + Number(o.montoEjercido), 0);
     const avanceFisicoPromedio =
@@ -92,22 +87,48 @@ export class DashboardService {
     if (user.rol === Rol.contratista) {
       throw new ForbiddenException('Not available for contratista role');
     }
-    const rows = await this.prisma.obra.groupBy({
-      by: ['municipioId'],
+    const obras = await this.prisma.obra.findMany({
       where: this.obraWhere(user),
-      _count: { id: true },
-      orderBy: { _count: { id: 'desc' } },
-      take: 10,
+      select: { municipioId: true, programa: true, montoAutorizado: true },
     });
-    const municipioIds = rows.map((r) => r.municipioId);
+
+    const byMunicipio = new Map<
+      string,
+      { programas: Set<string>; obras_count: number; inversion_total: number }
+    >();
+    for (const obra of obras) {
+      const bucket = byMunicipio.get(obra.municipioId) ?? {
+        programas: new Set<string>(),
+        obras_count: 0,
+        inversion_total: 0,
+      };
+      bucket.programas.add(obra.programa);
+      bucket.obras_count += 1;
+      bucket.inversion_total += Number(obra.montoAutorizado);
+      byMunicipio.set(obra.municipioId, bucket);
+    }
+
     const municipios = await this.prisma.municipio.findMany({
-      where: { id: { in: municipioIds } },
+      where: { id: { in: [...byMunicipio.keys()] } },
     });
     const nameById = new Map(municipios.map((m) => [m.id, m.nombre]));
-    return rows.map((r) => ({
-      municipio: nameById.get(r.municipioId) ?? '',
-      obras_count: r._count.id,
-    }));
+
+    return [...byMunicipio.entries()]
+      .map(([municipioId, stats]) => ({
+        municipio: nameById.get(municipioId) ?? '',
+        programas_count: stats.programas.size,
+        obras_count: stats.obras_count,
+        inversion_total: stats.inversion_total,
+        _nombre: nameById.get(municipioId) ?? '',
+      }))
+      .sort((a, b) => {
+        if (b.programas_count !== a.programas_count) return b.programas_count - a.programas_count;
+        if (b.obras_count !== a.obras_count) return b.obras_count - a.obras_count;
+        if (b.inversion_total !== a.inversion_total) return b.inversion_total - a.inversion_total;
+        return a._nombre.localeCompare(b._nombre, 'es');
+      })
+      .slice(0, 10)
+      .map(({ _nombre: _n, ...row }) => row);
   }
 
   async exportSummary(user: Usuario, format: 'csv' | 'json' = 'json'): Promise<string | object> {
@@ -242,7 +263,7 @@ export class DashboardService {
       vals.length ? vals.reduce((s, v) => s + v, 0) / vals.length : 0;
 
     return [...byPeriodo.entries()]
-      .sort(([a], [b]) => a.localeCompare(b))
+      .sort(([a], [b]) => comparePeriodo(a, b))
       .map(([periodo, vals]) => ({
         mes: periodo,
         programado: Math.round(avg(vals.programado) * 10) / 10,

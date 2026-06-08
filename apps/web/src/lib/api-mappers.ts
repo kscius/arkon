@@ -238,9 +238,15 @@ export function mapAlerta(raw: Record<string, unknown>): Alerta {
     municipio: String(raw.municipio ?? ''),
     titulo: String(raw.titulo),
     descripcion: String(raw.descripcion ?? ''),
-    tipo: String(raw.tipo).toLowerCase() as Alerta['tipo'],
+    tipo: String(raw.tipo).toLowerCase(),
     severidad: String(raw.severidad).toLowerCase() as Alerta['severidad'],
     fechaGeneracion: String(raw.fecha_generacion ?? raw.fechaGeneracion ?? ''),
     atendida: Boolean(raw.atendida),
+    accionTomada:
+      raw.accion_tomada != null
+        ? String(raw.accion_tomada)
+        : raw.accionTomada != null
+          ? String(raw.accionTomada)
+          : null,
   };
 }

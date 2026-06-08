@@ -1,21 +1,17 @@
 import { useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+import { ComboBox } from '@/components/ui/combobox';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import type { TopContratistaChartRow } from '@/types';
 import { getBrand } from '@/config/brand';
 import { formatCurrencyM, formatPercentage } from '@/lib/utils';
+import { cn } from '@/lib/utils';
 import {
   Bar,
   BarChart,
   CartesianGrid,
+  Cell,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -27,6 +23,10 @@ interface RankingContratistasChartProps {
   programas: { id: string; label: string }[];
   programaFilter: string;
   onProgramaFilterChange: (value: string) => void;
+  /** Highlights the row/bar for the contractor selected in the panel header */
+  highlightContratistaId?: string;
+  /** Contractor name shown in contextual subtitle */
+  contextLabel?: string;
 }
 
 export function RankingContratistasChart({
@@ -34,49 +34,79 @@ export function RankingContratistasChart({
   programas,
   programaFilter,
   onProgramaFilterChange,
+  highlightContratistaId,
+  contextLabel,
 }: RankingContratistasChartProps) {
   const brand = getBrand();
   const navigate = useNavigate();
 
+  const programaOptions = useMemo(
+    () => [
+      { value: '__all__', label: 'Todos los programas' },
+      ...programas.map((p) => ({ value: p.id, label: p.label })),
+    ],
+    [programas],
+  );
+
+  const highlightIndex = useMemo(
+    () =>
+      highlightContratistaId
+        ? rows.findIndex((r) => r.contratistaId === highlightContratistaId)
+        : -1,
+    [rows, highlightContratistaId],
+  );
+
   const chartData = useMemo(
     () =>
-      rows.slice(0, 10).map((row) => ({
+      rows.slice(0, 10).map((row, index) => ({
         ...row,
+        rank: index + 1,
+        isHighlighted: row.contratistaId === highlightContratistaId,
         label:
           row.contratista.length > 22
             ? `${row.contratista.slice(0, 22)}…`
             : row.contratista,
       })),
-    [rows],
+    [rows, highlightContratistaId],
   );
+
+  const contextMessage = useMemo(() => {
+    if (!contextLabel) return null;
+    if (highlightIndex >= 0) {
+      return `${contextLabel} ocupa el puesto #${highlightIndex + 1} en este ranking.`;
+    }
+    if (programaFilter !== '__all__') {
+      return `${contextLabel} no aparece en el top 10 para el programa seleccionado.`;
+    }
+    return `Comparativa de contratistas para contextualizar a ${contextLabel}.`;
+  }, [contextLabel, highlightIndex, programaFilter]);
 
   return (
     <Card>
       <CardHeader className="pb-2">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
-          <CardTitle className="text-base font-semibold text-gray-900">
-            Ranking contratistas por programa
-          </CardTitle>
-          <div className="flex items-center gap-2">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+          <div className="min-w-0">
+            <CardTitle className="text-base font-semibold text-gray-900">
+              Ranking contratistas por programa
+            </CardTitle>
+            {contextMessage && (
+              <p className="text-[11px] text-gray-500 mt-1">{contextMessage}</p>
+            )}
+          </div>
+          <div className="flex items-center gap-2 shrink-0">
             <Badge variant="outline" className="text-[10px]">
               Top {Math.min(rows.length, 10)}
             </Badge>
             {programas.length > 0 && (
-              <Select value={programaFilter} onValueChange={onProgramaFilterChange}>
-                <SelectTrigger className="h-8 w-[200px] text-xs">
-                  <SelectValue placeholder="Programa" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="__all__" className="text-xs">
-                    Todos los programas
-                  </SelectItem>
-                  {programas.map((p) => (
-                    <SelectItem key={p.id} value={p.id} className="text-xs">
-                      {p.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <ComboBox
+                options={programaOptions}
+                value={programaFilter}
+                onValueChange={onProgramaFilterChange}
+                placeholder="Programa"
+                searchPlaceholder="Buscar programa..."
+                triggerClassName="w-[220px] sm:w-[260px]"
+                className="w-[220px] sm:w-[260px]"
+              />
             )}
           </div>
         </div>
@@ -111,14 +141,22 @@ export function RankingContratistasChart({
                 <Bar
                   dataKey="obrasCount"
                   name="obrasCount"
-                  fill={brand.colors.primary}
                   radius={[0, 3, 3, 0]}
                   cursor="pointer"
                   onClick={(data) => {
                     const id = (data as { contratistaId?: string }).contratistaId;
                     if (id) navigate(`/contratistas/${id}`);
                   }}
-                />
+                >
+                  {chartData.map((entry) => (
+                    <Cell
+                      key={entry.contratistaId ?? entry.contratista}
+                      fill={entry.isHighlighted ? brand.colors.accent : brand.colors.primary}
+                      stroke={entry.isHighlighted ? brand.colors.accent : undefined}
+                      strokeWidth={entry.isHighlighted ? 2 : 0}
+                    />
+                  ))}
+                </Bar>
               </BarChart>
             </ResponsiveContainer>
             <div className="mt-4 overflow-x-auto">
@@ -133,27 +171,42 @@ export function RankingContratistasChart({
                   </tr>
                 </thead>
                 <tbody>
-                  {rows.slice(0, 10).map((row, i) => (
-                    <tr
-                      key={row.contratistaId ?? row.contratista}
-                      className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer"
-                      onClick={() =>
-                        row.contratistaId && navigate(`/contratistas/${row.contratistaId}`)
-                      }
-                    >
-                      <td className="py-2 px-2">{i + 1}</td>
-                      <td className="py-2 px-2 font-medium text-gray-900">{row.contratista}</td>
-                      <td className="py-2 px-2 text-center">{row.obrasCount}</td>
-                      <td className="py-2 px-2 text-center">
-                        {row.avancePromedio != null
-                          ? formatPercentage(row.avancePromedio)
-                          : '—'}
-                      </td>
-                      <td className="py-2 px-2 text-center">
-                        {row.montoTotal != null ? formatCurrencyM(row.montoTotal) : '—'}
-                      </td>
-                    </tr>
-                  ))}
+                  {rows.slice(0, 10).map((row, i) => {
+                    const isHighlighted = row.contratistaId === highlightContratistaId;
+                    return (
+                      <tr
+                        key={row.contratistaId ?? row.contratista}
+                        className={cn(
+                          'border-b border-gray-100 hover:bg-gray-50 cursor-pointer',
+                          isHighlighted && 'bg-brand-primary/5 border-l-2 border-l-brand-accent',
+                        )}
+                        onClick={() =>
+                          row.contratistaId && navigate(`/contratistas/${row.contratistaId}`)
+                        }
+                      >
+                        <td className="py-2 px-2">{i + 1}</td>
+                        <td className="py-2 px-2 font-medium text-gray-900">
+                          <span className="flex items-center gap-2 min-w-0">
+                            <span className="truncate">{row.contratista}</span>
+                            {isHighlighted && (
+                              <Badge variant="secondary" className="text-[9px] shrink-0">
+                                Seleccionado
+                              </Badge>
+                            )}
+                          </span>
+                        </td>
+                        <td className="py-2 px-2 text-center">{row.obrasCount}</td>
+                        <td className="py-2 px-2 text-center">
+                          {row.avancePromedio != null
+                            ? formatPercentage(row.avancePromedio)
+                            : '—'}
+                        </td>
+                        <td className="py-2 px-2 text-center">
+                          {row.montoTotal != null ? formatCurrencyM(row.montoTotal) : '—'}
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

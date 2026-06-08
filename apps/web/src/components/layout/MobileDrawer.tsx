@@ -52,6 +52,7 @@ export function MobileDrawer({ onClose }: { onClose: () => void }) {
 
   const isActive = (path: string) => {
     if (path === '/dashboard') return location.pathname === '/dashboard';
+    if (path === '/obras') return location.pathname === '/obras' || location.pathname.startsWith('/obras/');
     if (path.includes('/municipios/')) return location.pathname.startsWith('/municipios');
     if (path.includes('/contratistas/')) return location.pathname.startsWith('/contratistas');
     if (path === '/alertas') return location.pathname === '/alertas';

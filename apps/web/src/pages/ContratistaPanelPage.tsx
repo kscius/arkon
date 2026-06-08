@@ -7,7 +7,7 @@ import { useAsyncData } from '@/hooks/use-async-data';
 import { fetchChartTopContratistas, fetchContratista, fetchContratistas, fetchObras } from '@/lib/api';
 import { formatCurrencyM, formatPercentage, getObraStatusColor, getObraStatusLabel, getProgramaName } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ComboBox } from '@/components/ui/combobox';
 import { Building2, DollarSign, TrendingUp, AlertTriangle } from 'lucide-react';
 
 export default function ContratistaPanelPage() {
@@ -23,16 +23,8 @@ export default function ContratistaPanelPage() {
     else if (user?.contratistaId) setSelectedId(user.contratistaId);
   }, [contratistaId, user?.contratistaId]);
 
-  const load = useCallback(async () => {
-    const [contratistas, obras, topContratistas] = await Promise.all([
-      fetchContratistas(),
-      fetchObras(),
-      showRanking
-        ? fetchChartTopContratistas(
-            programaFilter === '__all__' ? undefined : programaFilter,
-          ).catch(() => [])
-        : Promise.resolve([]),
-    ]);
+  const loadBase = useCallback(async () => {
+    const [contratistas, obras] = await Promise.all([fetchContratistas(), fetchObras()]);
     const id = selectedId || contratistas[0]?.id;
     const contratista = id
       ? contratistas.find((c) => c.id === id) ?? (await fetchContratista(id))
@@ -40,72 +32,148 @@ export default function ContratistaPanelPage() {
     const contratistaObras = contratista
       ? obras.filter((o) => o.contratistaId === contratista.id)
       : [];
-    return { contratistas, contratista, contratistaObras, obras, topContratistas };
-  }, [selectedId, showRanking, programaFilter]);
+    return { contratistas, contratista, contratistaObras, obras };
+  }, [selectedId]);
 
-  const { data, loading, error, reload } = useAsyncData(load, [load]);
+  const { data: baseData, loading: baseLoading, error: baseError, reload: reloadBase } =
+    useAsyncData(loadBase, [loadBase]);
 
-  const obras = data?.obras ?? [];
+  const loadRanking = useCallback(async () => {
+    if (!showRanking) return [];
+    return fetchChartTopContratistas(
+      programaFilter === '__all__' ? undefined : programaFilter,
+    ).catch(() => []);
+  }, [showRanking, programaFilter]);
+
+  const { data: topContratistas = [], loading: rankingLoading } = useAsyncData(
+    loadRanking,
+    [loadRanking],
+  );
+
+  const loading = baseLoading || (showRanking && rankingLoading);
+  const error = baseError;
+  const reload = reloadBase;
+
+  const contratista = baseData?.contratista;
+  const contratistas = useMemo(() => baseData?.contratistas ?? [], [baseData?.contratistas]);
+  const contratistaObrasAll = useMemo(
+    () => baseData?.contratistaObras ?? [],
+    [baseData?.contratistaObras],
+  );
+
   const programaOptions = useMemo(() => {
-    const ids = [...new Set(obras.map((o) => o.programa).filter(Boolean))];
+    const ids = [...new Set(contratistaObrasAll.map((o) => o.programa).filter(Boolean))];
     return ids.map((id) => ({ id, label: getProgramaName(id) }));
-  }, [obras]);
+  }, [contratistaObrasAll]);
 
-  if (!data?.contratista) {
+  useEffect(() => {
+    if (
+      programaFilter !== '__all__' &&
+      programaOptions.length > 0 &&
+      !programaOptions.some((p) => p.id === programaFilter)
+    ) {
+      setProgramaFilter('__all__');
+    }
+  }, [programaFilter, programaOptions]);
+
+  const contratistaObras = useMemo(() => {
+    if (programaFilter === '__all__') return contratistaObrasAll;
+    return contratistaObrasAll.filter((o) => o.programa === programaFilter);
+  }, [contratistaObrasAll, programaFilter]);
+
+  const displayStats = useMemo(() => {
+    if (!contratista) return null;
+    if (programaFilter === '__all__' || contratistaObras.length === 0) {
+      return {
+        obrasAsignadas: contratista.obrasAsignadas,
+        montoTotal: contratista.montoTotal,
+        avancePromedio: contratista.avancePromedio,
+        observacionesPendientes: contratista.observacionesPendientes,
+      };
+    }
+    const montoTotal = contratistaObras.reduce((s, o) => s + (o.montoContratado ?? 0), 0);
+    const avancePromedio =
+      contratistaObras.reduce((s, o) => s + o.avanceFisicoReal, 0) / contratistaObras.length;
+    return {
+      obrasAsignadas: contratistaObras.length,
+      montoTotal,
+      avancePromedio,
+      observacionesPendientes: contratista.observacionesPendientes,
+    };
+  }, [contratista, contratistaObras, programaFilter]);
+
+  const contratistaOptions = useMemo(
+    () => contratistas.map((c) => ({ value: c.id, label: c.nombre })),
+    [contratistas],
+  );
+
+  const canPickContratista = user?.role === 'estatal' || user?.role === 'municipal';
+
+  const handleContratistaChange = (id: string) => {
+    setSelectedId(id);
+    if (canPickContratista) navigate(`/contratistas/${id}`);
+  };
+
+  if (!contratista || !displayStats) {
     return <PageState loading={loading} error={error} onRetry={reload}><span /></PageState>;
   }
-
-  const { contratistas, contratista, contratistaObras, topContratistas } = data;
-  const canPickContratista = user?.role === 'estatal' || user?.role === 'municipal';
+  const programaLabel =
+    programaFilter === '__all__'
+      ? 'todos los programas'
+      : getProgramaName(programaFilter);
 
   return (
     <PageState loading={loading} error={error} onRetry={reload}>
     <div className="space-y-6">
       <div className="bg-white rounded-lg border border-gray-200 p-4 lg:p-6">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-3 mb-2">
-              <h1 className="text-lg font-bold text-brand-primary">Panel del Contratista</h1>
+          <div className="min-w-0 flex-1">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 mb-2">
+              <h1 className="text-lg font-bold text-brand-primary shrink-0">Panel del Contratista</h1>
               {canPickContratista ? (
-                <Select value={selectedId} onValueChange={setSelectedId}>
-                  <SelectTrigger className="w-[250px] h-9 text-xs">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {contratistas.map((c) => (
-                      <SelectItem key={c.id} value={c.id} className="text-xs">
-                        {c.nombre}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <ComboBox
+                  options={contratistaOptions}
+                  value={selectedId}
+                  onValueChange={handleContratistaChange}
+                  placeholder="Selecciona un contratista..."
+                  searchPlaceholder="Buscar contratista..."
+                  triggerClassName="sm:max-w-md lg:max-w-lg"
+                  className="w-full sm:w-auto sm:min-w-[280px] sm:max-w-lg"
+                />
               ) : (
-                <span className="text-xs text-gray-600">{contratista.nombre}</span>
+                <span className="text-xs text-gray-600 truncate" title={contratista.nombre}>
+                  {contratista.nombre}
+                </span>
               )}
             </div>
             <p className="text-[11px] text-gray-500">RFC: {contratista.rfc}</p>
+            {showRanking && programaFilter !== '__all__' && (
+              <p className="text-[10px] text-gray-400 mt-1">
+                Indicadores filtrados por programa: {programaLabel}
+              </p>
+            )}
           </div>
         </div>
 
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mt-4">
           <div className="bg-gray-50 rounded-lg p-3">
             <Building2 className="w-4 h-4 text-brand-primary mb-1" />
-            <div className="text-xl font-bold">{contratista.obrasAsignadas}</div>
+            <div className="text-xl font-bold">{displayStats.obrasAsignadas}</div>
             <div className="text-[10px] text-gray-500">Obras asignadas</div>
           </div>
           <div className="bg-gray-50 rounded-lg p-3">
             <DollarSign className="w-4 h-4 text-brand-accent mb-1" />
-            <div className="text-xl font-bold">{formatCurrencyM(contratista.montoTotal)}</div>
+            <div className="text-xl font-bold">{formatCurrencyM(displayStats.montoTotal)}</div>
             <div className="text-[10px] text-gray-500">Monto total</div>
           </div>
           <div className="bg-gray-50 rounded-lg p-3">
             <TrendingUp className="w-4 h-4 text-[#3182CE] mb-1" />
-            <div className="text-xl font-bold">{formatPercentage(contratista.avancePromedio)}</div>
+            <div className="text-xl font-bold">{formatPercentage(displayStats.avancePromedio)}</div>
             <div className="text-[10px] text-gray-500">Avance promedio</div>
           </div>
           <div className="bg-gray-50 rounded-lg p-3">
             <AlertTriangle className="w-4 h-4 text-red-500 mb-1" />
-            <div className="text-xl font-bold">{contratista.observacionesPendientes}</div>
+            <div className="text-xl font-bold">{displayStats.observacionesPendientes}</div>
             <div className="text-[10px] text-gray-500">Observaciones</div>
           </div>
         </div>
@@ -113,16 +181,25 @@ export default function ContratistaPanelPage() {
 
       {showRanking && (
         <RankingContratistasChart
-          rows={topContratistas}
+          rows={topContratistas ?? []}
           programas={programaOptions}
           programaFilter={programaFilter}
           onProgramaFilterChange={setProgramaFilter}
+          highlightContratistaId={selectedId}
+          contextLabel={contratista.nombre}
         />
       )}
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold">Obras asignadas</CardTitle>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+            <CardTitle className="text-sm font-semibold">Obras asignadas</CardTitle>
+            {programaFilter !== '__all__' && (
+              <span className="text-[10px] text-gray-500">
+                Filtradas por {programaLabel}
+              </span>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -136,13 +213,17 @@ export default function ContratistaPanelPage() {
                   <p className="text-xs font-semibold truncate">{obra.nombre}</p>
                   <p className="text-[10px] text-gray-500">{obra.folio} — {getProgramaName(obra.programa)}</p>
                 </div>
-                <span className="text-[10px] font-medium" style={{ color: getObraStatusColor(obra.estatus) }}>
+                <span className="text-[10px] font-medium shrink-0" style={{ color: getObraStatusColor(obra.estatus) }}>
                   {getObraStatusLabel(obra.estatus)}
                 </span>
               </div>
             ))}
             {contratistaObras.length === 0 && (
-              <p className="text-sm text-gray-500 text-center py-6">Sin obras asignadas.</p>
+              <p className="text-sm text-gray-500 text-center py-6">
+                {programaFilter === '__all__'
+                  ? 'Sin obras asignadas.'
+                  : `Sin obras en ${programaLabel}.`}
+              </p>
             )}
           </div>
         </CardContent>

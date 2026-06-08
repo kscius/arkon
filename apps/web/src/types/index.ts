@@ -33,7 +33,8 @@ export type Severidad = 'baja' | 'media' | 'alta' | 'critica';
 
 export type ObservacionStatus = 'abierta' | 'en_atencion' | 'atendida' | 'cerrada';
 
-export type AlertaType = 'retraso' | 'documental' | 'financiera' | 'tecnica' | 'programa';
+/** Valores conocidos; la BD puede usar otros (p. ej. retraso_fisico, documentacion_incompleta). */
+export type AlertaType = string;
 
 export interface Obra {
   id: string;
@@ -138,6 +139,7 @@ export interface Alerta {
   severidad: Severidad;
   fechaGeneracion: string;
   atendida: boolean;
+  accionTomada?: string | null;
 }
 
 export interface Contratista {

@@ -11,6 +11,7 @@ export function TopBar() {
   const getTitle = () => {
     const path = location.pathname;
     if (path === '/dashboard') return 'Dashboard Ejecutivo';
+    if (path === '/obras') return 'Catalogo de Obras';
     if (path.startsWith('/obras/')) return 'Detalle de Obra';
     if (path.startsWith('/municipios/')) return 'Panel del Municipio';
     if (path.startsWith('/contratistas/')) return 'Panel del Contratista';

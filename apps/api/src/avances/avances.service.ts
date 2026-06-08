@@ -1,5 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { EstatusAvance, Rol, Usuario } from '@prisma/client';
+import { comparePeriodo } from '../common/periodo.util';
 import { ScopeService } from '../common/scope.service';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -38,9 +39,10 @@ export class AvancesService {
     await this.scope.getObraOrThrow(obraId, user);
     const avances = await this.prisma.avanceMensual.findMany({
       where: { obraId },
-      orderBy: { periodo: 'asc' },
     });
-    return avances.map((a) => this.map(a));
+    return avances
+      .sort((a, b) => comparePeriodo(a.periodo, b.periodo))
+      .map((a) => this.map(a));
   }
 
   async create(

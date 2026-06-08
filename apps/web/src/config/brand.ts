@@ -11,6 +11,8 @@ export type BrandConfig = {
   assistantGreeting: string;
   /** Program codes for obra forms and filters (tenant-specific). */
   programas?: string[];
+  /** Executing agencies for obra forms (tenant-specific). */
+  dependencias?: string[];
   /** Suggested prompts shown on the assistant page. */
   assistantSuggestions?: string[];
   demoEmail: string;
@@ -43,6 +45,18 @@ const ARKON_BRAND: BrandConfig = {
   assistantGreeting:
     'Buen dia. Soy el Asistente Inteligente de ARKON, tu apoyo para la gestion de obras estatales y municipales.\n\nPuedo consultarte avances fisico-financieros, detectar obras con retraso o riesgo, y generar resumenes por programa presupuestal.\n\nComo puedo ayudarte hoy?',
   programas: ['FAPAA', 'CAM', 'FAIS', 'FORTAMUN', 'FOMAGUA', 'FOISE', 'PEF', 'SISPLADE'],
+  dependencias: [
+    'Comision de Agua Potable',
+    'Proteccion Civil Estatal',
+    'Secretaria de Cultura',
+    'Secretaria de Cultura y Deporte',
+    'Secretaria de Desarrollo Social',
+    'Secretaria de Educacion',
+    'Secretaria de Energia',
+    'Secretaria de Infraestructura',
+    'Secretaria de Salud',
+    'Secretaria del Medio Ambiente',
+  ],
   assistantSuggestions: [
     'Obras con retraso critico',
     'Avance fisico vs financiero',
@@ -81,6 +95,7 @@ const CONAGUA_BRAND: BrandConfig = {
   assistantGreeting:
     'Buen dia. Soy el Asistente Inteligente de CONAGUA, tu apoyo para el seguimiento de la infraestructura hidrica nacional.\n\nPuedo consultarte avances por programa (PROAGUA, PEAS, PRODDER), detectar obras de agua potable o saneamiento con desviaciones, y revisar el estado de recursos no dispersados.\n\nComo puedo ayudarte hoy?',
   programas: ['PROAGUA', 'PEAS', 'PRODDER'],
+  dependencias: ['CONAGUA'],
   assistantSuggestions: [
     'Obras PROAGUA con retraso',
     'Inversion ejercida por PRODDER',

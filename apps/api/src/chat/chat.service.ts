@@ -74,17 +74,11 @@ export class ChatService {
 
     const totalObras = obras.length;
     const enEjecucion = obras.filter(
-      (o) =>
-        o.estatus === EstatusObra.en_ejecucion_a_tiempo ||
-        o.estatus === EstatusObra.en_ejecucion_retraso,
+      (o) => o.estatus === EstatusObra.en_ejecucion_a_tiempo,
     ).length;
     const conRetraso = obras.filter((o) => o.estatus === EstatusObra.en_ejecucion_retraso).length;
     const concluidas = obras.filter((o) => o.estatus === EstatusObra.concluida).length;
-    const enRiesgo = obras.filter(
-      (o) =>
-        o.estatus === EstatusObra.en_riesgo ||
-        o.estatus === EstatusObra.en_ejecucion_retraso,
-    ).length;
+    const enRiesgo = obras.filter((o) => o.estatus === EstatusObra.en_riesgo).length;
     const montoAutorizadoTotal = obras.reduce((s, o) => s + Number(o.montoAutorizado), 0);
     const avancePromedio =
       totalObras > 0
@@ -170,15 +164,9 @@ export class ChatService {
     const obrasRetraso = obras.filter((o) => o.estatus === EstatusObra.en_ejecucion_retraso).length;
     const obrasConcluidas = obras.filter((o) => o.estatus === EstatusObra.concluida).length;
     const obrasEjecucion = obras.filter(
-      (o) =>
-        o.estatus === EstatusObra.en_ejecucion_a_tiempo ||
-        o.estatus === EstatusObra.en_ejecucion_retraso,
+      (o) => o.estatus === EstatusObra.en_ejecucion_a_tiempo,
     ).length;
-    const obrasRiesgo = obras.filter(
-      (o) =>
-        o.estatus === EstatusObra.en_riesgo ||
-        o.estatus === EstatusObra.en_ejecucion_retraso,
-    ).length;
+    const obrasRiesgo = obras.filter((o) => o.estatus === EstatusObra.en_riesgo).length;
     const montoTotal = obras.reduce((s, o) => s + Number(o.montoAutorizado), 0);
 
     const lower = message.toLowerCase();

@@ -17,6 +17,16 @@ import type { UserRole } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Dialog,
   DialogContent,
   DialogFooter,
@@ -37,6 +47,7 @@ export default function AdminUsuariosPage() {
 
   const { data, loading, error, reload } = useAsyncData(load, [load]);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [userToDelete, setUserToDelete] = useState<AdminUser | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const [email, setEmail] = useState('');
@@ -106,12 +117,14 @@ export default function AdminUsuariosPage() {
     }
   };
 
-  const handleDelete = async (u: AdminUser) => {
-    if (!window.confirm(`¿Eliminar usuario ${u.email}?`)) return;
+  const handleDeleteConfirm = async () => {
+    if (!userToDelete) return;
+    const u = userToDelete;
     setBusyId(u.id);
     try {
       await deleteUser(u.id);
       toast.success('Usuario eliminado');
+      setUserToDelete(null);
       reload();
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : 'No se pudo eliminar');
@@ -135,10 +148,7 @@ export default function AdminUsuariosPage() {
     <PageState loading={loading} error={error} onRetry={reload}>
       <div className="space-y-4">
         <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-lg font-bold text-brand-primary">Administración de usuarios</h1>
-            <p className="text-xs text-gray-500">Solo personal estatal puede crear cuentas.</p>
-          </div>
+          <h1 className="text-lg font-bold text-brand-primary">Administración de usuarios</h1>
           <Button type="button" onClick={() => setDialogOpen(true)} className="gap-2">
             <UserPlus className="w-4 h-4" />
             Nuevo usuario
@@ -201,7 +211,7 @@ export default function AdminUsuariosPage() {
                           <button
                             type="button"
                             disabled={busyId === u.id}
-                            onClick={() => handleDelete(u)}
+                            onClick={() => setUserToDelete(u)}
                             className="text-red-600 hover:underline inline-flex items-center gap-1 disabled:opacity-50"
                           >
                             <Trash2 className="w-3 h-3" />
@@ -216,6 +226,37 @@ export default function AdminUsuariosPage() {
             </div>
           </CardContent>
         </Card>
+
+        <AlertDialog
+          open={!!userToDelete}
+          onOpenChange={(open) => {
+            if (!open && !busyId) setUserToDelete(null);
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Eliminar usuario?</AlertDialogTitle>
+              <AlertDialogDescription>
+                {userToDelete
+                  ? `Se eliminará permanentemente la cuenta de ${userToDelete.fullName} (${userToDelete.email}). Esta acción no se puede deshacer.`
+                  : ''}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={!!busyId}>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={!!busyId}
+                className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+                onClick={(e) => {
+                  e.preventDefault();
+                  void handleDeleteConfirm();
+                }}
+              >
+                {busyId ? 'Eliminando...' : 'Eliminar'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogContent>

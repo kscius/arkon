@@ -59,7 +59,7 @@ export async function fetchObra(id: string): Promise<Obra> {
 }
 
 export interface CreateObraInput {
-  folio: string;
+  folio?: string;
   nombre: string;
   localidad: string;
   programa: string;
@@ -370,6 +370,8 @@ export interface ChartPoint {
   municipio?: string;
   count?: number;
   obras_count?: number;
+  programas_count?: number;
+  inversion_total?: number;
   monto?: number;
   mes?: string;
   programado?: number;
@@ -481,12 +483,8 @@ export async function fetchDashboardKpis(): Promise<DashboardKpis> {
     const total = obras.length || 1;
     return {
       total_obras: obras.length,
-      obras_en_ejecucion: obras.filter(
-        (o) => o.estatus === 'en_ejecucion_a_tiempo' || o.estatus === 'en_ejecucion_retraso',
-      ).length,
-      obras_retraso: obras.filter(
-        (o) => o.estatus === 'en_ejecucion_retraso' || o.estatus === 'en_riesgo',
-      ).length,
+      obras_en_ejecucion: obras.filter((o) => o.estatus === 'en_ejecucion_a_tiempo').length,
+      obras_retraso: obras.filter((o) => o.estatus === 'en_ejecucion_retraso').length,
       obras_concluidas: obras.filter((o) => o.estatus === 'concluida').length,
       monto_autorizado: obras.reduce((s, o) => s + o.montoAutorizado, 0),
       monto_ejercido: obras.reduce((s, o) => s + o.montoEjercido, 0),

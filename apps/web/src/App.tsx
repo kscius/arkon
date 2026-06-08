@@ -9,6 +9,7 @@ import { Spinner } from '@/components/ui/spinner';
 import LoginPage from '@/pages/LoginPage';
 import DashboardRouter from '@/components/dashboard/DashboardRouter';
 import ObraDetailPage from '@/pages/ObraDetailPage';
+import ObrasPage from '@/pages/ObrasPage';
 import MunicipioPanelPage from '@/pages/MunicipioPanelPage';
 import ContratistaPanelPage from '@/pages/ContratistaPanelPage';
 import AsistentePage from '@/pages/AsistentePage';
@@ -77,6 +78,16 @@ function AppRoutes() {
           <ProtectedRoute>
             <AppLayout>
               <DashboardRouter />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/obras"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <ObrasPage />
             </AppLayout>
           </ProtectedRoute>
         }
