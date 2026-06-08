@@ -3,7 +3,10 @@ import { EstatusObra, TipoObra } from '@prisma/client';
 import { IsEnum, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class CreateObraDto {
-  @ApiProperty() @IsString() folio!: string;
+  @ApiPropertyOptional({ description: 'Se genera automáticamente si se omite' })
+  @IsOptional()
+  @IsString()
+  folio?: string;
   @ApiProperty() @IsString() nombre!: string;
   @ApiProperty() @IsString() localidad!: string;
   @ApiProperty() @IsString() programa!: string;

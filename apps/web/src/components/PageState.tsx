@@ -14,7 +14,7 @@ export function PageState({ loading, error, onRetry, children }: PageStateProps)
   if (loading) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 py-16 text-gray-500">
-        <Spinner className="size-8 text-[#1B3A5C]" />
+        <Spinner className="size-8 text-brand-primary" />
         <p className="text-sm">Cargando datos...</p>
       </div>
     );

@@ -83,7 +83,7 @@ export function MapaTerritorial({ municipios, obras }: MapaTerritorialProps) {
     <div className="space-y-3">
       <div className="flex flex-wrap items-center gap-3 text-[11px] text-gray-600">
         <span className="inline-flex items-center gap-1">
-          <MapPin className="w-3.5 h-3.5 text-[#1B3A5C]" />
+          <MapPin className="w-3.5 h-3.5 text-brand-primary" />
           {georeferenced.length} obra{georeferenced.length === 1 ? '' : 's'} georreferenciada
           {georeferenced.length !== obras.length ? ` de ${obras.length}` : ''}
         </span>

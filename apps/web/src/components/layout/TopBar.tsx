@@ -1,20 +1,23 @@
 import { useLocation } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
+import { getBrand } from '@/config/brand';
 import { Bell, Menu } from 'lucide-react';
 
 export function TopBar() {
+  const brand = getBrand();
   const { user, notifications, toggleSidebar, toggleMobileDrawer } = useApp();
   const location = useLocation();
 
   const getTitle = () => {
     const path = location.pathname;
     if (path === '/dashboard') return 'Dashboard Ejecutivo';
+    if (path === '/obras') return 'Catalogo de Obras';
     if (path.startsWith('/obras/')) return 'Detalle de Obra';
     if (path.startsWith('/municipios/')) return 'Panel del Municipio';
     if (path.startsWith('/contratistas/')) return 'Panel del Contratista';
     if (path === '/asistente') return 'Asistente de IA';
     if (path === '/alertas') return 'Centro de Alertas';
-    return 'CEASPUE';
+    return brand.productName;
   };
 
   return (
@@ -34,7 +37,7 @@ export function TopBar() {
         </button>
         <div>
           <h1 className="text-sm font-semibold text-gray-900">{getTitle()}</h1>
-          <p className="text-[10px] text-gray-500 hidden sm:block">Comision Estatal de Agua y Saneamiento del Estado de Puebla</p>
+          <p className="text-[10px] text-gray-500 hidden sm:block">{brand.tagline}</p>
         </div>
       </div>
       <div className="flex items-center gap-3">
@@ -47,7 +50,10 @@ export function TopBar() {
           )}
         </button>
         <div className="flex items-center gap-2 pl-3 border-l border-gray-200">
-          <div className="w-8 h-8 rounded-full bg-[#8B1538] flex items-center justify-center text-white text-xs font-bold">
+          <div
+            className="w-8 h-8 rounded-full flex items-center justify-center text-white text-xs font-bold"
+            style={{ backgroundColor: brand.colors.secondary }}
+          >
             {user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2) || 'US'}
           </div>
           <div className="hidden md:block">

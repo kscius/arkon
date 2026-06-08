@@ -1,7 +1,8 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
+import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import {
   Dialog,
@@ -13,10 +14,24 @@ import {
 import { Button } from '@/components/ui/button';
 import { createObra, fetchContratistas, fetchMunicipios, updateObra, type CreateObraInput } from '@/lib/api';
 import { ApiError } from '@/lib/api-client';
+import { getBrand } from '@/config/brand';
 import { getProgramaName, getTipoObraLabel } from '@/lib/utils';
 import type { Obra, User } from '@/types';
 
-const PROGRAMAS = ['FAPAA', 'CAM', 'FAIS', 'FORTAMUN', 'FOMAGUA', 'FOISE', 'PEF', 'SISPLADE'];
+const DEFAULT_PROGRAMAS = ['FAPAA', 'CAM', 'FAIS', 'FORTAMUN', 'FOMAGUA', 'FOISE', 'PEF', 'SISPLADE'];
+
+const DEFAULT_DEPENDENCIAS = [
+  'Comision de Agua Potable',
+  'Proteccion Civil Estatal',
+  'Secretaria de Cultura',
+  'Secretaria de Cultura y Deporte',
+  'Secretaria de Desarrollo Social',
+  'Secretaria de Educacion',
+  'Secretaria de Energia',
+  'Secretaria de Infraestructura',
+  'Secretaria de Salud',
+  'Secretaria del Medio Ambiente',
+];
 
 const TIPOS_OBRA = [
   'pavimentacion_urbana',
@@ -43,7 +58,6 @@ const ESTATUS_OBRA = [
 ] as const;
 
 const schema = z.object({
-  folio: z.string().min(1, 'Folio requerido'),
   nombre: z.string().min(1, 'Nombre requerido'),
   localidad: z.string().min(1, 'Localidad requerida'),
   programa: z.string().min(1),
@@ -73,7 +87,16 @@ interface ObraFormModalProps {
   onSuccess: () => void;
 }
 
+function resolveDependenciaOptions(catalog: string[], current?: string): string[] {
+  if (!current || catalog.includes(current)) return catalog;
+  return [current, ...catalog];
+}
+
 export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: ObraFormModalProps) {
+  const brand = getBrand();
+  const programas = brand.programas ?? DEFAULT_PROGRAMAS;
+  const dependenciasCatalog = brand.dependencias ?? DEFAULT_DEPENDENCIAS;
+  const defaultDependencia = dependenciasCatalog[0] ?? '';
   const isEdit = Boolean(obra);
   const isEstatal = user.role === 'estatal';
   const forcedMunicipioId = user.role === 'municipal' ? user.municipioId : undefined;
@@ -85,11 +108,10 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
   const form = useForm<FormValues>({
     resolver: zodResolver(schema),
     defaultValues: {
-      folio: '',
       nombre: '',
       localidad: '',
-      programa: PROGRAMAS[0],
-      dependencia: 'Secretaría de Obras Públicas',
+      programa: programas[0],
+      dependencia: defaultDependencia,
       tipo_obra: 'pavimentacion_urbana',
       monto_autorizado: 1_000_000,
       municipio_id: forcedMunicipioId ?? '',
@@ -117,7 +139,6 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
     if (!open) return;
     if (obra) {
       form.reset({
-        folio: obra.folio,
         nombre: obra.nombre,
         localidad: obra.localidad,
         programa: obra.programa,
@@ -137,11 +158,10 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
       });
     } else {
       form.reset({
-        folio: '',
         nombre: '',
         localidad: '',
-        programa: PROGRAMAS[0],
-        dependencia: 'Secretaría de Obras Públicas',
+        programa: programas[0],
+        dependencia: defaultDependencia,
         tipo_obra: 'pavimentacion_urbana',
         monto_autorizado: 1_000_000,
         municipio_id: forcedMunicipioId ?? '',
@@ -152,12 +172,28 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
         plazo_ejecucion: undefined,
       });
     }
-  }, [open, obra, forcedMunicipioId, form]);
+  }, [open, obra, forcedMunicipioId, form, programas, defaultDependencia]);
+
+  const dependenciaOptions = resolveDependenciaOptions(dependenciasCatalog, obra?.dependencia);
+
+  const showFieldError = (name: keyof FormValues): string | undefined => {
+    const err = form.formState.errors[name];
+    if (!err?.message) return undefined;
+    if (form.formState.isSubmitted || form.formState.touchedFields[name]) {
+      return String(err.message);
+    }
+    return undefined;
+  };
+
+  const inputClass = (name: keyof FormValues) =>
+    cn(
+      'w-full h-9 px-2 text-xs border rounded-md bg-white',
+      showFieldError(name) ? 'border-red-500 ring-1 ring-red-200' : 'border-gray-200',
+    );
 
   const onSubmit = form.handleSubmit(async (values) => {
     const municipioId = forcedMunicipioId ?? values.municipio_id;
     const payload: CreateObraInput = {
-      folio: values.folio.trim(),
       nombre: values.nombre.trim(),
       localidad: values.localidad.trim(),
       programa: values.programa,
@@ -199,20 +235,26 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
           <DialogTitle>{isEdit ? 'Editar obra' : 'Nueva obra'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-3">
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Folio *">
-              <input {...form.register('folio')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md" disabled={isEdit} />
+          {isEdit && obra ? (
+            <Field label="Folio">
+              <p className="h-9 px-2 flex items-center text-xs text-gray-700 bg-gray-50 border border-gray-200 rounded-md">
+                {obra.folio}
+              </p>
             </Field>
-            <Field label="Programa *">
-              <select {...form.register('programa')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white">
-                {PROGRAMAS.map((p) => (
-                  <option key={p} value={p}>
-                    {getProgramaName(p)}
-                  </option>
-                ))}
-              </select>
-            </Field>
-          </div>
+          ) : (
+            <p className="text-[11px] text-gray-500 bg-gray-50 border border-gray-100 rounded-md px-2 py-1.5">
+              El folio se generará automáticamente al guardar (formato PROGRAMA-AÑO-###).
+            </p>
+          )}
+          <Field label="Programa *">
+            <select {...form.register('programa')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white">
+              {programas.map((p) => (
+                <option key={p} value={p}>
+                  {getProgramaName(p)}
+                </option>
+              ))}
+            </select>
+          </Field>
           <Field label="Nombre *">
             <input {...form.register('nombre')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" />
           </Field>
@@ -221,7 +263,13 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
               <input {...form.register('localidad')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" />
             </Field>
             <Field label="Dependencia *">
-              <input {...form.register('dependencia')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" />
+              <select {...form.register('dependencia')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white">
+                {dependenciaOptions.map((d) => (
+                  <option key={d} value={d}>
+                    {d}
+                  </option>
+                ))}
+              </select>
             </Field>
           </div>
           <div className="grid grid-cols-2 gap-3">
@@ -255,23 +303,23 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
               <input type="date" {...form.register('fecha_termino_programada')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" />
             </Field>
           </div>
-          <Field label="Plazo de ejecución (meses)">
+          <Field label="Plazo de ejecución (meses)" required error={showFieldError('plazo_ejecucion')}>
             <input
               type="number"
-              min={0}
+              min={1}
               {...form.register('plazo_ejecucion', {
                 valueAsNumber: true,
                 setValueAs: (v) => (v === '' || Number.isNaN(Number(v)) ? undefined : Number(v)),
               })}
-              className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white"
+              className={inputClass('plazo_ejecucion')}
               placeholder="Ej. 12"
             />
           </Field>
           {isEstatal && (
-            <Field label="Municipio *">
+            <Field label="Municipio" required error={showFieldError('municipio_id')}>
               <select
                 {...form.register('municipio_id')}
-                className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white"
+                className={inputClass('municipio_id')}
                 disabled={loadingCatalogs}
               >
                 <option value="">Seleccionar...</option>
@@ -310,11 +358,30 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  required,
+  error,
+  children,
+}: {
+  label: string;
+  required?: boolean;
+  error?: string;
+  children: ReactNode;
+}) {
   return (
     <div>
-      <label className="text-[10px] text-gray-500 uppercase font-medium block mb-1">{label}</label>
+      <label
+        className={cn(
+          'text-[10px] uppercase font-medium block mb-1',
+          error ? 'text-red-600' : 'text-gray-500',
+        )}
+      >
+        {label}
+        {required ? <span className="text-red-600"> *</span> : null}
+      </label>
       {children}
+      {error ? <p className="text-[10px] text-red-600 mt-0.5">{error}</p> : null}
     </div>
   );
 }

@@ -1,6 +1,7 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { EstatusObra, Prisma, Rol, Usuario } from '@prisma/client';
 import { rowsToCsv } from '../common/csv.util';
+import { buildFolio, nextFolioSequence } from '../common/folio.util';
 import { ScopeService } from '../common/scope.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateObraDto, UpdateObraDto } from './dto/obra.dto';
@@ -97,15 +98,35 @@ export class ObrasService {
     return this.mapObra(obra);
   }
 
+  private async resolveFolioForCreate(dto: CreateObraDto): Promise<string> {
+    const trimmed = dto.folio?.trim();
+    if (trimmed) return trimmed;
+
+    const year = new Date().getFullYear();
+    const prog = dto.programa.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+    const prefix = `${prog}-${year}-`;
+    const existing = await this.prisma.obra.findMany({
+      where: { folio: { startsWith: prefix, mode: 'insensitive' } },
+      select: { folio: true },
+    });
+    const sequence = nextFolioSequence(
+      existing.map((o) => o.folio),
+      dto.programa,
+      year,
+    );
+    return buildFolio(dto.programa, year, sequence);
+  }
+
   async create(dto: CreateObraDto, user: Usuario) {
     if (user.rol === Rol.contratista) {
       throw new ForbiddenException('Contratistas cannot create obras');
     }
     const municipioId =
       user.rol === Rol.municipal && user.municipioId ? user.municipioId : dto.municipio_id;
+    const folio = await this.resolveFolioForCreate(dto);
     const obra = await this.prisma.obra.create({
       data: {
-        folio: dto.folio,
+        folio,
         nombre: dto.nombre,
         localidad: dto.localidad,
         programa: dto.programa,

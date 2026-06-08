@@ -46,6 +46,7 @@ services:
       UPLOAD_DIR: /app/uploads
       ALLOW_PUBLIC_REGISTER: ${ALLOW_PUBLIC_REGISTER:-true}
       OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      TENANT_ID: ${TENANT_ID:-arkon}
     volumes:
       - uploads:/app/uploads
     ports:
@@ -73,6 +74,7 @@ services:
       dockerfile: apps/web/Dockerfile
       args:
         VITE_API_URL: /api
+        VITE_TENANT: ${VITE_TENANT:-arkon}
     ports:
       - '${WEB_PORT:-8080}:80'
     networks:

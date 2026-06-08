@@ -129,6 +129,60 @@ export function getRiesgoLabel(nivel: string): string {
   return labels[nivel] || nivel;
 }
 
+/** Convierte claves snake_case de BD a texto legible (fallback genérico). */
+export function humanizeSnakeCase(value: string): string {
+  if (!value) return '-';
+  return value
+    .split('_')
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+}
+
+export function getAlertaTipoLabel(tipo: string): string {
+  const labels: Record<string, string> = {
+    retraso: 'Retraso',
+    retraso_fisico: 'Retraso fisico',
+    documental: 'Documental',
+    documentacion: 'Documentacion',
+    documentacion_incompleta: 'Documentacion incompleta',
+    financiera: 'Financiera',
+    desvio_financiero: 'Desvio financiero',
+    tecnica: 'Tecnica',
+    programa: 'Programa',
+    presupuestaria: 'Presupuestaria',
+    operativa: 'Operativa',
+    logistica: 'Logistica',
+    regulatoria: 'Regulatoria',
+    administrativa: 'Administrativa',
+    climatica: 'Climatica',
+    plazo: 'Plazo',
+  };
+  return labels[tipo] ?? humanizeSnakeCase(tipo);
+}
+
+export function getAlertaTipoColor(tipo: string): string {
+  const colors: Record<string, string> = {
+    retraso: '#DD6B20',
+    retraso_fisico: '#DD6B20',
+    documental: '#805AD5',
+    documentacion: '#805AD5',
+    documentacion_incompleta: '#805AD5',
+    financiera: '#D69E2E',
+    desvio_financiero: '#D69E2E',
+    tecnica: '#3182CE',
+    programa: '#2B6CB0',
+    presupuestaria: '#D69E2E',
+    operativa: '#4A5568',
+    logistica: '#718096',
+    regulatoria: '#E53E3E',
+    administrativa: '#805AD5',
+    climatica: '#3182CE',
+    plazo: '#DD6B20',
+  };
+  return colors[tipo] ?? '#718096';
+}
+
 export function getTipoObraLabel(tipo: string): string {
   const labels: Record<string, string> = {
     'pavimentacion_urbana': 'Pavimentacion',
@@ -148,20 +202,30 @@ export function getTipoObraLabel(tipo: string): string {
   return labels[tipo] || tipo;
 }
 
+import { getProgramaBrandColors } from '@/config/brand';
+
 export function getProgramaColor(id: string): string {
-  const colors: Record<string, string> = {
-    'fise': '#1B3A5C', 'fism': '#0D7377', 'fortamun': '#E8913A',
-    'fais': '#38A169', 'faeispum': '#D69E2E', 'pem': '#3182CE',
-    'pds': '#805AD5', 'proteccion-civil': '#DD6B20',
-  };
-  return colors[id] || '#718096';
+  const colors = getProgramaBrandColors();
+  const lower = id.toLowerCase();
+  return colors[id] ?? colors[lower] ?? colors[id.toUpperCase()] ?? '#718096';
 }
 
 export function getProgramaName(id: string): string {
   const names: Record<string, string> = {
-    'fise': 'FISE', 'fism': 'FISM', 'fortamun': 'FORTAMUN',
-    'fais': 'FAIS', 'faeispum': 'FAEISPUM', 'pem': 'PEM',
-    'pds': 'PDS', 'proteccion-civil': 'PPAD',
+    fise: 'FISE',
+    fism: 'FISM',
+    fortamun: 'FORTAMUN',
+    fais: 'FAIS',
+    faeispum: 'FAEISPUM',
+    pem: 'PEM',
+    pds: 'PDS',
+    'proteccion-civil': 'PPAD',
+    PROAGUA: 'PROAGUA — Agua potable, drenaje y saneamiento',
+    proagua: 'PROAGUA — Agua potable, drenaje y saneamiento',
+    PEAS: 'PEAS — Fortalecimiento de entidades de agua y saneamiento',
+    peas: 'PEAS — Fortalecimiento de entidades de agua y saneamiento',
+    PRODDER: 'PRODDER — Devolución de derechos',
+    prodder: 'PRODDER — Devolución de derechos',
   };
-  return names[id] || id.toUpperCase();
+  return names[id] ?? names[id.toLowerCase()] ?? id;
 }

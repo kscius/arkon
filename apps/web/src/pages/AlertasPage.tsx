@@ -7,7 +7,7 @@ import { useAsyncData } from '@/hooks/use-async-data';
 import { atenderAlerta, fetchAlertas, fetchObras } from '@/lib/api';
 import { ApiError } from '@/lib/api-client';
 import { toast } from 'sonner';
-import { formatDate, getSeverityColor, getSeverityLabel } from '@/lib/utils';
+import { formatDate, getAlertaTipoColor, getAlertaTipoLabel, getSeverityColor, getSeverityLabel } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
@@ -27,6 +27,7 @@ export default function AlertasPage() {
 
   const [filterSeveridad, setFilterSeveridad] = useState<string>('todas');
   const [filterTipo, setFilterTipo] = useState<string>('todas');
+  const [filterEstado, setFilterEstado] = useState<'pendientes' | 'atendidas' | 'todas'>('pendientes');
   const [searchTerm, setSearchTerm] = useState('');
   const [atenderTarget, setAtenderTarget] = useState<Alerta | null>(null);
   const [accionText, setAccionText] = useState('');
@@ -70,6 +71,8 @@ export default function AlertasPage() {
   const [allAlertas, obras] = data;
 
   const alertas = allAlertas.filter((a) => {
+    if (filterEstado === 'pendientes' && a.atendida) return false;
+    if (filterEstado === 'atendidas' && !a.atendida) return false;
     if (filterSeveridad !== 'todas' && a.severidad !== filterSeveridad) return false;
     if (filterTipo !== 'todas' && a.tipo !== filterTipo) return false;
     if (
@@ -82,18 +85,13 @@ export default function AlertasPage() {
     return true;
   });
 
+  const tiposUnicos = [...new Set(allAlertas.map((a) => a.tipo))].sort();
+
   const criticas = allAlertas.filter((a) => a.severidad === 'critica' && !a.atendida).length;
   const altas = allAlertas.filter((a) => a.severidad === 'alta' && !a.atendida).length;
   const medias = allAlertas.filter((a) => a.severidad === 'media' && !a.atendida).length;
   const bajas = allAlertas.filter((a) => a.severidad === 'baja' && !a.atendida).length;
-
-  const tipoColors: Record<string, string> = {
-    retraso: '#DD6B20',
-    documental: '#805AD5',
-    financiera: '#D69E2E',
-    tecnica: '#3182CE',
-    programa: '#1B3A5C',
-  };
+  const pendientesTotal = allAlertas.filter((a) => !a.atendida).length;
 
   const obraName = (obraId: string) => obras.find((o) => o.id === obraId)?.nombre ?? 'Obra';
 
@@ -101,8 +99,10 @@ export default function AlertasPage() {
     <PageState loading={loading} error={error} onRetry={reload}>
     <div className="space-y-6">
       <div>
-        <h1 className="text-xl font-bold text-[#1B3A5C]">Centro de Alertas</h1>
-        <p className="text-xs text-gray-500 mt-1">Monitoreo de alertas y notificaciones del sistema</p>
+        <h1 className="text-xl font-bold text-brand-primary">Centro de Alertas</h1>
+        <p className="text-xs text-gray-500 mt-1">
+          Monitoreo de alertas y notificaciones del sistema. Atender una alerta registra la accion tomada; las atendidas salen del contador pero pueden consultarse en el historial.
+        </p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
@@ -132,6 +132,15 @@ export default function AlertasPage() {
             </CardTitle>
             <div className="flex flex-wrap gap-2 lg:ml-auto">
               <select
+                value={filterEstado}
+                onChange={(e) => setFilterEstado(e.target.value as 'pendientes' | 'atendidas' | 'todas')}
+                className="text-xs border border-gray-200 rounded-lg px-2 py-1.5"
+              >
+                <option value="pendientes">Pendientes ({pendientesTotal})</option>
+                <option value="atendidas">Atendidas</option>
+                <option value="todas">Todas</option>
+              </select>
+              <select
                 value={filterSeveridad}
                 onChange={(e) => setFilterSeveridad(e.target.value)}
                 className="text-xs border border-gray-200 rounded-lg px-2 py-1.5"
@@ -148,11 +157,11 @@ export default function AlertasPage() {
                 className="text-xs border border-gray-200 rounded-lg px-2 py-1.5"
               >
                 <option value="todas">Todos los tipos</option>
-                <option value="retraso">Retraso</option>
-                <option value="documental">Documental</option>
-                <option value="financiera">Financiera</option>
-                <option value="tecnica">Tecnica</option>
-                <option value="programa">Programa</option>
+                {tiposUnicos.map((tipo) => (
+                  <option key={tipo} value={tipo}>
+                    {getAlertaTipoLabel(tipo)}
+                  </option>
+                ))}
               </select>
               <div className="relative">
                 <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
@@ -195,9 +204,15 @@ export default function AlertasPage() {
                     )}
                   </div>
                   <p className="text-xs text-gray-600 mt-2">{alerta.descripcion}</p>
+                  {alerta.atendida && alerta.accionTomada && (
+                    <p className="text-xs text-green-700 mt-2 bg-green-50 border border-green-100 rounded px-2 py-1.5">
+                      <span className="font-medium">Accion tomada: </span>
+                      {alerta.accionTomada}
+                    </p>
+                  )}
                   <div className="flex items-center gap-2 mt-2 flex-wrap">
-                    <Badge className="text-[10px]" style={{ backgroundColor: tipoColors[alerta.tipo] + '20', color: tipoColors[alerta.tipo] }}>
-                      {alerta.tipo}
+                    <Badge className="text-[10px]" style={{ backgroundColor: getAlertaTipoColor(alerta.tipo) + '20', color: getAlertaTipoColor(alerta.tipo) }}>
+                      {getAlertaTipoLabel(alerta.tipo)}
                     </Badge>
                     <Badge className="text-[10px]" style={{ backgroundColor: getSeverityColor(alerta.severidad) + '20', color: getSeverityColor(alerta.severidad) }}>
                       {getSeverityLabel(alerta.severidad)}
@@ -212,7 +227,7 @@ export default function AlertasPage() {
                           setAccionText('');
                           setAtenderTarget(alerta);
                         }}
-                        className="ml-auto text-[10px] font-medium text-[#2C5282] hover:underline"
+                        className="ml-auto text-[10px] font-medium text-brand-primary-light hover:underline"
                       >
                         Atender
                       </button>
@@ -222,7 +237,11 @@ export default function AlertasPage() {
               </motion.div>
             ))}
             {alertas.length === 0 && (
-              <p className="text-sm text-gray-500 text-center py-8">No hay alertas con los filtros seleccionados.</p>
+              <p className="text-sm text-gray-500 text-center py-8">
+                {filterEstado === 'pendientes'
+                  ? 'No hay alertas pendientes con los filtros seleccionados.'
+                  : 'No hay alertas con los filtros seleccionados.'}
+              </p>
             )}
           </div>
         </CardContent>
@@ -234,7 +253,12 @@ export default function AlertasPage() {
             <DialogTitle className="text-sm">Atender alerta</DialogTitle>
           </DialogHeader>
           {atenderTarget && (
-            <p className="text-xs text-gray-600">{atenderTarget.titulo}</p>
+            <p className="text-xs text-gray-600">
+              {atenderTarget.titulo}
+              <span className="block mt-1 text-gray-500">
+                Al confirmar, la alerta se marca como atendida y deja de contar como pendiente. Quedara en el historial con la accion que describa.
+              </span>
+            </p>
           )}
           <textarea
             value={accionText}
@@ -255,7 +279,7 @@ export default function AlertasPage() {
               type="button"
               disabled={atenderBusy}
               onClick={handleAtenderSubmit}
-              className="px-3 py-2 text-xs rounded-md bg-[#1B3A5C] text-white hover:bg-[#2C5282] disabled:opacity-60"
+              className="px-3 py-2 text-xs rounded-md bg-brand-primary text-white hover:bg-brand-primary-light disabled:opacity-60"
             >
               {atenderBusy ? 'Guardando...' : 'Confirmar'}
             </button>

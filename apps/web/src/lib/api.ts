@@ -29,20 +29,7 @@ import type {
   User,
 } from '@/types';
 
-const MUNICIPIO_COLORS = [
-  '#1B3A5C',
-  '#0D7377',
-  '#E8913A',
-  '#38A169',
-  '#3182CE',
-  '#805AD5',
-  '#D69E2E',
-  '#DD6B20',
-  '#DC2626',
-  '#059669',
-  '#2B6CB0',
-  '#276749',
-];
+import { getMunicipioChartColors } from '@/config/brand';
 
 export async function login(email: string, password: string): Promise<User> {
   const res = await apiFetch<{
@@ -72,7 +59,7 @@ export async function fetchObra(id: string): Promise<Obra> {
 }
 
 export interface CreateObraInput {
-  folio: string;
+  folio?: string;
   nombre: string;
   localidad: string;
   programa: string;
@@ -203,7 +190,8 @@ export async function deleteUser(id: string): Promise<void> {
 
 export async function fetchMunicipios(): Promise<MunicipioData[]> {
   const rows = await apiFetch<Record<string, unknown>[]>('/municipios');
-  return rows.map((row, i) => mapMunicipio(row, MUNICIPIO_COLORS[i % MUNICIPIO_COLORS.length]));
+  const colors = getMunicipioChartColors();
+  return rows.map((row, i) => mapMunicipio(row, colors[i % colors.length]));
 }
 
 export async function fetchMunicipio(id: string): Promise<MunicipioData> {
@@ -382,6 +370,8 @@ export interface ChartPoint {
   municipio?: string;
   count?: number;
   obras_count?: number;
+  programas_count?: number;
+  inversion_total?: number;
   monto?: number;
   mes?: string;
   programado?: number;
@@ -493,12 +483,8 @@ export async function fetchDashboardKpis(): Promise<DashboardKpis> {
     const total = obras.length || 1;
     return {
       total_obras: obras.length,
-      obras_en_ejecucion: obras.filter(
-        (o) => o.estatus === 'en_ejecucion_a_tiempo' || o.estatus === 'en_ejecucion_retraso',
-      ).length,
-      obras_retraso: obras.filter(
-        (o) => o.estatus === 'en_ejecucion_retraso' || o.estatus === 'en_riesgo',
-      ).length,
+      obras_en_ejecucion: obras.filter((o) => o.estatus === 'en_ejecucion_a_tiempo').length,
+      obras_retraso: obras.filter((o) => o.estatus === 'en_ejecucion_retraso').length,
       obras_concluidas: obras.filter((o) => o.estatus === 'concluida').length,
       monto_autorizado: obras.reduce((s, o) => s + o.montoAutorizado, 0),
       monto_ejercido: obras.reduce((s, o) => s + o.montoEjercido, 0),

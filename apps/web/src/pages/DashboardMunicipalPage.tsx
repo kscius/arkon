@@ -33,6 +33,7 @@ import { toast } from 'sonner';
 import type { AvanceMensual, Obra } from '@/types';
 import { normalizeName } from '@/lib/api-mappers';
 import { formatCurrencyM, formatPercentage, getObraStatusColor, getObraStatusLabel, getSeverityColor, getSeverityLabel, getProgramaColor, getProgramaName } from '@/lib/utils';
+import { getBrand } from '@/config/brand';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Building2, DollarSign, AlertTriangle, TrendingUp, Users, FileText, CheckCircle } from 'lucide-react';
@@ -41,6 +42,7 @@ const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { st
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' as const } } };
 
 export default function DashboardMunicipalPage() {
+  const brand = getBrand();
   const { user } = useApp();
   const navigate = useNavigate();
   const municipioId = user?.municipioId ?? '';
@@ -204,11 +206,11 @@ export default function DashboardMunicipalPage() {
   const alertasPendientes = munAlertas.filter(a => !a.atendida);
 
   const kpis = [
-    { label: 'Obras Municipales', value: totalObras.toString(), sub: `${obrasEjecucion} en ejecucion`, icon: Building2, color: '#1B3A5C' },
-    { label: 'Inversion Autorizada', value: formatCurrencyM(montoAutorizado), sub: 'Para su municipio', icon: DollarSign, color: '#E8913A' },
+    { label: 'Obras Municipales', value: totalObras.toString(), sub: `${obrasEjecucion} en ejecucion`, icon: Building2, color: brand.colors.primary },
+    { label: 'Inversion Autorizada', value: formatCurrencyM(montoAutorizado), sub: 'Para su municipio', icon: DollarSign, color: brand.colors.accent },
     { label: 'Avance Promedio', value: formatPercentage(avancePromedio), sub: 'Avance fisico', icon: TrendingUp, color: '#3182CE', trend: avancePromedio },
     { label: 'Obras con Retraso', value: obrasRetraso.toString(), sub: `${Math.round((obrasRetraso / totalObras) * 100)}% del total`, icon: AlertTriangle, color: '#DC2626' },
-    { label: 'Contratistas', value: munContratistas.length.toString(), sub: 'Empresas asignadas', icon: Users, color: '#0D7377' },
+    { label: 'Contratistas', value: munContratistas.length.toString(), sub: 'Empresas asignadas', icon: Users, color: brand.colors.secondary },
     { label: 'Alertas', value: alertasPendientes.length.toString(), sub: 'Pendientes de atencion', icon: AlertTriangle, color: '#D69E2E' },
   ];
 
@@ -217,7 +219,7 @@ export default function DashboardMunicipalPage() {
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-lg font-bold text-[#1B3A5C]">Dashboard Municipal — {municipioNombre}</h1>
+          <h1 className="text-lg font-bold text-brand-primary">Dashboard Municipal — {municipioNombre}</h1>
           <p className="text-xs text-gray-500 mt-1">Gestion de obras, contratistas y avances de su municipio</p>
         </div>
         <div className="flex flex-wrap gap-2 items-center">
@@ -298,7 +300,7 @@ export default function DashboardMunicipalPage() {
                           </div>
                         </td>
                         <td className="py-2 px-2 text-center"><span className="px-2 py-0.5 rounded-full text-[10px] font-medium text-white" style={{ backgroundColor: getObraStatusColor(obra.estatus) }}>{getObraStatusLabel(obra.estatus)}</span></td>
-                        <td className="py-2 px-2 text-center"><button className="text-[#2C5282] hover:underline text-[10px] font-medium">Ver</button></td>
+                        <td className="py-2 px-2 text-center"><button className="text-brand-primary-light hover:underline text-[10px] font-medium">Ver</button></td>
                       </tr>
                     ))}
                   </tbody>
@@ -328,7 +330,7 @@ export default function DashboardMunicipalPage() {
                   const cObras = munObras.filter(o => o.contratistaId === c.id);
                   return (
                     <div key={c.id} className="flex items-start gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => navigate(`/contratistas/${c.id}`)}>
-                      <div className="w-10 h-10 rounded-lg bg-[#0D7377] flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
+                      <div className="w-10 h-10 rounded-lg bg-brand-secondary flex items-center justify-center text-white text-sm font-bold flex-shrink-0">
                         {c.nombre.split(' ').map(w => w[0]).join('').substring(0, 2)}
                       </div>
                       <div className="flex-1 min-w-0">
@@ -451,7 +453,7 @@ export default function DashboardMunicipalPage() {
                   <button
                     type="submit"
                     disabled={busyId === 'est'}
-                    className="bg-[#1B3A5C] text-white px-4 py-2 rounded-md text-xs font-medium hover:bg-[#2C5282] disabled:opacity-60"
+                    className="bg-brand-primary text-white px-4 py-2 rounded-md text-xs font-medium hover:bg-brand-primary-light disabled:opacity-60"
                   >
                     {busyId === 'est' ? 'Guardando...' : 'Guardar Estimacion'}
                   </button>

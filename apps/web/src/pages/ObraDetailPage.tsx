@@ -24,6 +24,7 @@ import type { DocStatus } from '@/types';
 import { ApiError } from '@/lib/api-client';
 import type { DocCategoria, Documento } from '@/types';
 import { formatCurrency, formatPercentage, formatDate, formatNumber as formatCount, getObraStatusColor, getObraStatusLabel, getRiesgoColor, getRiesgoLabel, getProgramaColor, getProgramaName, getSeverityColor, getSeverityLabel, getTipoObraLabel } from '@/lib/utils';
+import { getBrand } from '@/config/brand';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -42,6 +43,7 @@ const DOC_CATEGORY_LABELS: Record<DocCategoria, string> = {
 };
 
 export default function ObraDetailPage() {
+  const brand = getBrand();
   const { obraId } = useParams<{ obraId: string }>();
   const { user } = useApp();
   const [activeTab, setActiveTab] = useState('avance');
@@ -240,7 +242,7 @@ export default function ObraDetailPage() {
         <div className="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
           <div>
             <div className="flex flex-wrap items-center gap-2 mb-2">
-              <h1 className="text-lg lg:text-xl font-bold text-[#1B3A5C]">{obra.nombre}</h1>
+              <h1 className="text-lg lg:text-xl font-bold text-brand-primary">{obra.nombre}</h1>
               <Badge style={{ backgroundColor: getObraStatusColor(obra.estatus), color: 'white' }} className="text-[10px]">
                 {getObraStatusLabel(obra.estatus)}
               </Badge>
@@ -336,10 +338,10 @@ export default function ObraDetailPage() {
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="bg-white border border-gray-200 p-1 h-auto flex flex-wrap">
-          <TabsTrigger value="avance" className="text-xs gap-1.5 data-[state=active]:bg-[#1B3A5C] data-[state=active]:text-white"><Activity className="w-3.5 h-3.5" /> Avance Fisico</TabsTrigger>
-          <TabsTrigger value="estimaciones" className="text-xs gap-1.5 data-[state=active]:bg-[#1B3A5C] data-[state=active]:text-white"><DollarSign className="w-3.5 h-3.5" /> Estimaciones</TabsTrigger>
-          <TabsTrigger value="expediente" className="text-xs gap-1.5 data-[state=active]:bg-[#1B3A5C] data-[state=active]:text-white"><Folder className="w-3.5 h-3.5" /> Expediente</TabsTrigger>
-          <TabsTrigger value="observaciones" className="text-xs gap-1.5 data-[state=active]:bg-[#1B3A5C] data-[state=active]:text-white"><MessageSquare className="w-3.5 h-3.5" /> Observaciones {obraObservaciones.length > 0 && <span className="ml-1 bg-red-500 text-white rounded-full px-1 text-[9px]">{obraObservaciones.length}</span>}</TabsTrigger>
+          <TabsTrigger value="avance" className="text-xs gap-1.5 data-[state=active]:bg-brand-primary data-[state=active]:text-white"><Activity className="w-3.5 h-3.5" /> Avance Fisico</TabsTrigger>
+          <TabsTrigger value="estimaciones" className="text-xs gap-1.5 data-[state=active]:bg-brand-primary data-[state=active]:text-white"><DollarSign className="w-3.5 h-3.5" /> Estimaciones</TabsTrigger>
+          <TabsTrigger value="expediente" className="text-xs gap-1.5 data-[state=active]:bg-brand-primary data-[state=active]:text-white"><Folder className="w-3.5 h-3.5" /> Expediente</TabsTrigger>
+          <TabsTrigger value="observaciones" className="text-xs gap-1.5 data-[state=active]:bg-brand-primary data-[state=active]:text-white"><MessageSquare className="w-3.5 h-3.5" /> Observaciones {obraObservaciones.length > 0 && <span className="ml-1 bg-red-500 text-white rounded-full px-1 text-[9px]">{obraObservaciones.length}</span>}</TabsTrigger>
         </TabsList>
 
         <AnimatePresence mode="wait">
@@ -357,7 +359,7 @@ export default function ObraDetailPage() {
                       <Tooltip formatter={(value: number) => `${value}%`} />
                       <Legend wrapperStyle={{ fontSize: '11px' }} />
                       <Line type="monotone" dataKey="programado" name="Programado" stroke="#A0AEC0" strokeDasharray="5 5" strokeWidth={2} dot={false} />
-                      <Line type="monotone" dataKey="reportado" name="Reportado" stroke="#2C5282" strokeWidth={2} dot={{ r: 4 }} />
+                      <Line type="monotone" dataKey="reportado" name="Reportado" stroke={brand.colors.primaryLight} strokeWidth={2} dot={{ r: 4 }} />
                       <Line type="monotone" dataKey="validado" name="Validado" stroke="#38A169" strokeWidth={2} dot={{ r: 4 }} />
                     </LineChart>
                   </ResponsiveContainer>
@@ -533,7 +535,7 @@ export default function ObraDetailPage() {
                     <button
                       type="submit"
                       disabled={docSubmitting}
-                      className="bg-[#1B3A5C] text-white px-4 py-2 rounded-md text-xs font-medium disabled:opacity-60"
+                      className="bg-brand-primary text-white px-4 py-2 rounded-md text-xs font-medium disabled:opacity-60"
                     >
                       {docSubmitting ? 'Subiendo...' : 'Cargar documento'}
                     </button>
@@ -563,7 +565,7 @@ export default function ObraDetailPage() {
                                       setActionError('No se pudo descargar');
                                       toast.error('No se pudo descargar');
                                     })}
-                                    className="text-[10px] text-[#2C5282] hover:underline"
+                                    className="text-[10px] text-brand-primary-light hover:underline"
                                   >
                                     Descargar
                                   </button>
@@ -677,7 +679,7 @@ export default function ObraDetailPage() {
                       <button
                         type="submit"
                         disabled={obsSubmitting}
-                        className="bg-[#1B3A5C] text-white px-4 py-2 rounded-md text-xs font-medium hover:bg-[#2C5282] transition-colors disabled:opacity-60"
+                        className="bg-brand-primary text-white px-4 py-2 rounded-md text-xs font-medium hover:bg-brand-primary-light transition-colors disabled:opacity-60"
                       >
                         {obsSubmitting ? 'Enviando...' : 'Emitir Observacion'}
                       </button>
@@ -727,7 +729,7 @@ export default function ObraDetailPage() {
                                   .then(() => reload())
                                   .catch(() => setActionError('No se pudo actualizar estatus'))
                               }
-                              className="mt-2 text-[10px] text-[#2C5282] hover:underline"
+                              className="mt-2 text-[10px] text-brand-primary-light hover:underline"
                             >
                               Marcar en atencion
                             </button>

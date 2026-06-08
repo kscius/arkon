@@ -12,36 +12,42 @@
     --card-foreground: 220 15% 12%;
     --popover: 0 0% 100%;
     --popover-foreground: 220 15% 12%;
-    --primary: 342 74% 31%;
+    --primary: 211 55% 23%;
     --primary-foreground: 0 0% 100%;
-    --secondary: 342 60% 20%;
+    --secondary: 180 80% 26%;
     --secondary-foreground: 0 0% 100%;
     --muted: 220 14% 96%;
     --muted-foreground: 218 11% 35%;
-    --accent: 342 74% 40%;
+    --accent: 30 78% 57%;
     --accent-foreground: 0 0% 100%;
     --destructive: 0 72% 51%;
     --destructive-foreground: 0 0% 98%;
     --border: 214 20% 90%;
     --input: 214 20% 90%;
-    --ring: 342 74% 31%;
+    --ring: 211 55% 23%;
     --radius: 0.5rem;
 
-    --sidebar-background: 342 74% 31%;
+    --sidebar-background: 211 55% 23%;
     --sidebar-foreground: 0 0% 100%;
-    --sidebar-primary: 0 0% 100%;
-    --sidebar-primary-foreground: 342 74% 31%;
-    --sidebar-accent: 342 60% 22%;
+    --sidebar-primary: 30 78% 57%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 211 55% 30%;
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 342 40% 25%;
-    --sidebar-ring: 0 0% 100%;
+    --sidebar-border: 211 40% 30%;
+    --sidebar-ring: 30 78% 57%;
 
-    --arkon-primary: #8B1538;
-    --arkon-primary-light: #A8193F;
-    --arkon-secondary: #6B1028;
-    --arkon-accent: #C41E5C;
-    --arkon-surface: #F7F8FA;
-    --arkon-surface-dark: #E2E8F0;
+    --brand-primary: #1B3664;
+    --brand-primary-light: #3B83BD;
+    --brand-secondary: #2A6F97;
+    --brand-accent: #C5A059;
+    --brand-surface: #F5F7FA;
+    --brand-surface-dark: #E2E8F0;
+    --arkon-primary: var(--brand-primary);
+    --arkon-primary-light: var(--brand-primary-light);
+    --arkon-secondary: var(--brand-secondary);
+    --arkon-accent: var(--brand-accent);
+    --arkon-surface: var(--brand-surface);
+    --arkon-surface-dark: var(--brand-surface-dark);
     --arkon-success: #38A169;
     --arkon-warning: #D69E2E;
     --arkon-danger: #DC2626;
@@ -53,7 +59,7 @@
   }
 
   body {
-    @apply bg-[#F7F8FA] text-foreground font-sans antialiased;
+    @apply bg-brand-surface text-foreground font-sans antialiased;
   }
 
   html {

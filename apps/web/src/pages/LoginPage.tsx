@@ -2,14 +2,92 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { ApiError } from '@/lib/api-client';
+import { getBrand } from '@/config/brand';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Mail, Lock, AlertCircle } from 'lucide-react';
 
+function LoginForm({
+  email,
+  setEmail,
+  password,
+  setPassword,
+  error,
+  loading,
+  onSubmit,
+  brand,
+}: {
+  email: string;
+  setEmail: (v: string) => void;
+  password: string;
+  setPassword: (v: string) => void;
+  error: string;
+  loading: boolean;
+  onSubmit: (e: React.FormEvent) => void;
+  brand: ReturnType<typeof getBrand>;
+}) {
+  return (
+    <>
+      {error && (
+        <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-sm text-red-600">
+          <AlertCircle className="w-4 h-4 flex-shrink-0" />
+          {error}
+        </div>
+      )}
+
+      <form onSubmit={onSubmit} className="space-y-4">
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-1.5">Correo electronico</label>
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="pl-10 h-11"
+              placeholder="usuario@institucion.gob.mx"
+              autoComplete="email"
+            />
+          </div>
+        </div>
+        <div>
+          <label className="block text-xs font-medium text-gray-600 mb-1.5">Contrasena</label>
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+            <Input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="pl-10 h-11"
+              placeholder="••••••••"
+              autoComplete="current-password"
+            />
+          </div>
+        </div>
+        <Button
+          type="submit"
+          className="w-full h-11 text-white font-medium hover:opacity-90"
+          style={{ backgroundColor: brand.colors.primary }}
+          disabled={loading}
+        >
+          {loading ? 'Iniciando sesion...' : 'Iniciar Sesion'}
+        </Button>
+      </form>
+
+      <p className="text-center text-[11px] text-gray-400 mt-4">
+        Demo: {brand.demoEmail} / {brand.demoPasswordHint}
+      </p>
+    </>
+  );
+}
+
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
+  const brand = getBrand();
+  const [email, setEmail] = useState(brand.demoEmail);
   const [password, setPassword] = useState('');
+  const [logoFailed, setLogoFailed] = useState(false);
+  const [bannerFailed, setBannerFailed] = useState(false);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useApp();
@@ -38,77 +116,108 @@ export default function LoginPage() {
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#F7F8FA] to-[#E2E8F0] p-4">
-      <div className="w-full max-w-md">
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          {/* Header with banner */}
-          <div className="bg-[#8B1538] p-6 flex flex-col items-center">
-            <img
-              src="/images/ceaspue-logo.png"
-              alt="CEASPUE"
-              className="h-16 object-contain brightness-0 invert mb-2"
-            />
-            <p className="text-white/80 text-xs text-center mt-1">
-              Sistema de Gestión de Obras Públicas
-            </p>
-          </div>
+  const institutionalLayout = Boolean(brand.loginBannerSrc);
 
-          <div className="p-8">
-            {/* Banner institucional */}
-            <div className="mb-6">
-              <img
-                src="/images/ceaspue-banner.png"
-                alt="Gobierno del Estado de Puebla"
-                className="w-full object-contain"
-              />
+  if (institutionalLayout) {
+    return (
+      <div
+        className="min-h-screen flex items-center justify-center p-4"
+        style={{
+          background: `linear-gradient(to bottom right, ${brand.colors.surface}, ${brand.colors.surfaceDark})`,
+        }}
+      >
+        <div className="w-full max-w-md">
+          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+            <div
+              className="p-6 flex flex-col items-center"
+              style={{ backgroundColor: brand.colors.primary }}
+            >
+              {brand.logoSrc && !logoFailed ? (
+                <img
+                  src={brand.logoSrc}
+                  alt={brand.logoAlt}
+                  onError={() => setLogoFailed(true)}
+                  className={`h-16 object-contain mb-2 ${brand.logoInvertOnDark ? 'brightness-0 invert' : ''}`}
+                />
+              ) : (
+                <div className="h-16 flex items-center text-2xl font-bold text-white mb-2">
+                  {brand.productShortName}
+                </div>
+              )}
+              <p className="text-white/80 text-xs text-center">{brand.loginSubtitle}</p>
             </div>
 
-            {error && (
-              <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-sm text-red-600">
-                <AlertCircle className="w-4 h-4 flex-shrink-0" />
-                {error}
+            <div className="p-8">
+              {brand.loginBannerSrc && !bannerFailed && (
+                <div className="mb-6">
+                  <img
+                    src={brand.loginBannerSrc}
+                    alt={brand.institutionName}
+                    onError={() => setBannerFailed(true)}
+                    className="w-full object-contain"
+                  />
+                </div>
+              )}
+
+              <LoginForm
+                email={email}
+                setEmail={setEmail}
+                password={password}
+                setPassword={setPassword}
+                error={error}
+                loading={loading}
+                onSubmit={handleSubmit}
+                brand={brand}
+              />
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      className="min-h-screen flex items-center justify-center p-4"
+      style={{
+        background: `linear-gradient(to bottom right, ${brand.colors.surface}, ${brand.colors.surfaceDark})`,
+      }}
+    >
+      <div className="w-full max-w-md">
+        <div className="bg-white rounded-xl shadow-lg p-8">
+          <div className="text-center mb-6">
+            {brand.logoSrc && !logoFailed ? (
+              <img
+                src={brand.logoSrc}
+                alt={brand.logoAlt}
+                onError={() => setLogoFailed(true)}
+                className="h-16 w-auto max-w-[240px] mx-auto mb-4 object-contain"
+              />
+            ) : (
+              <div
+                className="w-16 h-16 mx-auto mb-4 rounded-xl flex items-center justify-center text-2xl font-bold text-white"
+                style={{ backgroundColor: brand.colors.primary }}
+              >
+                {brand.productShortName.slice(0, 1)}
               </div>
             )}
-
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1.5">Correo electronico</label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 h-11"
-                    placeholder="usuario@ceaspue.gob.mx"
-                    autoComplete="email"
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1.5">Contrasena</label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <Input
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 h-11"
-                    placeholder="••••••••"
-                    autoComplete="current-password"
-                  />
-                </div>
-              </div>
-              <Button
-                type="submit"
-                className="w-full h-11 bg-[#8B1538] hover:bg-[#6B1028] text-white font-medium"
-                disabled={loading}
-              >
-                {loading ? 'Iniciando sesion...' : 'Iniciar Sesion'}
-              </Button>
-            </form>
+            <h1 className="text-2xl font-bold" style={{ color: brand.colors.primary }}>
+              {brand.productName}
+            </h1>
+            <p className="text-sm text-gray-500 mt-1">{brand.loginSubtitle}</p>
+            <p className="text-xs text-gray-400">{brand.tagline}</p>
           </div>
+
+          <LoginForm
+            email={email}
+            setEmail={setEmail}
+            password={password}
+            setPassword={setPassword}
+            error={error}
+            loading={loading}
+            onSubmit={handleSubmit}
+            brand={brand}
+          />
         </div>
       </div>
     </div>

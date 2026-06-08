@@ -8,6 +8,7 @@ import { createAvance, fetchAlertas, fetchAvancesByObra, fetchEstimacionesByObra
 import { ApiError } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { formatCurrencyM, formatPercentage, getObraStatusColor, getObraStatusLabel, getProgramaColor, getProgramaName, getSeverityColor, getSeverityLabel } from '@/lib/utils';
+import { getBrand } from '@/config/brand';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -17,6 +18,7 @@ const container = { hidden: { opacity: 0 }, show: { opacity: 1, transition: { st
 const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transition: { duration: 0.4, ease: 'easeOut' as const } } };
 
 export default function DashboardContratistaPage() {
+  const brand = getBrand();
   const { user } = useApp();
   const navigate = useNavigate();
   const contratistaId = user?.contratistaId ?? '';
@@ -194,8 +196,8 @@ export default function DashboardContratistaPage() {
   const avancePromedio = totalObras > 0 ? misObras.reduce((s, o) => s + o.avanceFisicoReal, 0) / totalObras : 0;
 
   const kpis = [
-    { label: 'Mis Obras', value: totalObras.toString(), sub: `${obrasEjecucion} en ejecucion`, icon: Building2, color: '#1B3A5C' },
-    { label: 'Inversion Total', value: formatCurrencyM(montoTotal), sub: 'Monto contratado', icon: DollarSign, color: '#E8913A' },
+    { label: 'Mis Obras', value: totalObras.toString(), sub: `${obrasEjecucion} en ejecucion`, icon: Building2, color: brand.colors.primary },
+    { label: 'Inversion Total', value: formatCurrencyM(montoTotal), sub: 'Monto contratado', icon: DollarSign, color: brand.colors.accent },
     { label: 'Avance Promedio', value: formatPercentage(avancePromedio), sub: 'Avance fisico', icon: TrendingUp, color: '#3182CE', trend: avancePromedio },
     { label: 'Obras con Retraso', value: obrasRetraso.toString(), sub: 'Requieren atencion', icon: AlertTriangle, color: '#DC2626' },
   ];
@@ -204,7 +206,7 @@ export default function DashboardContratistaPage() {
     <PageState loading={loading} error={error} onRetry={reload}>
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
       <div>
-        <h1 className="text-lg font-bold text-[#1B3A5C]">Panel del Contratista</h1>
+        <h1 className="text-lg font-bold text-brand-primary">Panel del Contratista</h1>
         <p className="text-xs text-gray-500 mt-1">Bienvenido, {user?.name}. Aqui puede gestionar sus obras asignadas y reportar avances.</p>
       </div>
 
@@ -304,7 +306,7 @@ export default function DashboardContratistaPage() {
                       value={obraId}
                       onChange={(e) => setObraId(e.target.value)}
                       required
-                      className="w-full h-10 px-3 text-xs border border-gray-200 rounded-md bg-white focus:border-[#1B3A5C] focus:ring-1 focus:ring-[#1B3A5C] outline-none"
+                      className="w-full h-10 px-3 text-xs border border-gray-200 rounded-md bg-white focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none"
                     >
                       <option value="">Seleccionar obra...</option>
                       {misObras.filter(o => o.estatus.includes('ejecucion') || o.estatus === 'en_preparacion').map(o => (
@@ -318,7 +320,7 @@ export default function DashboardContratistaPage() {
                       value={periodo}
                       onChange={(e) => setPeriodo(e.target.value)}
                       required
-                      className="w-full h-10 px-3 text-xs border border-gray-200 rounded-md bg-white focus:border-[#1B3A5C] outline-none"
+                      className="w-full h-10 px-3 text-xs border border-gray-200 rounded-md bg-white focus:border-brand-primary outline-none"
                     >
                       <option value="">Seleccionar periodo...</option>
                       {periodoOptions.map((p) => (
@@ -337,7 +339,7 @@ export default function DashboardContratistaPage() {
                       value={reportado}
                       onChange={(e) => setReportado(e.target.value)}
                       required
-                      className="w-full h-10 px-3 text-xs border border-gray-200 rounded-md focus:border-[#1B3A5C] outline-none"
+                      className="w-full h-10 px-3 text-xs border border-gray-200 rounded-md focus:border-brand-primary outline-none"
                       placeholder="0 - 100"
                     />
                   </div>
@@ -349,7 +351,7 @@ export default function DashboardContratistaPage() {
                     value={actividades}
                     onChange={(e) => setActividades(e.target.value)}
                     required
-                    className="w-full h-24 px-3 py-2 text-xs border border-gray-200 rounded-md resize-none focus:border-[#1B3A5C] outline-none"
+                    className="w-full h-24 px-3 py-2 text-xs border border-gray-200 rounded-md resize-none focus:border-brand-primary outline-none"
                     placeholder="Describa las actividades realizadas en este periodo..."
                   />
                 </div>
@@ -359,7 +361,7 @@ export default function DashboardContratistaPage() {
                   <textarea
                     value={comentarios}
                     onChange={(e) => setComentarios(e.target.value)}
-                    className="w-full h-16 px-3 py-2 text-xs border border-gray-200 rounded-md resize-none focus:border-[#1B3A5C] outline-none"
+                    className="w-full h-16 px-3 py-2 text-xs border border-gray-200 rounded-md resize-none focus:border-brand-primary outline-none"
                     placeholder="Reporte cualquier incidencia o comentario relevante..."
                   />
                 </div>
@@ -370,7 +372,7 @@ export default function DashboardContratistaPage() {
                   <button
                     type="submit"
                     disabled={submitting}
-                    className="bg-[#1B3A5C] text-white px-6 py-2.5 rounded-md text-xs font-medium hover:bg-[#2C5282] transition-colors disabled:opacity-60"
+                    className="bg-brand-primary text-white px-6 py-2.5 rounded-md text-xs font-medium hover:bg-brand-primary-light transition-colors disabled:opacity-60"
                   >
                     {submitting ? 'Enviando...' : 'Enviar Reporte'}
                   </button>
@@ -394,7 +396,7 @@ export default function DashboardContratistaPage() {
                   {actividadReciente.map((act) => (
                     <div key={act.key} className="relative">
                       <div className="absolute -left-4 top-1 w-2.5 h-2.5 rounded-full border-2 border-white"
-                        style={{ backgroundColor: act.tipo === 'avance' ? '#38A169' : act.tipo === 'observacion' ? '#DC2626' : act.tipo === 'estimacion' ? '#E8913A' : '#3182CE' }} />
+                        style={{ backgroundColor: act.tipo === 'avance' ? '#38A169' : act.tipo === 'observacion' ? '#DC2626' : act.tipo === 'estimacion' ? brand.colors.accent : '#3182CE' }} />
                       <div className="text-[10px] text-gray-400">{act.fecha}</div>
                       <div className="text-xs font-medium text-gray-800">{act.titulo}</div>
                       <div className="text-[11px] text-gray-600">{act.desc}</div>

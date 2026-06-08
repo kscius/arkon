@@ -116,6 +116,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         : '/contratistas';
       return [
         { path: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
+        { path: '/obras', label: 'Obras', icon: 'HardHat' },
         { path: munPath, label: 'Municipios', icon: 'MapPin' },
         { path: conPath, label: 'Contratistas', icon: 'Users' },
         { path: '/admin/usuarios', label: 'Usuarios', icon: 'Shield' },
@@ -127,6 +128,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (role === 'municipal') {
       return [
         { path: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
+        { path: '/obras', label: 'Obras', icon: 'HardHat' },
         {
           path: `/municipios/${user.municipioId ?? selectedMunicipio}`,
           label: 'Mi Municipio',
@@ -140,9 +142,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     return [
       { path: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
+      { path: '/obras', label: 'Mis Obras', icon: 'HardHat' },
       {
         path: `/contratistas/${user.contratistaId ?? selectedContratista}`,
-        label: 'Mis Obras',
+        label: 'Mi Empresa',
         icon: 'Building2',
       },
       { path: '/alertas', label: 'Alertas', icon: 'Bell' },
