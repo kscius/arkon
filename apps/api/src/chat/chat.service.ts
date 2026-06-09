@@ -12,17 +12,32 @@ import {
   Obra,
   Usuario,
 } from '@prisma/client';
-import { getApiBrand } from '../common/brand';
+import { getApiBrand, type TenantId } from '../common/brand';
 import { ScopeService } from '../common/scope.service';
 import { PrismaService } from '../prisma/prisma.service';
 
-const SUGGESTIONS = [
-  'Que obras necesitan atencion urgente ahora?',
-  'Cuales son las obras con mayor desfase fisico?',
-  'Resumen ejecutivo del portafolio de obras',
-  'Cuantas alertas criticas estan sin atender?',
-  'Comparativo de avance fisico vs financiero',
-];
+const SUGGESTIONS_BY_TENANT: Record<TenantId, string[]> = {
+  arkon: [
+    'Compara fisico vs financiero por programa',
+    'Detalle de obra: avances, docs y observaciones',
+    'Alertas criticas sin atender y acciones sugeridas',
+    'Inversion total por municipio y dependencia',
+    'Estimaciones en revision sin validar',
+    'Obras en riesgo con enlaces directos',
+  ],
+  conagua: [
+    'Fisico vs financiero en PROAGUA y PEAS',
+    'Detalle PTAR: avances, docs y alertas',
+    'Alertas criticas sin atender en saneamiento',
+    'Inversion por programa y macromedicion',
+    'Estimaciones y documentos pendientes de validar',
+    'Obras PROAGUA en riesgo con enlaces',
+  ],
+};
+
+function getSuggestions(): string[] {
+  return SUGGESTIONS_BY_TENANT[getApiBrand().tenantId];
+}
 
 type ChatHistoryMessage = { role: 'user' | 'assistant'; content: string };
 
@@ -52,14 +67,14 @@ export class ChatService {
     if (apiKey) {
       try {
         const response = await this.generateOpenAiResponse(trimmed, user, apiKey, history);
-        return { response, suggestions: SUGGESTIONS };
+        return { response, suggestions: getSuggestions() };
       } catch (err) {
         this.logger.warn(`OpenAI fallback to local rules: ${(err as Error).message}`);
       }
     }
 
     const response = await this.generateLocalResponse(trimmed, user);
-    return { response, suggestions: SUGGESTIONS };
+    return { response, suggestions: getSuggestions() };
   }
 
   private groupByObraId<T extends { obraId: string }>(items: T[]): Map<string, T[]> {

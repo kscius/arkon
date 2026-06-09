@@ -17,11 +17,12 @@ interface ChatMessage {
 }
 
 const DEFAULT_ASSISTANT_SUGGESTIONS = [
-  'Que obras tienen retraso?',
-  'Resumen de inversion por programa',
-  'Obras en riesgo',
-  'Comparativo fisico-financiero',
-  'Cuantas obras hay en total?',
+  'Compara fisico vs financiero por programa',
+  'Detalle de obra: avances, docs y observaciones',
+  'Alertas criticas sin atender y acciones sugeridas',
+  'Inversion total por municipio y dependencia',
+  'Estimaciones en revision sin validar',
+  'Obras en riesgo con enlaces directos',
 ];
 
 export default function AsistentePage() {
