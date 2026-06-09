@@ -82,11 +82,24 @@ const emptyForm = () => ({
   destinatarioIds: [] as string[],
 });
 
+function resolveAlcance(config: AlertaConfig): AlcanceTipo {
+  if (config.obraId) return 'obra';
+  if (config.municipioId) return 'municipio';
+  if (config.programaFiltro) return 'programa';
+  return 'todos';
+}
+
 function scopeLabel(config: AlertaConfig): string {
-  if (config.obraFolio) return `Obra: ${config.obraFolio}`;
-  if (config.municipioNombre) return `Municipio: ${config.municipioNombre}`;
-  if (config.programaFiltro) return `Programa: ${config.programaFiltro}`;
-  return 'Todas las obras';
+  switch (resolveAlcance(config)) {
+    case 'obra':
+      return `Obra: ${config.obraFolio ?? config.obraNombre ?? config.obraId}`;
+    case 'municipio':
+      return `Municipio: ${config.municipioNombre ?? config.municipioId}`;
+    case 'programa':
+      return `Programa: ${config.programaFiltro}`;
+    default:
+      return 'Todas las obras';
+  }
 }
 
 export default function ConfiguradorAlertasPage() {
@@ -149,10 +162,7 @@ export default function ConfiguradorAlertasPage() {
 
   const openEdit = (config: AlertaConfig) => {
     setEditing(config);
-    let alcance: AlcanceTipo = 'todos';
-    if (config.obraId) alcance = 'obra';
-    else if (config.municipioId) alcance = 'municipio';
-    else if (config.programaFiltro) alcance = 'programa';
+    const alcance = resolveAlcance(config);
 
     setForm({
       nombre: config.nombre,
@@ -188,12 +198,27 @@ export default function ConfiguradorAlertasPage() {
       destinatarios,
     };
 
-    if (form.alcance === 'programa' && form.programaFiltro) {
-      payload.programa_filtro = form.programaFiltro;
-    } else if (form.alcance === 'municipio' && form.municipioId) {
-      payload.municipio_id = form.municipioId;
-    } else if (form.alcance === 'obra' && form.obraId) {
-      payload.obra_id = form.obraId;
+    switch (form.alcance) {
+      case 'programa':
+        payload.programa_filtro = form.programaFiltro || null;
+        payload.municipio_id = null;
+        payload.obra_id = null;
+        break;
+      case 'municipio':
+        payload.municipio_id = form.municipioId || null;
+        payload.programa_filtro = null;
+        payload.obra_id = null;
+        break;
+      case 'obra':
+        payload.obra_id = form.obraId || null;
+        payload.programa_filtro = null;
+        payload.municipio_id = null;
+        break;
+      default:
+        payload.programa_filtro = null;
+        payload.municipio_id = null;
+        payload.obra_id = null;
+        break;
     }
 
     if (form.tipo === 'sin_actualizaciones' || form.tipo === 'sin_estimaciones') {
@@ -522,9 +547,20 @@ export default function ConfiguradorAlertasPage() {
                 <label className="text-[10px] text-gray-500 uppercase">Alcance</label>
                 <select
                   value={form.alcance}
-                  onChange={(e) =>
-                    setForm((p) => ({ ...p, alcance: e.target.value as AlcanceTipo }))
-                  }
+                  onChange={(e) => {
+                    const alcance = e.target.value as AlcanceTipo;
+                    setForm((p) => ({
+                      ...p,
+                      alcance,
+                      programaFiltro: alcance === 'programa' ? p.programaFiltro : '',
+                      municipioId:
+                        alcance === 'municipio'
+                          ? p.municipioId ||
+                            (user?.role === 'municipal' ? (user.municipioId ?? '') : '')
+                          : '',
+                      obraId: alcance === 'obra' ? p.obraId : '',
+                    }));
+                  }}
                   className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md mt-1 bg-white"
                   disabled={user?.role === 'municipal' && form.alcance === 'municipio'}
                 >

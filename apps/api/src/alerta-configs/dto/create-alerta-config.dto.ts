@@ -11,6 +11,7 @@ import {
   IsString,
   IsUUID,
   Min,
+  ValidateIf,
   ValidateNested,
 } from 'class-validator';
 
@@ -62,20 +63,23 @@ export class CreateAlertaConfigDto {
   @IsIn([...ALERTA_CONFIG_SEVERIDADES])
   severidad?: string;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ nullable: true })
+  @ValidateIf((_o, v) => v !== null)
   @IsOptional()
   @IsString()
-  programa_filtro?: string;
+  programa_filtro?: string | null;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ nullable: true })
+  @ValidateIf((_o, v) => v !== null)
   @IsOptional()
   @IsUUID()
-  municipio_id?: string;
+  municipio_id?: string | null;
 
-  @ApiPropertyOptional()
+  @ApiPropertyOptional({ nullable: true })
+  @ValidateIf((_o, v) => v !== null)
   @IsOptional()
   @IsUUID()
-  obra_id?: string;
+  obra_id?: string | null;
 
   @ApiPropertyOptional()
   @IsOptional()

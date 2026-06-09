@@ -231,9 +231,9 @@ export interface CreateAlertaConfigInput {
   activa?: boolean;
   tipo: AlertaConfigTipo;
   severidad?: Severidad;
-  programa_filtro?: string;
-  municipio_id?: string;
-  obra_id?: string;
+  programa_filtro?: string | null;
+  municipio_id?: string | null;
+  obra_id?: string | null;
   umbral_dias?: number;
   umbral_porcentaje?: number;
   umbral_monto?: number;

@@ -16,6 +16,28 @@ import { UpdateAlertaConfigDto } from './dto/update-alerta-config.dto';
 
 type DestinatarioJson = { userId: string; nombre: string; telefono: string };
 
+type ScopeDto = {
+  programa_filtro?: string | null;
+  municipio_id?: string | null;
+  obra_id?: string | null;
+};
+
+type ScopeData = {
+  programaFiltro: string | null;
+  municipioId: string | null;
+  obraId: string | null;
+};
+
+type AlertaConfigWithRelations = AlertaConfig & {
+  municipio: { nombre: string } | null;
+  obra: { folio: string; nombre: string } | null;
+};
+
+const CONFIG_INCLUDE = {
+  municipio: { select: { nombre: true } },
+  obra: { select: { folio: true, nombre: true } },
+} as const;
+
 @Injectable()
 export class AlertaConfigsService {
   constructor(
@@ -52,7 +74,41 @@ export class AlertaConfigsService {
       .filter((d) => d.userId && d.telefono);
   }
 
-  private map(config: AlertaConfig) {
+  private hasScopeFields(dto: ScopeDto): boolean {
+    return (
+      dto.programa_filtro !== undefined ||
+      dto.municipio_id !== undefined ||
+      dto.obra_id !== undefined
+    );
+  }
+
+  private resolveScopeFields(dto: ScopeDto): ScopeData {
+    if (dto.obra_id) {
+      return { programaFiltro: null, municipioId: null, obraId: dto.obra_id };
+    }
+    if (dto.municipio_id) {
+      return { programaFiltro: null, municipioId: dto.municipio_id, obraId: null };
+    }
+    if (dto.programa_filtro) {
+      return {
+        programaFiltro: dto.programa_filtro.trim() || null,
+        municipioId: null,
+        obraId: null,
+      };
+    }
+    return { programaFiltro: null, municipioId: null, obraId: null };
+  }
+
+  private resolveCreateScope(dto: ScopeDto, user: Usuario): ScopeData {
+    if (this.hasScopeFields(dto)) {
+      return this.resolveScopeFields(dto);
+    }
+    const municipioId =
+      user.rol === Rol.municipal && user.municipioId ? user.municipioId : null;
+    return { programaFiltro: null, municipioId, obraId: null };
+  }
+
+  private map(config: AlertaConfigWithRelations) {
     return {
       id: config.id,
       nombre: config.nombre,
@@ -62,7 +118,10 @@ export class AlertaConfigsService {
       severidad: config.severidad,
       programa_filtro: config.programaFiltro,
       municipio_id: config.municipioId,
+      municipio_nombre: config.municipio?.nombre ?? null,
       obra_id: config.obraId,
+      obra_folio: config.obra?.folio ?? null,
+      obra_nombre: config.obra?.nombre ?? null,
       umbral_dias: config.umbralDias,
       umbral_porcentaje:
         config.umbralPorcentaje != null ? Number(config.umbralPorcentaje) : null,
@@ -139,6 +198,7 @@ export class AlertaConfigsService {
     const configs = await this.prisma.alertaConfig.findMany({
       where: this.configWhere(user),
       orderBy: { createdAt: 'desc' },
+      include: CONFIG_INCLUDE,
     });
     return configs.map((c) => this.map(c));
   }
@@ -146,17 +206,22 @@ export class AlertaConfigsService {
   async findOne(id: string, user: Usuario) {
     const config = await this.prisma.alertaConfig.findFirst({
       where: { id, ...this.configWhere(user) },
+      include: CONFIG_INCLUDE,
     });
     if (!config) throw new NotFoundException('Alerta config not found');
     return this.map(config);
   }
 
   async create(dto: CreateAlertaConfigDto, user: Usuario) {
-    await this.validateScope(dto, user);
-    const municipioId =
-      user.rol === Rol.municipal && user.municipioId && !dto.obra_id
-        ? dto.municipio_id ?? user.municipioId
-        : dto.municipio_id;
+    const scope = this.resolveCreateScope(dto, user);
+    await this.validateScope(
+      {
+        municipio_id: scope.municipioId ?? undefined,
+        obra_id: scope.obraId ?? undefined,
+        programa_filtro: scope.programaFiltro ?? undefined,
+      },
+      user,
+    );
 
     const created = await this.prisma.alertaConfig.create({
       data: {
@@ -165,15 +230,16 @@ export class AlertaConfigsService {
         activa: dto.activa ?? true,
         tipo: dto.tipo,
         severidad: dto.severidad ?? 'media',
-        programaFiltro: dto.programa_filtro?.trim() || null,
-        municipioId: dto.obra_id ? null : municipioId ?? null,
-        obraId: dto.obra_id ?? null,
+        programaFiltro: scope.programaFiltro,
+        municipioId: scope.municipioId,
+        obraId: scope.obraId,
         umbralDias: dto.umbral_dias ?? null,
         umbralPorcentaje: dto.umbral_porcentaje ?? null,
         umbralMonto: dto.umbral_monto ?? null,
         destinatariosJson: this.toDestinatariosJson(dto.destinatarios),
         creadoPor: user.id,
       },
+      include: CONFIG_INCLUDE,
     });
     return this.map(created);
   }
@@ -184,12 +250,23 @@ export class AlertaConfigsService {
     });
     if (!existing) throw new NotFoundException('Alerta config not found');
     this.assertScopeAccess(existing, user);
+
+    const scopeUpdate = this.hasScopeFields(dto)
+      ? this.resolveScopeFields(dto)
+      : null;
+
     await this.validateScope(
-      {
-        municipio_id: dto.municipio_id ?? existing.municipioId ?? undefined,
-        obra_id: dto.obra_id ?? existing.obraId ?? undefined,
-        programa_filtro: dto.programa_filtro ?? existing.programaFiltro ?? undefined,
-      },
+      scopeUpdate
+        ? {
+            municipio_id: scopeUpdate.municipioId ?? undefined,
+            obra_id: scopeUpdate.obraId ?? undefined,
+            programa_filtro: scopeUpdate.programaFiltro ?? undefined,
+          }
+        : {
+            municipio_id: existing.municipioId ?? undefined,
+            obra_id: existing.obraId ?? undefined,
+            programa_filtro: existing.programaFiltro ?? undefined,
+          },
       user,
     );
 
@@ -203,13 +280,10 @@ export class AlertaConfigsService {
         ...(dto.activa !== undefined && { activa: dto.activa }),
         ...(dto.tipo !== undefined && { tipo: dto.tipo }),
         ...(dto.severidad !== undefined && { severidad: dto.severidad }),
-        ...(dto.programa_filtro !== undefined && {
-          programaFiltro: dto.programa_filtro?.trim() || null,
-        }),
-        ...(dto.municipio_id !== undefined && { municipioId: dto.municipio_id }),
-        ...(dto.obra_id !== undefined && {
-          obraId: dto.obra_id,
-          municipioId: dto.obra_id ? null : undefined,
+        ...(scopeUpdate && {
+          programaFiltro: scopeUpdate.programaFiltro,
+          municipioId: scopeUpdate.municipioId,
+          obraId: scopeUpdate.obraId,
         }),
         ...(dto.umbral_dias !== undefined && { umbralDias: dto.umbral_dias }),
         ...(dto.umbral_porcentaje !== undefined && {
@@ -220,6 +294,7 @@ export class AlertaConfigsService {
           destinatariosJson: this.toDestinatariosJson(dto.destinatarios),
         }),
       },
+      include: CONFIG_INCLUDE,
     });
     return this.map(updated);
   }
@@ -232,6 +307,7 @@ export class AlertaConfigsService {
     const updated = await this.prisma.alertaConfig.update({
       where: { id },
       data: { activa: !existing.activa },
+      include: CONFIG_INCLUDE,
     });
     return this.map(updated);
   }
