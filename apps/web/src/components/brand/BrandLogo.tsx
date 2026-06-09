@@ -12,6 +12,8 @@ type BrandLogoProps = {
   imageOnly?: boolean;
   /** Narrow sidebar icon strip. */
   collapsed?: boolean;
+  /** Render logo on a dark background: removes white frame and inverts colors. */
+  onDark?: boolean;
 };
 
 export function BrandLogo({
@@ -21,14 +23,17 @@ export function BrandLogo({
   compact = false,
   imageOnly = false,
   collapsed = false,
+  onDark = false,
 }: BrandLogoProps) {
   const brand = getBrand();
   const [logoFailed, setLogoFailed] = useState(false);
   const showLogo = brand.logoSrc && !logoFailed;
   const hideText = imageOnly || !showText;
+  const invertLogo = onDark && brand.logoInvertOnDark;
 
   const logoFrameClass = cn(
-    'bg-white rounded-md flex items-center justify-center overflow-hidden shrink-0',
+    'flex items-center justify-center overflow-hidden shrink-0',
+    !onDark && 'bg-white rounded-md',
     collapsed
       ? 'h-10 w-10 p-0'
       : imageOnly
@@ -46,6 +51,7 @@ export function BrandLogo({
       : compact
         ? 'h-full w-auto max-w-[120px]'
         : 'h-full w-auto max-w-[160px]',
+    invertLogo && 'brightness-0 invert',
   );
 
   return (

@@ -83,6 +83,7 @@ export function Sidebar() {
         <BrandLogo
           compact
           imageOnly
+          onDark
           collapsed={sidebarCollapsed}
           className={sidebarCollapsed ? 'flex-1' : 'flex-1 min-w-0'}
         />
