@@ -9,6 +9,9 @@ export function canAccessRoute(
   if (!isAuthenticated || !role) return route === '/';
 
   if (route === '/alertas') return true;
+  if (route === '/configurador-alertas') {
+    return role === 'estatal' || role === 'municipal';
+  }
   if (route === '/asistente') {
     return role === 'estatal' || role === 'municipal';
   }

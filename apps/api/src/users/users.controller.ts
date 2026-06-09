@@ -15,7 +15,7 @@ export class UsersController {
 
   @Get()
   @UseGuards(RolesGuard)
-  @Roles(Rol.estatal)
+  @Roles(Rol.estatal, Rol.municipal)
   list(@CurrentUser() user: Usuario) {
     return this.service.findAll(user);
   }

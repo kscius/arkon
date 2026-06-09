@@ -121,6 +121,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         { path: conPath, label: 'Contratistas', icon: 'Users' },
         { path: '/admin/usuarios', label: 'Usuarios', icon: 'Shield' },
         { path: '/alertas', label: 'Alertas', icon: 'Bell' },
+        { path: '/configurador-alertas', label: 'Configurador de Alertas', icon: 'BellRing' },
         { path: '/asistente', label: 'Asistente IA', icon: 'Sparkles' },
       ];
     }
@@ -136,6 +137,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         },
         { path: '/contratistas', label: 'Contratistas', icon: 'Users' },
         { path: '/alertas', label: 'Alertas', icon: 'Bell' },
+        { path: '/configurador-alertas', label: 'Configurador de Alertas', icon: 'Settings' },
         { path: '/asistente', label: 'Asistente IA', icon: 'Sparkles' },
       ];
     }

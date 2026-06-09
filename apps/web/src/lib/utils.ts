@@ -157,6 +157,9 @@ export function getAlertaTipoLabel(tipo: string): string {
     administrativa: 'Administrativa',
     climatica: 'Climatica',
     plazo: 'Plazo',
+    sin_actualizaciones: 'Sin actualizaciones',
+    exceso_presupuesto: 'Exceso de presupuesto',
+    sin_estimaciones: 'Sin estimaciones',
   };
   return labels[tipo] ?? humanizeSnakeCase(tipo);
 }

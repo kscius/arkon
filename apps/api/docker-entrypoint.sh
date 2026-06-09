@@ -34,8 +34,17 @@ else
 fi
 
 if [ -f "prisma/seed.ts" ]; then
-  echo "Seeding database..."
-  npx prisma db seed || echo "Seed skipped (already seeded or seed error)."
+  USER_COUNT=$(node -e "
+    const {PrismaClient}=require('@prisma/client');
+    const p=new PrismaClient();
+    p.usuario.count().then(n=>{console.log(n);p.\$disconnect();}).catch(()=>{console.log(0);p.\$disconnect();});
+  " 2>/dev/null || echo "0")
+  if [ "$USER_COUNT" = "0" ]; then
+    echo "Seeding database..."
+    npx prisma db seed || echo "Seed error."
+  else
+    echo "Database already seeded ($USER_COUNT users), skipping."
+  fi
 else
   echo "prisma/seed.ts not found; skipping seed."
 fi

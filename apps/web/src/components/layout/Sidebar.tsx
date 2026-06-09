@@ -16,6 +16,9 @@ import {
   ChevronRight,
   HardHat,
   LandPlot,
+  BellRing,
+  Settings,
+  Shield,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -29,6 +32,9 @@ const iconMap: Record<string, LucideIcon> = {
   Sparkles,
   HardHat,
   LandPlot,
+  BellRing,
+  Settings,
+  Shield,
 };
 
 export function Sidebar() {
@@ -43,6 +49,7 @@ export function Sidebar() {
     if (path.includes('/municipios/')) return location.pathname.startsWith('/municipios');
     if (path.includes('/contratistas/')) return location.pathname.startsWith('/contratistas');
     if (path === '/alertas') return location.pathname === '/alertas';
+    if (path === '/configurador-alertas') return location.pathname === '/configurador-alertas';
     if (path === '/asistente') return location.pathname === '/asistente';
     if (path === '/admin/usuarios') return location.pathname === '/admin/usuarios';
     return location.pathname === path;

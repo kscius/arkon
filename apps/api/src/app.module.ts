@@ -4,6 +4,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { AlertaConfigsModule } from './alerta-configs/alerta-configs.module';
 import { AlertasModule } from './alertas/alertas.module';
 import { AvancesModule } from './avances/avances.module';
 import { ChatModule } from './chat/chat.module';
@@ -36,6 +37,7 @@ import { UsersModule } from './users/users.module';
     DocumentosModule,
     ObservacionesModule,
     AlertasModule,
+    AlertaConfigsModule,
     DashboardModule,
     ChatModule,
   ],
