@@ -28,11 +28,11 @@ export function BrandLogo({
   const hideText = imageOnly || !showText;
 
   const logoFrameClass = cn(
-    'bg-white rounded-md flex items-center justify-center overflow-hidden shrink-0',
+    'bg-[#f7f7f7] rounded-md flex items-center justify-center overflow-hidden shrink-0',
     collapsed
       ? 'h-10 w-10 p-0'
       : imageOnly
-        ? 'h-14 flex-1 min-w-0 w-full p-0'
+        ? 'h-14 flex-1 min-w-0 w-full p-[6px]'
         : compact
           ? 'h-8 px-1.5 py-0.5'
           : 'h-10 px-2 py-1',
