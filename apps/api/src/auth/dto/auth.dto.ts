@@ -57,6 +57,9 @@ export class UserResponseDto {
 
   @ApiPropertyOptional()
   contratistaId?: string | null;
+
+  @ApiPropertyOptional()
+  telefono?: string | null;
 }
 
 export class TokenResponseDto {

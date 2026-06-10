@@ -14,6 +14,7 @@ import MunicipioPanelPage from '@/pages/MunicipioPanelPage';
 import ContratistaPanelPage from '@/pages/ContratistaPanelPage';
 import AsistentePage from '@/pages/AsistentePage';
 import AlertasPage from '@/pages/AlertasPage';
+import ConfiguradorAlertasPage from '@/pages/ConfiguradorAlertasPage';
 import AdminUsuariosPage from '@/pages/AdminUsuariosPage';
 import { ContratistasRedirect, MunicipiosRedirect } from '@/components/CatalogRedirect';
 
@@ -148,6 +149,16 @@ function AppRoutes() {
           <ProtectedRoute>
             <AppLayout>
               <AlertasPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/configurador-alertas"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <ConfiguradorAlertasPage />
             </AppLayout>
           </ProtectedRoute>
         }

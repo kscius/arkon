@@ -56,6 +56,9 @@ export default function AdminUsuariosPage() {
   const [role, setRole] = useState<UserRole>('municipal');
   const [municipioId, setMunicipioId] = useState('');
   const [contratistaId, setContratistaId] = useState('');
+  const [telefono, setTelefono] = useState('');
+  const [editPhoneUser, setEditPhoneUser] = useState<AdminUser | null>(null);
+  const [editPhoneValue, setEditPhoneValue] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const handleCreate = async (e: React.FormEvent) => {
@@ -86,6 +89,7 @@ export default function AdminUsuariosPage() {
         .toUpperCase(),
       municipio_id: role === 'municipal' ? municipioId : undefined,
       contratista_id: role === 'contratista' ? contratistaId : undefined,
+      telefono: telefono.trim() || undefined,
     };
 
     setSubmitting(true);
@@ -96,6 +100,7 @@ export default function AdminUsuariosPage() {
       setEmail('');
       setPassword('');
       setFullName('');
+      setTelefono('');
       reload();
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : 'Error al crear usuario');
@@ -112,6 +117,21 @@ export default function AdminUsuariosPage() {
       reload();
     } catch (err) {
       toast.error(err instanceof ApiError ? err.message : 'No se pudo actualizar el usuario');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleSavePhone = async () => {
+    if (!editPhoneUser) return;
+    setBusyId(editPhoneUser.id);
+    try {
+      await updateUser(editPhoneUser.id, { telefono: editPhoneValue.trim() || null });
+      toast.success('Telefono actualizado');
+      setEditPhoneUser(null);
+      reload();
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : 'No se pudo actualizar el telefono');
     } finally {
       setBusyId(null);
     }
@@ -167,6 +187,7 @@ export default function AdminUsuariosPage() {
                     <th className="text-left py-2 px-2 text-gray-500">Nombre</th>
                     <th className="text-left py-2 px-2 text-gray-500">Email</th>
                     <th className="text-left py-2 px-2 text-gray-500">Rol</th>
+                    <th className="text-left py-2 px-2 text-gray-500">Telefono</th>
                     <th className="text-left py-2 px-2 text-gray-500">Alcance</th>
                     <th className="text-center py-2 px-2 text-gray-500">Estado</th>
                     <th className="text-center py-2 px-2 text-gray-500">Acciones</th>
@@ -187,6 +208,31 @@ export default function AdminUsuariosPage() {
                         <td className="py-2 px-2 font-medium">{u.fullName}</td>
                         <td className="py-2 px-2 text-gray-600">{u.email}</td>
                         <td className="py-2 px-2">{roleLabel(u.role)}</td>
+                        <td className="py-2 px-2 text-gray-500">
+                          {u.telefono ? (
+                            <button
+                              type="button"
+                              className="hover:underline text-left"
+                              onClick={() => {
+                                setEditPhoneUser(u);
+                                setEditPhoneValue(u.telefono ?? '');
+                              }}
+                            >
+                              {u.telefono}
+                            </button>
+                          ) : (
+                            <button
+                              type="button"
+                              className="text-brand-primary-light hover:underline"
+                              onClick={() => {
+                                setEditPhoneUser(u);
+                                setEditPhoneValue('');
+                              }}
+                            >
+                              Agregar
+                            </button>
+                          )}
+                        </td>
                         <td className="py-2 px-2 text-gray-500">{scope ?? '—'}</td>
                         <td className="py-2 px-2 text-center">
                           <span
@@ -284,6 +330,18 @@ export default function AdminUsuariosPage() {
                 />
               </div>
               <div>
+                <label className="text-[10px] text-gray-500 uppercase">
+                  Telefono WhatsApp (opcional)
+                </label>
+                <input
+                  type="tel"
+                  value={telefono}
+                  onChange={(e) => setTelefono(e.target.value)}
+                  placeholder="52..."
+                  className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md mt-1"
+                />
+              </div>
+              <div>
                 <label className="text-[10px] text-gray-500 uppercase">Contraseña</label>
                 <input
                   type="password"
@@ -292,6 +350,16 @@ export default function AdminUsuariosPage() {
                   className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md mt-1"
                   minLength={6}
                   required
+                />
+              </div>
+              <div>
+                <label className="text-[10px] text-gray-500 uppercase">Telefono (WhatsApp)</label>
+                <input
+                  type="tel"
+                  value={telefono}
+                  onChange={(e) => setTelefono(e.target.value)}
+                  placeholder="Opcional, ej. 5512345678"
+                  className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md mt-1"
                 />
               </div>
               <div>
@@ -351,6 +419,35 @@ export default function AdminUsuariosPage() {
                 </Button>
               </DialogFooter>
             </form>
+          </DialogContent>
+        </Dialog>
+
+        <Dialog
+          open={!!editPhoneUser}
+          onOpenChange={(open) => {
+            if (!open) setEditPhoneUser(null);
+          }}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Editar telefono</DialogTitle>
+            </DialogHeader>
+            <p className="text-xs text-gray-500">{editPhoneUser?.fullName}</p>
+            <input
+              type="tel"
+              value={editPhoneValue}
+              onChange={(e) => setEditPhoneValue(e.target.value)}
+              placeholder="5512345678"
+              className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md"
+            />
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={() => setEditPhoneUser(null)}>
+                Cancelar
+              </Button>
+              <Button type="button" disabled={!!busyId} onClick={() => void handleSavePhone()}>
+                Guardar
+              </Button>
+            </DialogFooter>
           </DialogContent>
         </Dialog>
       </div>

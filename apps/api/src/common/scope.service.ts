@@ -52,4 +52,43 @@ export class ScopeService {
       throw new ForbiddenException('Access denied');
     }
   }
+
+  municipioWhere(user: Usuario): Prisma.MunicipioWhereInput {
+    if (user.rol === Rol.estatal) return {};
+    if (user.rol === Rol.municipal && user.municipioId) {
+      return { id: user.municipioId };
+    }
+    if (user.rol === Rol.contratista && user.contratistaId) {
+      return { obras: { some: { contratistaId: user.contratistaId } } };
+    }
+    return { id: '00000000-0000-0000-0000-000000000000' };
+  }
+
+  contratistaWhere(user: Usuario): Prisma.ContratistaWhereInput {
+    if (user.rol === Rol.estatal) return {};
+    if (user.rol === Rol.municipal && user.municipioId) {
+      return { obras: { some: { municipioId: user.municipioId } } };
+    }
+    if (user.rol === Rol.contratista && user.contratistaId) {
+      return { id: user.contratistaId };
+    }
+    return { id: '00000000-0000-0000-0000-000000000000' };
+  }
+
+  alertaConfigWhere(user: Usuario): Prisma.AlertaConfigWhereInput {
+    if (user.rol === Rol.estatal) return {};
+    if (user.rol === Rol.municipal && user.municipioId) {
+      return {
+        OR: [
+          { municipioId: user.municipioId },
+          { obra: { municipioId: user.municipioId } },
+          { municipioId: null, obraId: null, creador: { municipioId: user.municipioId } },
+        ],
+      };
+    }
+    if (user.rol === Rol.contratista && user.contratistaId) {
+      return { obra: { contratistaId: user.contratistaId } };
+    }
+    return { id: '00000000-0000-0000-0000-000000000000' };
+  }
 }

@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { EstatusObra, EstadoDocumento } from '@prisma/client';
+import { AlertaConfigsService } from '../alerta-configs/alerta-configs.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 const PHYSICAL_LAG_THRESHOLD = 10;
@@ -11,7 +12,10 @@ const REQUIRED_DOC_CATEGORIES = ['administrativa', 'tecnica', 'ejecucion'] as co
 export class AlertasSchedulerService {
   private readonly logger = new Logger(AlertasSchedulerService.name);
 
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly alertaConfigs: AlertaConfigsService,
+  ) {}
 
   @Cron(CronExpression.EVERY_6_HOURS)
   async runScheduledChecks(): Promise<void> {
@@ -19,6 +23,12 @@ export class AlertasSchedulerService {
     await this.checkRetrasoFisico();
     await this.checkDesvioFinanciero();
     await this.checkDocumentacionIncompleta();
+    await this.checkAlertaConfigs();
+  }
+
+  private async checkAlertaConfigs(): Promise<void> {
+    const created = await this.alertaConfigs.processActiveConfigs();
+    this.logger.log(`Custom alert configs processed: ${created} new alert(s)`);
   }
 
   private today(): string {

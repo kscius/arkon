@@ -21,15 +21,22 @@ import {
 } from '@/lib/api-mappers';
 import type {
   Alerta,
+  AlertaConfig,
+  AlertaConfigDestinatario,
+  AlertaConfigTipo,
+  AdminUser,
   Contratista,
   Documento,
   MunicipioData,
   Obra,
+  Severidad,
   TopContratistaChartRow,
   User,
 } from '@/types';
 
 import { getMunicipioChartColors } from '@/config/brand';
+
+export type { AdminUser } from '@/types';
 
 export async function login(email: string, password: string): Promise<User> {
   const res = await apiFetch<{
@@ -121,17 +128,6 @@ export async function createContratista(body: CreateContratistaInput): Promise<C
   return mapContratista(row);
 }
 
-export interface AdminUser {
-  id: string;
-  email: string;
-  fullName: string;
-  role: User['role'];
-  avatarInitials: string;
-  municipioId?: string;
-  contratistaId?: string;
-  isActive: boolean;
-}
-
 function mapAdminUser(row: Record<string, unknown>): AdminUser {
   return {
     id: String(row.id),
@@ -142,6 +138,44 @@ function mapAdminUser(row: Record<string, unknown>): AdminUser {
     municipioId: row.municipio_id != null ? String(row.municipio_id) : undefined,
     contratistaId: row.contratista_id != null ? String(row.contratista_id) : undefined,
     isActive: row.is_active !== false && row.isActive !== false,
+    telefono: row.telefono != null ? String(row.telefono) : null,
+  };
+}
+
+function mapAlertaConfig(row: Record<string, unknown>): AlertaConfig {
+  const rawDest = row.destinatarios;
+  const destinatarios: AlertaConfigDestinatario[] = Array.isArray(rawDest)
+    ? rawDest.map((d) => {
+        const item = d as Record<string, unknown>;
+        return {
+          userId: String(item.userId ?? item.user_id ?? ''),
+          nombre: String(item.nombre ?? ''),
+          telefono: String(item.telefono ?? ''),
+        };
+      })
+    : [];
+
+  return {
+    id: String(row.id),
+    nombre: String(row.nombre ?? ''),
+    descripcion: row.descripcion != null ? String(row.descripcion) : null,
+    activa: row.activa !== false,
+    tipo: String(row.tipo) as AlertaConfigTipo,
+    severidad: String(row.severidad ?? 'media') as Severidad,
+    programaFiltro: row.programa_filtro != null ? String(row.programa_filtro) : null,
+    municipioId: row.municipio_id != null ? String(row.municipio_id) : null,
+    municipioNombre: row.municipio_nombre != null ? String(row.municipio_nombre) : null,
+    obraId: row.obra_id != null ? String(row.obra_id) : null,
+    obraNombre: row.obra_nombre != null ? String(row.obra_nombre) : null,
+    obraFolio: row.obra_folio != null ? String(row.obra_folio) : null,
+    umbralDias: row.umbral_dias != null ? Number(row.umbral_dias) : null,
+    umbralPorcentaje: row.umbral_porcentaje != null ? Number(row.umbral_porcentaje) : null,
+    umbralMonto: row.umbral_monto != null ? Number(row.umbral_monto) : null,
+    destinatarios,
+    creadoPor: String(row.creado_por ?? ''),
+    creadorNombre: row.creador_nombre != null ? String(row.creador_nombre) : null,
+    createdAt: String(row.created_at ?? ''),
+    updatedAt: String(row.updated_at ?? ''),
   };
 }
 
@@ -158,6 +192,7 @@ export interface CreateUserInput {
   avatar_initials?: string;
   municipio_id?: string;
   contratista_id?: string;
+  telefono?: string;
 }
 
 export async function createUser(body: CreateUserInput): Promise<AdminUser> {
@@ -171,12 +206,14 @@ export async function createUser(body: CreateUserInput): Promise<AdminUser> {
 export interface UpdateUserInput {
   isActive?: boolean;
   full_name?: string;
+  telefono?: string | null;
 }
 
 export async function updateUser(id: string, body: UpdateUserInput): Promise<AdminUser> {
   const payload: Record<string, unknown> = {};
   if (body.isActive !== undefined) payload.is_active = body.isActive;
   if (body.full_name !== undefined) payload.full_name = body.full_name;
+  if (body.telefono !== undefined) payload.telefono = body.telefono ?? '';
   const row = await apiFetch<Record<string, unknown>>(`/users/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(payload),
@@ -186,6 +223,91 @@ export async function updateUser(id: string, body: UpdateUserInput): Promise<Adm
 
 export async function deleteUser(id: string): Promise<void> {
   await apiFetch<{ deleted: boolean }>(`/users/${id}`, { method: 'DELETE' });
+}
+
+export interface CreateAlertaConfigInput {
+  nombre: string;
+  descripcion?: string;
+  activa?: boolean;
+  tipo: AlertaConfigTipo;
+  severidad?: Severidad;
+  programa_filtro?: string | null;
+  municipio_id?: string | null;
+  obra_id?: string | null;
+  umbral_dias?: number;
+  umbral_porcentaje?: number;
+  umbral_monto?: number;
+  destinatarios?: { user_id: string; nombre: string; telefono: string }[];
+}
+
+export type UpdateAlertaConfigInput = Partial<CreateAlertaConfigInput>;
+
+export async function fetchAlertaConfigs(): Promise<AlertaConfig[]> {
+  const rows = await apiFetch<Record<string, unknown>[]>('/alerta-configs');
+  return rows.map(mapAlertaConfig);
+}
+
+export async function createAlertaConfig(body: CreateAlertaConfigInput): Promise<AlertaConfig> {
+  const row = await apiFetch<Record<string, unknown>>('/alerta-configs', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+  return mapAlertaConfig(row);
+}
+
+export async function updateAlertaConfig(
+  id: string,
+  body: UpdateAlertaConfigInput,
+): Promise<AlertaConfig> {
+  const row = await apiFetch<Record<string, unknown>>(`/alerta-configs/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+  return mapAlertaConfig(row);
+}
+
+export async function toggleAlertaConfig(id: string): Promise<AlertaConfig> {
+  const row = await apiFetch<Record<string, unknown>>(`/alerta-configs/${id}/toggle`, {
+    method: 'PATCH',
+  });
+  return mapAlertaConfig(row);
+}
+
+export async function deleteAlertaConfig(id: string): Promise<void> {
+  await apiFetch<{ deleted: boolean }>(`/alerta-configs/${id}`, { method: 'DELETE' });
+}
+
+export interface SimularAlertaConfigResult {
+  simulado: boolean;
+  destinatarios: { nombre: string; telefono: string; mensaje: string }[];
+  alertasGeneradas: number;
+  obrasCoincidentes?: { id: string; folio: string; nombre: string }[];
+}
+
+export async function simularAlertaConfig(id: string): Promise<SimularAlertaConfigResult> {
+  const row = await apiFetch<Record<string, unknown>>(`/alerta-configs/${id}/simular`, {
+    method: 'POST',
+  });
+  const dest = Array.isArray(row.destinatarios)
+    ? (row.destinatarios as Record<string, unknown>[]).map((d) => ({
+        nombre: String(d.nombre ?? ''),
+        telefono: String(d.telefono ?? ''),
+        mensaje: String(d.mensaje ?? ''),
+      }))
+    : [];
+  const obras = Array.isArray(row.obras_coincidentes)
+    ? (row.obras_coincidentes as Record<string, unknown>[]).map((o) => ({
+        id: String(o.id),
+        folio: String(o.folio ?? ''),
+        nombre: String(o.nombre ?? ''),
+      }))
+    : undefined;
+  return {
+    simulado: row.simulado === true,
+    destinatarios: dest,
+    alertasGeneradas: Number(row.alertas_generadas ?? 0),
+    obrasCoincidentes: obras,
+  };
 }
 
 export async function fetchMunicipios(): Promise<MunicipioData[]> {
@@ -238,10 +360,13 @@ export async function fetchObservacionesByObra(obraId: string) {
   return rows.map((r) => mapObservacion(r, obraId));
 }
 
-export async function askChat(message: string): Promise<{ response: string; suggestions: string[] }> {
+export async function askChat(
+  message: string,
+  history: { role: 'user' | 'assistant'; content: string }[] = [],
+): Promise<{ response: string; suggestions: string[] }> {
   return apiFetch('/chat/ask', {
     method: 'POST',
-    body: JSON.stringify({ message }),
+    body: JSON.stringify({ message, history }),
   });
 }
 

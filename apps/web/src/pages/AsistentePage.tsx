@@ -17,11 +17,12 @@ interface ChatMessage {
 }
 
 const DEFAULT_ASSISTANT_SUGGESTIONS = [
-  'Que obras tienen retraso?',
-  'Resumen de inversion por programa',
-  'Obras en riesgo',
-  'Comparativo fisico-financiero',
-  'Cuantas obras hay en total?',
+  'Compara fisico vs financiero por programa',
+  'Detalle de obra: avances, docs y observaciones',
+  'Alertas criticas sin atender y acciones sugeridas',
+  'Inversion total por municipio y dependencia',
+  'Estimaciones en revision sin validar',
+  'Obras en riesgo con enlaces directos',
 ];
 
 export default function AsistentePage() {
@@ -46,6 +47,10 @@ export default function AsistentePage() {
 
   const handleSend = async (text: string = input) => {
     if (!text.trim() || isTyping) return;
+    const history = messages
+      .filter((m) => m.id !== 'welcome' && !m.isError)
+      .map((m) => ({ role: m.role, content: m.content }));
+
     const userMsg: ChatMessage = {
       id: Date.now().toString(),
       role: 'user',
@@ -58,7 +63,7 @@ export default function AsistentePage() {
     setError(null);
 
     try {
-      const { response } = await askChat(text);
+      const { response } = await askChat(text, history);
       const assistantMsg: ChatMessage = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
