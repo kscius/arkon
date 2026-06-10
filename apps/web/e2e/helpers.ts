@@ -1,19 +1,36 @@
 import { type APIRequestContext, type Page, test } from '@playwright/test';
 
+const rawTenant = process.env.TENANT_ID?.trim().toLowerCase();
 const tenantId =
-  process.env.TENANT_ID?.trim().toLowerCase() === 'conagua' ? 'conagua' : 'arkon';
-const emailDomain = tenantId === 'conagua' ? 'conagua.gob.mx' : 'arkon.gob.mx';
+  rawTenant === 'conagua' ? 'conagua' : rawTenant === 'ceaspue' ? 'ceaspue' : 'arkon';
 
-export const DEMO_PASSWORD = tenantId === 'conagua' ? 'Conagua2024!' : 'Arkon2024!';
+const emailDomain =
+  tenantId === 'conagua'
+    ? 'conagua.gob.mx'
+    : tenantId === 'ceaspue'
+      ? 'sigopem.gob.mx'
+      : 'arkon.gob.mx';
+
+export const DEMO_PASSWORD =
+  tenantId === 'conagua'
+    ? 'Conagua2024!'
+    : tenantId === 'ceaspue'
+      ? 'Sigopem2024!'
+      : 'Arkon2024!';
 
 export const DEMO_USERS = {
   estatal: `estatal@${emailDomain}`,
-  municipal: `municipal.centro@${emailDomain}`,
+  municipal:
+    tenantId === 'ceaspue' ? `puebla@${emailDomain}` : `municipal.centro@${emailDomain}`,
   contratista: `cce@${emailDomain}`,
 } as const;
 
 export const DEMO_ASSISTANT_LABEL =
-  tenantId === 'conagua' ? /Asistente CONAGUA/i : /Asistente ARKON/i;
+  tenantId === 'conagua'
+    ? /Asistente CONAGUA/i
+    : tenantId === 'ceaspue'
+      ? /Asistente Inteligente de CEASPUE/i
+      : /Asistente ARKON/i;
 
 /** Skip tests when API health is not available (stack not started or not seeded). */
 export async function skipIfApiDown(request: APIRequestContext): Promise<void> {

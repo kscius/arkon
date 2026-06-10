@@ -40,4 +40,18 @@ UI: http://localhost:8080
 
 ## Integracion con rama conagua
 
-Esta rama incorpora las mejoras funcionales de `conagua` (catalogo de obras, folios, combobox de programas, tenant system) manteniendo la identidad visual de Puebla via `VITE_TENANT=ceaspue` y `TENANT_ID=ceaspue`.
+Esta rama incorpora las mejoras funcionales de `conagua` manteniendo la identidad visual de Puebla via `VITE_TENANT=ceaspue` y `TENANT_ID=ceaspue`:
+
+- Catalogo de obras, folios y combobox de programas
+- **Configurador de alertas** (`/configurador-alertas`) — reglas personalizables por alcance
+- **Asistente con historial** — contexto de conversacion y sugerencias especificas de CEASPUE
+- Campo `telefono` en usuarios (admin)
+- Migracion Prisma: `alerta_configs` + `users.telefono`
+
+Tras el merge, ejecute:
+
+```powershell
+pnpm --filter @arkon/api prisma:generate
+pnpm --filter @arkon/api prisma:migrate
+pnpm --filter @arkon/api prisma:seed
+```

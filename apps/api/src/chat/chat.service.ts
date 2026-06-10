@@ -33,6 +33,14 @@ const SUGGESTIONS_BY_TENANT: Record<TenantId, string[]> = {
     'Estimaciones y documentos pendientes de validar',
     'Obras PROAGUA en riesgo con enlaces',
   ],
+  ceaspue: [
+    'Obras con retraso critico',
+    'Avance fisico vs financiero',
+    'Obras de agua potable en riesgo',
+    'Presupuesto ejercido por programa',
+    'Alertas activas del sistema',
+    'Resumen ejecutivo de avances',
+  ],
 };
 
 function getSuggestions(): string[] {
