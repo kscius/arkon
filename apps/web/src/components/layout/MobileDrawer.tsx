@@ -77,7 +77,7 @@ export function MobileDrawer({ onClose }: { onClose: () => void }) {
         style={{ backgroundColor: brand.colors.primary }}
       >
         <div className="flex items-center gap-1.5 px-3 py-2.5 border-b border-white/10">
-          <BrandLogo compact imageOnly className="flex-1 min-w-0" />
+          <BrandLogo compact imageOnly onDark className="flex-1 min-w-0" />
           <button onClick={onClose} className="text-white/60 hover:text-white">
             <X className="w-5 h-5" />
           </button>
