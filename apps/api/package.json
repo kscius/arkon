@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "nest start --watch",
-    "build": "nest build",
+    "build": "nest build && tsc -p tsconfig.seed.json",
     "start": "node dist/main.js",
     "start:prod": "node dist/main.js",
     "lint": "tsc --noEmit -p tsconfig.json",
@@ -53,6 +53,6 @@
     "typescript": "^5.7.0"
   },
   "prisma": {
-    "seed": "tsx prisma/seed.ts"
+    "seed": "node prisma/seed.js"
   }
 }

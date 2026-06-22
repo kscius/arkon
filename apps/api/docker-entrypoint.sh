@@ -33,11 +33,11 @@ else
   npx prisma db push
 fi
 
-if [ -f "prisma/seed.ts" ]; then
+if [ -f "prisma/seed.js" ] || [ -f "prisma/seed.ts" ]; then
   echo "Seeding database..."
   npx prisma db seed || echo "Seed skipped (already seeded or seed error)."
 else
-  echo "prisma/seed.ts not found; skipping seed."
+  echo "prisma/seed.js not found; skipping seed."
 fi
 
 echo "Starting ARKON API..."
