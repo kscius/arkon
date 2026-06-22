@@ -816,6 +816,101 @@ async function main() {
       console.log('  Seeded AnexoEjecucion + 2 AnexoTecnico (Guanajuato 2026)');
     }
 
+    let proaguaEnriched = 0;
+    for (let i = 0; i < obras.length; i++) {
+      const obra = obras[i];
+      if (!obra.cua) continue;
+      const coberturaBase = 38 + (i % 22);
+      await prisma.obra.update({
+        where: { id: obra.id },
+        data: {
+          idSisba: `SISBA-${obra.folio.replace(/-/g, '')}`,
+          numContrato:
+            obra.programa === 'PROAGUA' || obra.programa === 'PEAS'
+              ? `12R100-${obra.folio}-01`
+              : null,
+          comprasMxFolio: obra.programa === 'PROAGUA' ? `CMX-${obra.folio}` : null,
+          tipoAdjudicacion: 'licitacion_publica',
+          fechaFallo: obra.fechaInicio,
+          coberturaApAntes: coberturaBase,
+          coberturaApMeta: Math.min(coberturaBase + 28, 100),
+          coberturaTarAntes: Math.max(coberturaBase - 12, 0),
+          coberturaTarMeta: Math.min(coberturaBase + 18, 100),
+          caudalLps: obra.tipoObra === 'agua_potable' ? 1.8 + (i % 6) * 0.5 : null,
+          pobIncorporar: Math.max(1, Math.floor(obra.poblacionBeneficiada * 0.35)),
+          pobMejorar: Math.max(1, Math.floor(obra.poblacionBeneficiada * 0.65)),
+          pobMujeres: Math.max(1, Math.floor(obra.poblacionBeneficiada * 0.51)),
+          pobIndigena: i % 3 === 0 ? Math.floor(obra.poblacionBeneficiada * 0.08) : 0,
+          pobAfromexicano: i % 4 === 0 ? Math.floor(obra.poblacionBeneficiada * 0.02) : 0,
+        },
+      });
+      proaguaEnriched++;
+    }
+    console.log(`  Enriched ${proaguaEnriched} obras with PROAGUA ficha fields`);
+
+    const entGto = entidadByClave.get('11');
+    const entMor = entidadByClave.get('17');
+    const muniLeon = municipioByName.get('León');
+    const muniCuernavaca = municipioByName.get('Cuernavaca');
+    const obraProagua2025 = obras.find((o) => o.folio === 'PROAGUA-2025-001');
+
+    const solicitudesSeed: Array<{
+      programa: string;
+      ejercicioFiscal: number;
+      entidadId: string;
+      municipioId: string;
+      tipoApoyo: string;
+      componente: string;
+      montoSolicitado: number;
+      estatus: string;
+      obraResultanteId?: string;
+    }> = [];
+
+    if (entGto && muniLeon) {
+      solicitudesSeed.push({
+        programa: 'PROAGUA',
+        ejercicioFiscal: 2026,
+        entidadId: entGto.id,
+        municipioId: muniLeon.id,
+        tipoApoyo: 'infraestructura',
+        componente: 'AP',
+        montoSolicitado: 12500000,
+        estatus: 'borrador',
+      });
+    }
+    if (entMor && muniCuernavaca) {
+      solicitudesSeed.push({
+        programa: 'PEAS',
+        ejercicioFiscal: 2026,
+        entidadId: entMor.id,
+        municipioId: muniCuernavaca.id,
+        tipoApoyo: 'fortalecimiento',
+        componente: 'saneamiento',
+        montoSolicitado: 8500000,
+        estatus: 'presentada',
+      });
+    }
+    if (entMor && muniCuernavaca && obraProagua2025) {
+      solicitudesSeed.push({
+        programa: 'PROAGUA',
+        ejercicioFiscal: 2025,
+        entidadId: entMor.id,
+        municipioId: muniCuernavaca.id,
+        tipoApoyo: 'infraestructura',
+        componente: 'AP',
+        montoSolicitado: Number(obraProagua2025.montoAutorizado),
+        estatus: 'aprobada',
+        obraResultanteId: obraProagua2025.id,
+      });
+    }
+
+    for (const s of solicitudesSeed) {
+      await prisma.solicitudPrograma.create({ data: s });
+    }
+    if (solicitudesSeed.length > 0) {
+      console.log(`  Seeded ${solicitudesSeed.length} solicitudes programa (Anexo I)`);
+    }
+
     const directorConagua = users.find((u) => u.rolConagua === 'director_conagua');
     if (directorConagua) {
       for (const cfg of PROAGUA_ALERTA_CONFIGS) {

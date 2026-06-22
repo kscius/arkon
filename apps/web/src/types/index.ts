@@ -41,6 +41,8 @@ export interface ObraProaguaFields {
   idSisba?: string | null;
   numContrato?: string | null;
   comprasMxFolio?: string | null;
+  tipoAdjudicacion?: string | null;
+  fechaFallo?: string | null;
   subcomponente?: string | null;
   tipoLocalidad?: string | null;
   coberturaApAntes?: number | null;

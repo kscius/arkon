@@ -339,7 +339,7 @@ export default function ObraDetailPage() {
         </CardContent>
       </Card>
 
-      {isConagua && <FichaProaguaSection obra={obra} />}
+      {isConagua && <FichaProaguaSection obra={obra} defaultOpen />}
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>

@@ -93,7 +93,7 @@ const CONAGUA_BRAND: BrandConfig = {
   loginSubtitle: 'Comision Nacional del Agua',
   assistantName: 'Asistente CONAGUA',
   assistantGreeting:
-    'Buen dia. Soy el Asistente Inteligente de CONAGUA. Accedo al portafolio hidrico completo: obras PROAGUA, PEAS, PRODDER, PTAR, avances, alertas, estimaciones y documentos.\n\nAnalizo desviaciones fisico-financieras, inversion por programa, alertas criticas y te comparto enlaces directos a cada obra.\n\nMantengo el hilo de nuestra conversacion. Como puedo ayudarte hoy?',
+    'Buen dia. Soy el Asistente CONAGUA. Accedo al portafolio hidrico completo: obras PROAGUA, PEAS, PRODDER, PTAR, avances, alertas, estimaciones y documentos.\n\nAnalizo desviaciones fisico-financieras, inversion por programa, alertas criticas y te comparto enlaces directos a cada obra.\n\nMantengo el hilo de nuestra conversacion. Como puedo ayudarte hoy?',
   programas: ['PROAGUA', 'PEAS', 'PRODDER'],
   dependencias: ['CONAGUA'],
   assistantSuggestions: [

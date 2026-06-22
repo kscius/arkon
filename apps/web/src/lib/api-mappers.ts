@@ -98,6 +98,8 @@ export function mapObra(raw: Record<string, unknown>): Obra {
     idSisba: raw.id_sisba != null ? String(raw.id_sisba) : null,
     numContrato: raw.num_contrato != null ? String(raw.num_contrato) : null,
     comprasMxFolio: raw.compras_mx_folio != null ? String(raw.compras_mx_folio) : null,
+    tipoAdjudicacion: raw.tipo_adjudicacion != null ? String(raw.tipo_adjudicacion) : null,
+    fechaFallo: raw.fecha_fallo != null ? String(raw.fecha_fallo) : null,
     subcomponente: raw.subcomponente != null ? String(raw.subcomponente) : null,
     tipoLocalidad: raw.tipo_localidad != null ? String(raw.tipo_localidad) : null,
     coberturaApAntes: raw.cobertura_ap_antes != null ? Number(raw.cobertura_ap_antes) : null,
