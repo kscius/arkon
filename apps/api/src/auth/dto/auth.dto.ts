@@ -60,6 +60,9 @@ export class UserResponseDto {
 
   @ApiPropertyOptional()
   telefono?: string | null;
+
+  @ApiPropertyOptional()
+  rolConagua?: string | null;
 }
 
 export class TokenResponseDto {

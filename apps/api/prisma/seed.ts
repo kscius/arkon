@@ -42,6 +42,91 @@ function loadJson<T>(name: string): T {
   return JSON.parse(readFileSync(join(seedDir, name), 'utf-8')) as T;
 }
 
+function isConaguaTenant(): boolean {
+  return process.env.TENANT_ID?.trim().toLowerCase() === 'conagua';
+}
+
+function resolveContratistaId(
+  contratistas: { id: string; nombre: string }[],
+  contratistaNombre: string | undefined,
+  fallbackIndex: number,
+): string {
+  if (contratistaNombre) {
+    const key = contratistaNombre.toLowerCase();
+    const match = contratistas.find(
+      (c) =>
+        c.nombre.toLowerCase().includes(key) ||
+        c.nombre.toLowerCase().includes(`(${key})`),
+    );
+    if (match) return match.id;
+  }
+  return contratistas[fallbackIndex % contratistas.length].id;
+}
+
+function resolveOrganismoOperadorId(
+  organismos: { id: string; siglas: string | null; nombre: string }[],
+  siglasOrNombre: string | undefined,
+): string | null {
+  if (!siglasOrNombre) return null;
+  const key = siglasOrNombre.toLowerCase();
+  const match = organismos.find(
+    (o) =>
+      o.siglas?.toLowerCase() === key ||
+      o.siglas?.toLowerCase().includes(key) ||
+      o.nombre.toLowerCase().includes(key) ||
+      o.nombre.toLowerCase().includes(`(${key})`),
+  );
+  return match?.id ?? null;
+}
+
+function generateCua(folio: string, cuaFromSeed?: string): string {
+  return cuaFromSeed ?? `CUA-${folio}`;
+}
+
+const MUNICIPIO_ENTIDAD_CLAVE: Record<string, string> = {
+  'Guadalupe Victoria': '10',
+  'Santiago Papasquiaro': '10',
+  León: '11',
+  Irapuato: '11',
+  Celaya: '11',
+  Cortázar: '11',
+  Guanajuato: '11',
+  Puebla: '21',
+  Mérida: '31',
+  'San Juan del Río': '22',
+  Tulum: '23',
+  Tepache: '26',
+  Cuernavaca: '17',
+  CDMX: '09',
+};
+
+const EXECUTION_ESTATUS = new Set<string>([
+  'en_ejecucion_a_tiempo',
+  'en_ejecucion_retraso',
+  'en_riesgo',
+]);
+
+type EntidadSeed = { nombre: string; clave: string };
+type OrganismoSeed = {
+  nombre: string;
+  siglas: string;
+  tipo_organismo: string;
+  entidad_clave: string;
+  rfc?: string;
+  director?: string;
+  email?: string;
+  telefono?: string;
+};
+type AccionProgramaSeed = {
+  programa: string;
+  componente: string;
+  subcomponente: string;
+  clave: string;
+  descripcion: string;
+  unidad: string;
+  tipo_localidad: string;
+};
+
 type MunicipioSeed = { nombre: string; latitud: number; longitud: number };
 type ContratistaSeed = {
   nombre: string;
@@ -75,6 +160,11 @@ type ObraSeed = {
   riesgo: string;
   latitud: number;
   longitud: number;
+  contratista_nombre?: string;
+  cua?: string;
+  subcomponente?: string;
+  tipo_localidad?: string;
+  accion_programa_clave?: string;
 };
 type AlertaSeed = {
   obra_id: string | null;
@@ -220,6 +310,66 @@ function programasCanonicosForTenant(tenantId?: string): readonly ProgramaCanoni
   return PROGRAMAS_CANONICOS_ARKON;
 }
 
+function componenteFromObra(tipoObra: string, nombre: string): string {
+  if (tipoObra === 'agua_potable') return 'AP';
+  const lower = nombre.toLowerCase();
+  if (lower.includes('ptar') || lower.includes('saneamiento') || lower.includes('lodos')) {
+    return 'saneamiento';
+  }
+  return 'alcantarillado';
+}
+
+const PROAGUA_ALERTA_CONFIGS = [
+  {
+    nombre: 'Plazo de contratacion PROAGUA',
+    descripcion: 'Obra PROAGUA sin contrato al 31 de agosto (Art. 5 U074)',
+    tipo: 'plazo_contratacion',
+    severidad: 'alta',
+    programaFiltro: 'PROAGUA',
+    umbralDias: 1,
+  },
+  {
+    nombre: 'Plazo de conclusion PROAGUA',
+    descripcion: 'Obra activa despues del 31 de diciembre (Art. 5 U074)',
+    tipo: 'plazo_conclusion',
+    severidad: 'critica',
+    programaFiltro: 'PROAGUA',
+    umbralDias: 1,
+  },
+  {
+    nombre: 'Informe trimestral pendiente',
+    descripcion: 'Avance trimestral no presentado en 5 dias habiles post-cierre',
+    tipo: 'informe_trimestral_pendiente',
+    severidad: 'alta',
+    programaFiltro: 'PROAGUA',
+    umbralDias: 5,
+  },
+  {
+    nombre: 'Sancion por anexos tardios',
+    descripcion: 'Anexo tecnico sin firma en 10 dias habiles post-aprobacion (-15% presupuesto)',
+    tipo: 'sancion_anexos_tardios',
+    severidad: 'critica',
+    programaFiltro: 'PROAGUA',
+    umbralDias: 10,
+  },
+  {
+    nombre: 'Reintegro pendiente TESOFE',
+    descripcion: 'Recursos no reintegrados 15 dias naturales post-cierre de ejercicio',
+    tipo: 'reintegro_pendiente',
+    severidad: 'critica',
+    programaFiltro: 'PROAGUA',
+    umbralDias: 15,
+  },
+  {
+    nombre: 'Dispersion retrasada a ejecutor',
+    descripcion: 'Sin transferencia registrada en 10 dias habiles post-formalizacion de anexos',
+    tipo: 'dispersion_retrasada',
+    severidad: 'media',
+    programaFiltro: 'PROAGUA',
+    umbralDias: 10,
+  },
+] as const;
+
 async function main() {
   const tenant = demoTenant();
   const programasCanonicos = programasCanonicosForTenant();
@@ -229,14 +379,24 @@ async function main() {
 
   await prisma.$transaction([
     prisma.alerta.deleteMany(),
+    prisma.alertaConfig.deleteMany(),
     prisma.observacion.deleteMany(),
     prisma.documento.deleteMany(),
     prisma.estimacion.deleteMany(),
     prisma.avanceMensual.deleteMany(),
+    prisma.avanceTrimestral.deleteMany(),
+    prisma.cofinanciamiento.deleteMany(),
+    prisma.solicitudPrograma.deleteMany(),
     prisma.obra.deleteMany(),
+    prisma.cierreEjercicio.deleteMany(),
+    prisma.anexoTecnico.deleteMany(),
+    prisma.anexoEjecucion.deleteMany(),
     prisma.usuario.deleteMany(),
     prisma.contratista.deleteMany(),
+    prisma.accionPrograma.deleteMany(),
+    prisma.organismoOperador.deleteMany(),
     prisma.municipio.deleteMany(),
+    prisma.entidadFederativa.deleteMany(),
     prisma.programa.deleteMany(),
   ]);
 
@@ -260,15 +420,82 @@ async function main() {
   }
   console.log(`  Seeded ${programasCanonicos.length} programas`);
 
+  const conagua = isConaguaTenant();
+  let entidades: { id: string; nombre: string; clave: string }[] = [];
+  let organismos: { id: string; siglas: string | null; nombre: string; entidadId: string | null }[] =
+    [];
+  let accionesPrograma: { id: string; clave: string; componente: string; subcomponente: string; tipoLocalidad: string }[] =
+    [];
+
+  if (conagua) {
+    const entidadesData = loadJson<EntidadSeed[]>('entidades-federativas.json');
+    entidades = await Promise.all(
+      entidadesData.map((e) =>
+        prisma.entidadFederativa.create({
+          data: { nombre: e.nombre, clave: e.clave },
+        }),
+      ),
+    );
+    console.log(`  Seeded ${entidades.length} entidades federativas`);
+
+    const accionesData = loadJson<AccionProgramaSeed[]>('acciones-programa.json');
+    accionesPrograma = await Promise.all(
+      accionesData.map((a) =>
+        prisma.accionPrograma.create({
+          data: {
+            programa: a.programa,
+            componente: a.componente,
+            subcomponente: a.subcomponente,
+            clave: a.clave,
+            descripcion: a.descripcion,
+            unidad: a.unidad,
+            tipoLocalidad: a.tipo_localidad,
+          },
+        }),
+      ),
+    );
+    console.log(`  Seeded ${accionesPrograma.length} acciones programa`);
+  }
+
+  const entidadByClave = new Map(entidades.map((e) => [e.clave, e]));
+
   const municipiosData = loadJson<MunicipioSeed[]>('municipios.json');
   const municipios = await Promise.all(
     municipiosData.map((m) =>
       prisma.municipio.create({
-        data: { nombre: m.nombre, latitud: m.latitud, longitud: m.longitud },
+        data: {
+          nombre: m.nombre,
+          latitud: m.latitud,
+          longitud: m.longitud,
+          ...(conagua && MUNICIPIO_ENTIDAD_CLAVE[m.nombre]
+            ? { entidadId: entidadByClave.get(MUNICIPIO_ENTIDAD_CLAVE[m.nombre])!.id }
+            : {}),
+        },
       }),
     ),
   );
   console.log(`  Seeded ${municipios.length} municipios`);
+
+  if (conagua) {
+    const organismosData = loadJson<OrganismoSeed[]>('organismos-operadores.json');
+    organismos = await Promise.all(
+      organismosData.map((o) =>
+        prisma.organismoOperador.create({
+          data: {
+            nombre: o.nombre,
+            siglas: o.siglas,
+            tipoOrganismo: o.tipo_organismo,
+            entidadId: entidadByClave.get(o.entidad_clave)?.id,
+            rfc: o.rfc,
+            director: o.director,
+            email: o.email,
+            telefono: o.telefono,
+          },
+        }),
+      ),
+    );
+    console.log(`  Seeded ${organismos.length} organismos operadores`);
+  }
 
   const municipioByName = new Map(municipios.map((m) => [m.nombre, m]));
   const municipioAt = (index: number): string => {
@@ -304,6 +531,7 @@ async function main() {
       avatarInitials: 'MV',
       municipioId: null as string | null,
       contratistaId: null as string | null,
+      rolConagua: conagua ? 'director_conagua' : null,
     },
     {
       email: demoEmail('coordinador'),
@@ -312,6 +540,7 @@ async function main() {
       avatarInitials: 'JM',
       municipioId: null,
       contratistaId: null,
+      rolConagua: conagua ? 'coordinador_regional' : null,
     },
     {
       email: demoEmail('municipal.centro'),
@@ -320,6 +549,7 @@ async function main() {
       avatarInitials: 'LM',
       municipioId: municipioAt(0),
       contratistaId: null,
+      rolConagua: conagua ? 'ejecutor_municipal' : null,
     },
     {
       email: demoEmail('municipal.norte'),
@@ -328,6 +558,7 @@ async function main() {
       avatarInitials: 'RD',
       municipioId: municipioAt(1),
       contratistaId: null,
+      rolConagua: conagua ? 'ejecutor_municipal' : null,
     },
     {
       email: demoEmail('municipal.valle'),
@@ -336,6 +567,7 @@ async function main() {
       avatarInitials: 'MR',
       municipioId: municipioAt(2),
       contratistaId: null,
+      rolConagua: conagua ? 'corese' : null,
     },
     {
       email: demoEmail('municipal.sur'),
@@ -344,6 +576,7 @@ async function main() {
       avatarInitials: 'JF',
       municipioId: municipioAt(3),
       contratistaId: null,
+      rolConagua: conagua ? 'ejecutor_municipal' : null,
     },
     {
       email: demoEmail('cce'),
@@ -352,6 +585,7 @@ async function main() {
       avatarInitials: 'CM',
       municipioId: null,
       contratistaId: contratistas[0].id,
+      rolConagua: conagua ? 'contratista_oo' : null,
     },
     {
       email: demoEmail('gdp'),
@@ -360,6 +594,7 @@ async function main() {
       avatarInitials: 'MT',
       municipioId: null,
       contratistaId: contratistas[1].id,
+      rolConagua: conagua ? 'contratista_oo' : null,
     },
     {
       email: demoEmail('ies'),
@@ -368,22 +603,48 @@ async function main() {
       avatarInitials: 'RH',
       municipioId: null,
       contratistaId: contratistas[2].id,
+      rolConagua: conagua ? 'contratista_oo' : null,
     },
   ];
 
-  await Promise.all(
+  const users = await Promise.all(
     usersData.map((u) =>
       prisma.usuario.create({
         data: { ...u, passwordHash, isActive: true },
       }),
     ),
   );
-  console.log(`  Seeded ${usersData.length} users`);
+  console.log(`  Seeded ${users.length} users`);
 
   const obrasData = loadJson<ObraSeed[]>('obras.json');
+  const accionByClave = new Map(accionesPrograma.map((a) => [a.clave, a]));
+
+  const resolveAccionProgramaId = (o: ObraSeed): string | null => {
+    if (!conagua || accionesPrograma.length === 0) return null;
+    if (o.accion_programa_clave) {
+      return accionByClave.get(o.accion_programa_clave)?.id ?? null;
+    }
+    const componente = componenteFromObra(o.tipo_obra, o.nombre);
+    const subcomponente = o.subcomponente ?? 'nuevo';
+    const tipoLocalidad = o.tipo_localidad ?? 'urbana';
+    const match = accionesPrograma.find(
+      (a) =>
+        a.componente === componente &&
+        a.subcomponente === subcomponente &&
+        a.tipoLocalidad === tipoLocalidad,
+    );
+    return match?.id ?? accionesPrograma[0]?.id ?? null;
+  };
+
   const obras = await Promise.all(
-    obrasData.map((o, i) =>
-      prisma.obra.create({
+    obrasData.map((o, i) => {
+      const organismoOperadorId = conagua
+        ? resolveOrganismoOperadorId(organismos, o.contratista_nombre)
+        : null;
+      const organismo = organismos.find((org) => org.id === organismoOperadorId);
+      const entidadFederativaId = organismo?.entidadId ?? null;
+
+      return prisma.obra.create({
         data: {
           folio: o.folio,
           nombre: o.nombre,
@@ -410,12 +671,177 @@ async function main() {
           longitud: o.longitud,
           evidenciaFotografica: [],
           municipioId: municipios[i % municipios.length].id,
-          contratistaId: contratistas[i % contratistas.length].id,
+          contratistaId: resolveContratistaId(contratistas, o.contratista_nombre, i),
+          ...(conagua
+            ? {
+                cua: generateCua(o.folio, o.cua),
+                subcomponente: o.subcomponente,
+                tipoLocalidad: o.tipo_localidad,
+                entidadFederativaId,
+                organismoOperadorId,
+                accionProgramaId: resolveAccionProgramaId(o),
+              }
+            : {}),
         },
-      }),
-    ),
+      });
+    }),
   );
   console.log(`  Seeded ${obras.length} obras`);
+
+  if (conagua) {
+    let cofinCount = 0;
+    for (const obra of obras) {
+      const monto = Number(obra.montoAutorizado);
+      const mitad = monto / 2;
+      await prisma.cofinanciamiento.createMany({
+        data: [
+          {
+            obraId: obra.id,
+            fuente: 'federal',
+            monto: mitad,
+            porcentaje: 50,
+            descripcion: 'Aportacion federal PROAGUA/CONAGUA',
+          },
+          {
+            obraId: obra.id,
+            fuente: 'estatal',
+            monto: mitad,
+            porcentaje: 50,
+            descripcion: 'Contraparte estatal 50%',
+          },
+        ],
+      });
+      cofinCount += 2;
+    }
+    console.log(`  Seeded ${cofinCount} cofinanciamiento records`);
+
+    let trimestralCount = 0;
+    for (const obra of obras) {
+      if (!EXECUTION_ESTATUS.has(obra.estatus)) continue;
+      const ejercicio = Number(obra.folio.match(/\d{4}/)?.[0] ?? 2024);
+      const avanceFin = Number(obra.montoEjercido);
+      const avanceFis = Number(obra.avanceFisicoReal);
+      const trimestres = [
+        {
+          trimestre: 1,
+          fisAnt: 0,
+          fisTri: Math.min(avanceFis * 0.35, 35),
+          finAnt: 0,
+          finTri: avanceFin * 0.3,
+        },
+        {
+          trimestre: 2,
+          fisAnt: Math.min(avanceFis * 0.35, 35),
+          fisTri: Math.min(avanceFis * 0.35, 35),
+          finAnt: avanceFin * 0.3,
+          finTri: avanceFin * 0.35,
+        },
+      ];
+      for (const t of trimestres) {
+        const fisAcum = t.fisAnt + t.fisTri;
+        const finAcum = t.finAnt + t.finTri;
+        await prisma.avanceTrimestral.create({
+          data: {
+            obraId: obra.id,
+            ejercicioFiscal: ejercicio,
+            trimestre: t.trimestre,
+            avanceFisicoAnterior: t.fisAnt,
+            avanceFisicoTrimestre: t.fisTri,
+            avanceFisicoAcumulado: fisAcum,
+            avanceFinAnterior: t.finAnt,
+            avanceFinTrimestre: t.finTri,
+            avanceFinAcumulado: finAcum,
+            fechaEntrega: t.trimestre === 1 ? `10-04-${ejercicio}` : `10-07-${ejercicio}`,
+            estatus: t.trimestre === 1 ? EstatusAvance.validado : EstatusAvance.pendiente,
+            observaciones: `Informe trimestral Q${t.trimestre} ${ejercicio}`,
+          },
+        });
+        trimestralCount++;
+      }
+    }
+    console.log(`  Seeded ${trimestralCount} avance trimestral records`);
+
+    const guanajuatoEntidad = entidades.find((e) => e.clave === '11');
+    const japamiOrg = organismos.find((o) => o.siglas === 'JAPAMI');
+    const simapagOrg = organismos.find((o) => o.siglas === 'SIMAPAG');
+    const obrasGto2026 = obras.filter((o) =>
+      ['PEAS-2026-001', 'PEAS-2026-005'].includes(o.folio),
+    );
+
+    if (guanajuatoEntidad && japamiOrg && simapagOrg) {
+      const montoFederal = obrasGto2026.reduce((sum, o) => sum + Number(o.montoAutorizado) / 2, 0);
+      const montoEstatal = montoFederal;
+
+      const anexoEjecucion = await prisma.anexoEjecucion.create({
+        data: {
+          numero: 'AE-GTO-2026-001',
+          ejercicioFiscal: 2026,
+          entidadFederativa: guanajuatoEntidad.nombre,
+          montoFederal,
+          montoEstatal,
+          fechaFirma: '15-01-2026',
+          fechaVigenciaFin: '31-12-2026',
+          estatus: 'vigente',
+        },
+      });
+
+      const anexoJapami = await prisma.anexoTecnico.create({
+        data: {
+          anexoEjecucionId: anexoEjecucion.id,
+          organismoOperadorId: japamiOrg.id,
+          ejercicioFiscal: 2026,
+          tipoLocalidad: 'urbana',
+          estatus: 'vigente',
+        },
+      });
+
+      const anexoSimapag = await prisma.anexoTecnico.create({
+        data: {
+          anexoEjecucionId: anexoEjecucion.id,
+          organismoOperadorId: simapagOrg.id,
+          ejercicioFiscal: 2026,
+          tipoLocalidad: 'urbana',
+          estatus: 'vigente',
+        },
+      });
+
+      for (const obra of obrasGto2026) {
+        const anexoId =
+          obra.folio === 'PEAS-2026-001' ? anexoJapami.id : anexoSimapag.id;
+        await prisma.obra.update({
+          where: { id: obra.id },
+          data: { anexoTecnicoId: anexoId },
+        });
+      }
+      console.log('  Seeded AnexoEjecucion + 2 AnexoTecnico (Guanajuato 2026)');
+    }
+
+    const directorConagua = users.find((u) => u.rolConagua === 'director_conagua');
+    if (directorConagua) {
+      for (const cfg of PROAGUA_ALERTA_CONFIGS) {
+        await prisma.alertaConfig.create({
+          data: {
+            nombre: cfg.nombre,
+            descripcion: cfg.descripcion,
+            activa: true,
+            tipo: cfg.tipo,
+            severidad: cfg.severidad,
+            programaFiltro: cfg.programaFiltro,
+            umbralDias: cfg.umbralDias,
+            destinatariosJson: [
+              {
+                user_id: directorConagua.id,
+                nombre: directorConagua.fullName,
+                telefono: '5555550100',
+              },
+            ],
+            creadoPor: directorConagua.id,
+          },
+        });
+      }
+      console.log(`  Seeded ${PROAGUA_ALERTA_CONFIGS.length} PROAGUA alerta configs`);
+    }
+  }
 
   let avanceCount = 0;
   for (const obra of obras) {

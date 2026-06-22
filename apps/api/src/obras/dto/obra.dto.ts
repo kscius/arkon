@@ -31,6 +31,28 @@ export class CreateObraDto {
   @ApiPropertyOptional() @IsOptional() @IsNumber() longitud?: number;
   @ApiProperty() @IsUUID() municipio_id!: string;
   @ApiPropertyOptional() @IsOptional() @IsUUID() contratista_id?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() cua?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() id_sisba?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() num_contrato?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() compras_mx_folio?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() tipo_adjudicacion?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() fecha_fallo?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() tipo_localidad?: string;
+  @ApiPropertyOptional() @IsOptional() @IsString() subcomponente?: string;
+  @ApiPropertyOptional() @IsOptional() @IsUUID() accion_programa_id?: string;
+  @ApiPropertyOptional() @IsOptional() @IsNumber() cobertura_ap_antes?: number;
+  @ApiPropertyOptional() @IsOptional() @IsNumber() cobertura_ap_meta?: number;
+  @ApiPropertyOptional() @IsOptional() @IsNumber() cobertura_tar_antes?: number;
+  @ApiPropertyOptional() @IsOptional() @IsNumber() cobertura_tar_meta?: number;
+  @ApiPropertyOptional() @IsOptional() @IsNumber() caudal_lps?: number;
+  @ApiPropertyOptional() @IsOptional() @IsNumber() pob_incorporar?: number;
+  @ApiPropertyOptional() @IsOptional() @IsNumber() pob_mejorar?: number;
+  @ApiPropertyOptional() @IsOptional() @IsNumber() pob_mujeres?: number;
+  @ApiPropertyOptional() @IsOptional() @IsNumber() pob_indigena?: number;
+  @ApiPropertyOptional() @IsOptional() @IsNumber() pob_afromexicano?: number;
+  @ApiPropertyOptional() @IsOptional() @IsUUID() entidad_federativa_id?: string;
+  @ApiPropertyOptional() @IsOptional() @IsUUID() organismo_operador_id?: string;
+  @ApiPropertyOptional() @IsOptional() @IsUUID() anexo_tecnico_id?: string;
 }
 
 export class UpdateObraDto extends PartialType(CreateObraDto) {}

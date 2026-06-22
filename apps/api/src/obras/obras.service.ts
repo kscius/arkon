@@ -6,6 +6,17 @@ import { ScopeService } from '../common/scope.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateObraDto, UpdateObraDto } from './dto/obra.dto';
 
+const OBRA_INCLUDE = {
+  municipio: true,
+  contratista: true,
+  entidadFederativa: true,
+  organismoOperador: true,
+  accionPrograma: true,
+  cofinanciamientos: true,
+} as const;
+
+type ObraPayload = Prisma.ObraGetPayload<{ include: typeof OBRA_INCLUDE }>;
+
 @Injectable()
 export class ObrasService {
   constructor(
@@ -13,7 +24,7 @@ export class ObrasService {
     private readonly scope: ScopeService,
   ) {}
 
-  private mapObra(obra: Prisma.ObraGetPayload<{ include: { municipio: true; contratista: true } }>) {
+  private mapObra(obra: ObraPayload) {
     const montoContratado = Number(obra.montoContratado);
     const montoEjercido = Number(obra.montoEjercido);
     const montoEjercidoExcedeContratado =
@@ -54,6 +65,65 @@ export class ObrasService {
       created_at: obra.createdAt,
       municipio_nombre: obra.municipio?.nombre ?? '',
       contratista_nombre: obra.contratista?.nombre ?? '',
+      cua: obra.cua,
+      id_sisba: obra.idSisba,
+      num_contrato: obra.numContrato,
+      compras_mx_folio: obra.comprasMxFolio,
+      tipo_adjudicacion: obra.tipoAdjudicacion,
+      fecha_fallo: obra.fechaFallo,
+      tipo_localidad: obra.tipoLocalidad,
+      subcomponente: obra.subcomponente,
+      accion_programa_id: obra.accionProgramaId,
+      accion_programa_clave: obra.accionPrograma?.clave ?? null,
+      cobertura_ap_antes: obra.coberturaApAntes != null ? Number(obra.coberturaApAntes) : null,
+      cobertura_ap_meta: obra.coberturaApMeta != null ? Number(obra.coberturaApMeta) : null,
+      cobertura_tar_antes: obra.coberturaTarAntes != null ? Number(obra.coberturaTarAntes) : null,
+      cobertura_tar_meta: obra.coberturaTarMeta != null ? Number(obra.coberturaTarMeta) : null,
+      caudal_lps: obra.caudalLps != null ? Number(obra.caudalLps) : null,
+      pob_incorporar: obra.pobIncorporar,
+      pob_mejorar: obra.pobMejorar,
+      pob_mujeres: obra.pobMujeres,
+      pob_indigena: obra.pobIndigena,
+      pob_afromexicano: obra.pobAfromexicano,
+      entidad_federativa_id: obra.entidadFederativaId,
+      entidad_federativa_nombre: obra.entidadFederativa?.nombre ?? '',
+      organismo_operador_id: obra.organismoOperadorId,
+      organismo_operador_nombre: obra.organismoOperador?.nombre ?? '',
+      anexo_tecnico_id: obra.anexoTecnicoId,
+      cofinanciamientos: obra.cofinanciamientos.map((c) => ({
+        id: c.id,
+        fuente: c.fuente,
+        monto: Number(c.monto),
+        porcentaje: Number(c.porcentaje),
+        descripcion: c.descripcion,
+      })),
+    };
+  }
+
+  private proaguaFields(dto: CreateObraDto | UpdateObraDto) {
+    return {
+      ...(dto.cua !== undefined && { cua: dto.cua }),
+      ...(dto.id_sisba !== undefined && { idSisba: dto.id_sisba }),
+      ...(dto.num_contrato !== undefined && { numContrato: dto.num_contrato }),
+      ...(dto.compras_mx_folio !== undefined && { comprasMxFolio: dto.compras_mx_folio }),
+      ...(dto.tipo_adjudicacion !== undefined && { tipoAdjudicacion: dto.tipo_adjudicacion }),
+      ...(dto.fecha_fallo !== undefined && { fechaFallo: dto.fecha_fallo }),
+      ...(dto.tipo_localidad !== undefined && { tipoLocalidad: dto.tipo_localidad }),
+      ...(dto.subcomponente !== undefined && { subcomponente: dto.subcomponente }),
+      ...(dto.accion_programa_id !== undefined && { accionProgramaId: dto.accion_programa_id }),
+      ...(dto.cobertura_ap_antes !== undefined && { coberturaApAntes: dto.cobertura_ap_antes }),
+      ...(dto.cobertura_ap_meta !== undefined && { coberturaApMeta: dto.cobertura_ap_meta }),
+      ...(dto.cobertura_tar_antes !== undefined && { coberturaTarAntes: dto.cobertura_tar_antes }),
+      ...(dto.cobertura_tar_meta !== undefined && { coberturaTarMeta: dto.cobertura_tar_meta }),
+      ...(dto.caudal_lps !== undefined && { caudalLps: dto.caudal_lps }),
+      ...(dto.pob_incorporar !== undefined && { pobIncorporar: dto.pob_incorporar }),
+      ...(dto.pob_mejorar !== undefined && { pobMejorar: dto.pob_mejorar }),
+      ...(dto.pob_mujeres !== undefined && { pobMujeres: dto.pob_mujeres }),
+      ...(dto.pob_indigena !== undefined && { pobIndigena: dto.pob_indigena }),
+      ...(dto.pob_afromexicano !== undefined && { pobAfromexicano: dto.pob_afromexicano }),
+      ...(dto.entidad_federativa_id !== undefined && { entidadFederativaId: dto.entidad_federativa_id }),
+      ...(dto.organismo_operador_id !== undefined && { organismoOperadorId: dto.organismo_operador_id }),
+      ...(dto.anexo_tecnico_id !== undefined && { anexoTecnicoId: dto.anexo_tecnico_id }),
     };
   }
 
@@ -78,11 +148,12 @@ export class ObrasService {
       where.OR = [
         { folio: { contains: filters.search, mode: 'insensitive' } },
         { nombre: { contains: filters.search, mode: 'insensitive' } },
+        { cua: { contains: filters.search, mode: 'insensitive' } },
       ];
     }
     const obras = await this.prisma.obra.findMany({
       where,
-      include: { municipio: true, contratista: true },
+      include: OBRA_INCLUDE,
       orderBy: { folio: 'asc' },
     });
     return obras.map((o) => this.mapObra(o));
@@ -91,7 +162,7 @@ export class ObrasService {
   async findOne(id: string, user: Usuario) {
     const obra = await this.prisma.obra.findUnique({
       where: { id },
-      include: { municipio: true, contratista: true },
+      include: OBRA_INCLUDE,
     });
     if (!obra) throw new NotFoundException('Obra not found');
     this.scope.assertObraAccess(obra, user);
@@ -151,8 +222,9 @@ export class ObrasService {
         longitud: dto.longitud,
         municipioId,
         contratistaId: dto.contratista_id,
+        ...this.proaguaFields(dto),
       },
-      include: { municipio: true, contratista: true },
+      include: OBRA_INCLUDE,
     });
     return this.mapObra(obra);
   }
@@ -178,8 +250,9 @@ export class ObrasService {
         estatus: dto.estatus,
         riesgo: dto.riesgo,
         contratistaId: dto.contratista_id,
+        ...this.proaguaFields(dto),
       },
-      include: { municipio: true, contratista: true },
+      include: OBRA_INCLUDE,
     });
     return this.mapObra(obra);
   }
@@ -203,6 +276,7 @@ export class ObrasService {
     const obras = await this.findAll(user, filters);
     const rows = obras.map((o) => ({
       folio: o.folio,
+      cua: o.cua ?? '',
       nombre: o.nombre,
       municipio: o.municipio_nombre,
       contratista: o.contratista_nombre,

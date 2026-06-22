@@ -25,11 +25,14 @@ import { ApiError } from '@/lib/api-client';
 import type { DocCategoria, Documento } from '@/types';
 import { formatCurrency, formatPercentage, formatDate, formatNumber as formatCount, getObraStatusColor, getObraStatusLabel, getRiesgoColor, getRiesgoLabel, getProgramaColor, getProgramaName, getSeverityColor, getSeverityLabel, getTipoObraLabel } from '@/lib/utils';
 import { getBrand } from '@/config/brand';
+import { FichaProaguaSection } from '@/components/proagua/FichaProaguaSection';
+import { CofinanciamientoTable } from '@/components/proagua/CofinanciamientoTable';
+import { AvanceTrimestralPanel } from '@/components/proagua/AvanceTrimestralPanel';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Activity, DollarSign, Folder, MessageSquare, AlertCircle, FileText, Image } from 'lucide-react';
+import { Activity, DollarSign, Folder, MessageSquare, AlertCircle, FileText, Image, Droplets } from 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
@@ -44,6 +47,7 @@ const DOC_CATEGORY_LABELS: Record<DocCategoria, string> = {
 
 export default function ObraDetailPage() {
   const brand = getBrand();
+  const isConagua = brand.tenantId === 'conagua';
   const { obraId } = useParams<{ obraId: string }>();
   const { user } = useApp();
   const [activeTab, setActiveTab] = useState('avance');
@@ -335,6 +339,8 @@ export default function ObraDetailPage() {
         </CardContent>
       </Card>
 
+      {isConagua && <FichaProaguaSection obra={obra} />}
+
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <TabsList className="bg-white border border-gray-200 p-1 h-auto flex flex-wrap">
@@ -342,6 +348,9 @@ export default function ObraDetailPage() {
           <TabsTrigger value="estimaciones" className="text-xs gap-1.5 data-[state=active]:bg-brand-primary data-[state=active]:text-white"><DollarSign className="w-3.5 h-3.5" /> Estimaciones</TabsTrigger>
           <TabsTrigger value="expediente" className="text-xs gap-1.5 data-[state=active]:bg-brand-primary data-[state=active]:text-white"><Folder className="w-3.5 h-3.5" /> Expediente</TabsTrigger>
           <TabsTrigger value="observaciones" className="text-xs gap-1.5 data-[state=active]:bg-brand-primary data-[state=active]:text-white"><MessageSquare className="w-3.5 h-3.5" /> Observaciones {obraObservaciones.length > 0 && <span className="ml-1 bg-red-500 text-white rounded-full px-1 text-[9px]">{obraObservaciones.length}</span>}</TabsTrigger>
+          {isConagua && (
+            <TabsTrigger value="proagua" className="text-xs gap-1.5 data-[state=active]:bg-brand-primary data-[state=active]:text-white"><Droplets className="w-3.5 h-3.5" /> PROAGUA</TabsTrigger>
+          )}
         </TabsList>
 
         <AnimatePresence mode="wait">
@@ -755,6 +764,15 @@ export default function ObraDetailPage() {
               </div>
             </motion.div>
           </TabsContent>
+
+          {isConagua && obraId && (
+            <TabsContent value="proagua" className="mt-4">
+              <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="space-y-4">
+                <CofinanciamientoTable obraId={obraId} />
+                <AvanceTrimestralPanel obraId={obraId} />
+              </motion.div>
+            </TabsContent>
+          )}
         </AnimatePresence>
       </Tabs>
     </div>

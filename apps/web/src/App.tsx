@@ -16,6 +16,7 @@ import AsistentePage from '@/pages/AsistentePage';
 import AlertasPage from '@/pages/AlertasPage';
 import ConfiguradorAlertasPage from '@/pages/ConfiguradorAlertasPage';
 import AdminUsuariosPage from '@/pages/AdminUsuariosPage';
+import SolicitudesPage from '@/pages/SolicitudesPage';
 import { ContratistasRedirect, MunicipiosRedirect } from '@/components/CatalogRedirect';
 
 const { Routes, Route, Navigate, useLocation } = ReactRouter;
@@ -169,6 +170,16 @@ function AppRoutes() {
           <ProtectedRoute>
             <AppLayout>
               <AsistentePage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/solicitudes"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <SolicitudesPage />
             </AppLayout>
           </ProtectedRoute>
         }

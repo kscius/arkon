@@ -10,26 +10,38 @@ import {
 import {
   mapAlerta,
   mapAvance,
+  mapAvanceTrimestral,
+  mapAccionPrograma,
+  mapCofinanciamiento,
   mapContratista,
   mapDocumento,
+  mapEntidadFederativa,
   mapEstimacion,
   mapMunicipio,
   mapObra,
   mapObservacion,
+  mapOrganismoOperador,
+  mapSolicitudPrograma,
   mapTopContratista,
   mapUser,
 } from '@/lib/api-mappers';
 import type {
+  AccionPrograma,
   Alerta,
   AlertaConfig,
   AlertaConfigDestinatario,
   AlertaConfigTipo,
   AdminUser,
+  AvanceTrimestral,
+  Cofinanciamiento,
   Contratista,
   Documento,
+  EntidadFederativa,
   MunicipioData,
   Obra,
+  OrganismoOperador,
   Severidad,
+  SolicitudPrograma,
   TopContratistaChartRow,
   User,
 } from '@/types';
@@ -91,6 +103,25 @@ export interface CreateObraInput {
   longitud?: number;
   municipio_id: string;
   contratista_id?: string;
+  cua?: string;
+  id_sisba?: string;
+  num_contrato?: string;
+  compras_mx_folio?: string;
+  subcomponente?: string;
+  tipo_localidad?: string;
+  cobertura_ap_antes?: number;
+  cobertura_ap_meta?: number;
+  cobertura_tar_antes?: number;
+  cobertura_tar_meta?: number;
+  caudal_lps?: number;
+  pob_incorporar?: number;
+  pob_mejorar?: number;
+  pob_mujeres?: number;
+  pob_indigena?: number;
+  pob_afromexicano?: number;
+  entidad_federativa_id?: string;
+  organismo_operador_id?: string;
+  accion_programa_id?: string;
 }
 
 export type UpdateObraInput = Partial<CreateObraInput>;
@@ -620,4 +651,86 @@ export async function fetchDashboardKpis(): Promise<DashboardKpis> {
       alertas_total: alertas.filter((a) => !a.atendida).length,
     };
   }
+}
+
+// --- PROAGUA / CONAGUA ---
+
+export async function fetchCofinanciamientosByObra(obraId: string): Promise<Cofinanciamiento[]> {
+  const rows = await apiFetch<Record<string, unknown>[]>(`/obras/${obraId}/cofinanciamientos`);
+  return rows.map((r) => mapCofinanciamiento(r, obraId));
+}
+
+export async function fetchAvancesTrimestralesByObra(obraId: string): Promise<AvanceTrimestral[]> {
+  const rows = await apiFetch<Record<string, unknown>[]>(`/obras/${obraId}/avances-trimestrales`);
+  return rows.map((r) => mapAvanceTrimestral(r, obraId));
+}
+
+export async function fetchOrganismosOperadores(params?: {
+  municipio_id?: string;
+  entidad_id?: string;
+  search?: string;
+}): Promise<OrganismoOperador[]> {
+  const qs = new URLSearchParams();
+  if (params?.municipio_id) qs.set('municipio_id', params.municipio_id);
+  if (params?.entidad_id) qs.set('entidad_id', params.entidad_id);
+  if (params?.search) qs.set('search', params.search);
+  const query = qs.toString() ? `?${qs}` : '';
+  const rows = await apiFetch<Record<string, unknown>[]>(`/organismos-operadores${query}`);
+  return rows.map(mapOrganismoOperador);
+}
+
+export async function fetchAccionesPrograma(programa?: string): Promise<AccionPrograma[]> {
+  const qs = programa ? `?programa=${encodeURIComponent(programa)}` : '';
+  const rows = await apiFetch<Record<string, unknown>[]>(`/acciones-programa${qs}`);
+  return rows.map(mapAccionPrograma);
+}
+
+export async function fetchEntidadesFederativas(): Promise<EntidadFederativa[]> {
+  const rows = await apiFetch<Record<string, unknown>[]>('/entidades-federativas');
+  return rows.map(mapEntidadFederativa);
+}
+
+export async function fetchSolicitudes(params?: { estatus?: string }): Promise<SolicitudPrograma[]> {
+  const qs = params?.estatus ? `?estatus=${encodeURIComponent(params.estatus)}` : '';
+  const rows = await apiFetch<Record<string, unknown>[]>(`/solicitudes-programa${qs}`);
+  return rows.map(mapSolicitudPrograma);
+}
+
+export interface CreateSolicitudInput {
+  programa: string;
+  ejercicio_fiscal: number;
+  entidad_id: string;
+  municipio_id: string;
+  tipo_apoyo: string;
+  componente: string;
+  monto_solicitado: number;
+  estatus?: string;
+}
+
+export async function createSolicitud(body: CreateSolicitudInput): Promise<SolicitudPrograma> {
+  const row = await apiFetch<Record<string, unknown>>('/solicitudes-programa', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+  return mapSolicitudPrograma(row);
+}
+
+export async function presentarSolicitud(id: string): Promise<SolicitudPrograma> {
+  const row = await apiFetch<Record<string, unknown>>(`/solicitudes-programa/${id}/transicion`, {
+    method: 'POST',
+    body: JSON.stringify({ estatus: 'presentada' }),
+  });
+  return mapSolicitudPrograma(row);
+}
+
+export type ProaguaExportKind =
+  | 'anexo-ix'
+  | 'anexo-xiii'
+  | 'anexo-xviii'
+  | 'anexo-xxii'
+  | 'anexo-xxiii';
+
+export async function downloadProaguaExport(kind: ProaguaExportKind, id: string): Promise<void> {
+  const { blob, filename } = await apiFetchBlob(`/proagua/export/${kind}/${id}`);
+  triggerBlobDownload(blob, filename ?? `${kind}-${id}.xlsx`);
 }

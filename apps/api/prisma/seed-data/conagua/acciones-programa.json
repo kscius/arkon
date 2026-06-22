@@ -1,0 +1,83 @@
+[
+  {
+    "programa": "PROAGUA",
+    "componente": "AP",
+    "subcomponente": "nuevo",
+    "clave": "AP-N-R",
+    "descripcion": "Agua potable - infraestructura nueva en localidad rural",
+    "unidad": "accion",
+    "tipo_localidad": "rural"
+  },
+  {
+    "programa": "PROAGUA",
+    "componente": "AP",
+    "subcomponente": "rehabilitado",
+    "clave": "AP-R-R",
+    "descripcion": "Agua potable - rehabilitacion en localidad rural",
+    "unidad": "accion",
+    "tipo_localidad": "rural"
+  },
+  {
+    "programa": "PROAGUA",
+    "componente": "AP",
+    "subcomponente": "mejoramiento",
+    "clave": "AP-M-U",
+    "descripcion": "Agua potable - mejoramiento en localidad urbana",
+    "unidad": "accion",
+    "tipo_localidad": "urbana"
+  },
+  {
+    "programa": "PROAGUA",
+    "componente": "alcantarillado",
+    "subcomponente": "nuevo",
+    "clave": "ALC-N-R",
+    "descripcion": "Alcantarillado - infraestructura nueva en localidad rural",
+    "unidad": "accion",
+    "tipo_localidad": "rural"
+  },
+  {
+    "programa": "PROAGUA",
+    "componente": "alcantarillado",
+    "subcomponente": "rehabilitado",
+    "clave": "ALC-R-U",
+    "descripcion": "Alcantarillado - rehabilitacion en localidad urbana",
+    "unidad": "accion",
+    "tipo_localidad": "urbana"
+  },
+  {
+    "programa": "PROAGUA",
+    "componente": "alcantarillado",
+    "subcomponente": "mejoramiento",
+    "clave": "ALC-M-U",
+    "descripcion": "Alcantarillado - mejoramiento en localidad urbana",
+    "unidad": "accion",
+    "tipo_localidad": "urbana"
+  },
+  {
+    "programa": "PROAGUA",
+    "componente": "saneamiento",
+    "subcomponente": "nuevo",
+    "clave": "SAN-N-R",
+    "descripcion": "Saneamiento - infraestructura nueva en localidad rural",
+    "unidad": "accion",
+    "tipo_localidad": "rural"
+  },
+  {
+    "programa": "PROAGUA",
+    "componente": "saneamiento",
+    "subcomponente": "rehabilitado",
+    "clave": "SAN-R-U",
+    "descripcion": "Saneamiento - rehabilitacion en localidad urbana",
+    "unidad": "accion",
+    "tipo_localidad": "urbana"
+  },
+  {
+    "programa": "PROAGUA",
+    "componente": "saneamiento",
+    "subcomponente": "mejoramiento",
+    "clave": "SAN-M-U",
+    "descripcion": "Saneamiento - mejoramiento en localidad urbana",
+    "unidad": "accion",
+    "tipo_localidad": "urbana"
+  }
+]

@@ -21,6 +21,12 @@ export const ALERTA_CONFIG_TIPOS = [
   'retraso_fisico',
   'sin_estimaciones',
   'documentacion_incompleta',
+  'plazo_contratacion',
+  'plazo_conclusion',
+  'informe_trimestral_pendiente',
+  'sancion_anexos_tardios',
+  'reintegro_pendiente',
+  'dispersion_retrasada',
 ] as const;
 
 export const ALERTA_CONFIG_SEVERIDADES = ['baja', 'media', 'alta', 'critica'] as const;

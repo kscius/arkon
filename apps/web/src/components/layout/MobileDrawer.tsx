@@ -65,6 +65,7 @@ export function MobileDrawer({ onClose }: { onClose: () => void }) {
     if (path === '/configurador-alertas') return location.pathname === '/configurador-alertas';
     if (path === '/configurador-alertas') return location.pathname === '/configurador-alertas';
     if (path === '/asistente') return location.pathname === '/asistente';
+    if (path === '/solicitudes') return location.pathname === '/solicitudes';
     if (path === '/admin/usuarios') return location.pathname === '/admin/usuarios';
     return location.pathname === path;
   };

@@ -4,20 +4,30 @@ import { APP_GUARD } from '@nestjs/core';
 import { ScheduleModule } from '@nestjs/schedule';
 import { AuthModule } from './auth/auth.module';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard';
+import { AccionesProgramaModule } from './acciones-programa/acciones-programa.module';
 import { AlertaConfigsModule } from './alerta-configs/alerta-configs.module';
 import { AlertasModule } from './alertas/alertas.module';
+import { AnexosEjecucionModule } from './anexos-ejecucion/anexos-ejecucion.module';
 import { AvancesModule } from './avances/avances.module';
+import { AvancesTrimestralesModule } from './avances-trimestrales/avances-trimestrales.module';
 import { ChatModule } from './chat/chat.module';
+import { CierresEjercicioModule } from './cierres-ejercicio/cierres-ejercicio.module';
+import { CofinanciamientosModule } from './cofinanciamientos/cofinanciamientos.module';
 import { ContratistasModule } from './contratistas/contratistas.module';
 import { DashboardModule } from './dashboard/dashboard.module';
 import { DocumentosModule } from './documentos/documentos.module';
+import { EntidadesFederativasModule } from './entidades-federativas/entidades-federativas.module';
 import { EstimacionesModule } from './estimaciones/estimaciones.module';
 import { HealthModule } from './health/health.module';
 import { MunicipiosModule } from './municipios/municipios.module';
 import { ObservacionesModule } from './observaciones/observaciones.module';
 import { ObrasModule } from './obras/obras.module';
+import { OrganismosOperadoresModule } from './organismos-operadores/organismos-operadores.module';
+import { ProaguaExportModule } from './proagua-export/proagua-export.module';
+import { ProaguaImportModule } from './proagua-import/proagua-import.module';
 import { CommonModule } from './common/common.module';
 import { PrismaModule } from './prisma/prisma.module';
+import { SolicitudesProgramaModule } from './solicitudes-programa/solicitudes-programa.module';
 import { UsersModule } from './users/users.module';
 
 @Module({
@@ -31,8 +41,18 @@ import { UsersModule } from './users/users.module';
     UsersModule,
     MunicipiosModule,
     ContratistasModule,
+    EntidadesFederativasModule,
+    OrganismosOperadoresModule,
+    AccionesProgramaModule,
     ObrasModule,
     AvancesModule,
+    AvancesTrimestralesModule,
+    CofinanciamientosModule,
+    AnexosEjecucionModule,
+    CierresEjercicioModule,
+    SolicitudesProgramaModule,
+    ProaguaExportModule,
+    ProaguaImportModule,
     EstimacionesModule,
     DocumentosModule,
     ObservacionesModule,

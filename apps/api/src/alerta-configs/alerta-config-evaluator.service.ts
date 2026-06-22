@@ -25,6 +25,9 @@ type ObraWithRelations = Prisma.ObraGetPayload<{
     avances: true;
     estimaciones: true;
     documentos: true;
+    avancesTrimestrales: true;
+    cofinanciamientos: true;
+    anexoTecnico: true;
   };
 }>;
 
@@ -53,6 +56,9 @@ export class AlertaConfigEvaluatorService {
         avances: { orderBy: { updatedAt: 'desc' } },
         estimaciones: { orderBy: { updatedAt: 'desc' } },
         documentos: true,
+        avancesTrimestrales: { orderBy: [{ ejercicioFiscal: 'desc' }, { trimestre: 'desc' }] },
+        cofinanciamientos: true,
+        anexoTecnico: true,
       },
     });
   }
@@ -69,6 +75,18 @@ export class AlertaConfigEvaluatorService {
         return this.evalSinEstimaciones(config, obra);
       case 'documentacion_incompleta':
         return this.evalDocumentacionIncompleta(config, obra);
+      case 'plazo_contratacion':
+        return this.evalPlazoContratacion(config, obra);
+      case 'plazo_conclusion':
+        return this.evalPlazoConclusion(config, obra);
+      case 'informe_trimestral_pendiente':
+        return this.evalInformeTrimestralPendiente(config, obra);
+      case 'sancion_anexos_tardios':
+        return this.evalSancionAnexosTardios(config, obra);
+      case 'reintegro_pendiente':
+        return this.evalReintegroPendiente(config, obra);
+      case 'dispersion_retrasada':
+        return this.evalDispersionRetrasada(config, obra);
       default:
         return null;
     }
@@ -250,6 +268,159 @@ export class AlertaConfigEvaluatorService {
       municipioId: obra.municipioId,
       titulo: `Documentacion incompleta: ${obra.folio}`,
       descripcion: `Faltan documentos en categorias: ${missing.join(', ')}.`,
+    };
+  }
+
+  private isProaguaObra(obra: ObraWithRelations): boolean {
+    return obra.programa.toUpperCase().includes('PROAGUA');
+  }
+
+  private lastBusinessDayOfAugust(year: number): Date {
+    const d = new Date(year, 8, 0);
+    while (d.getDay() === 0 || d.getDay() === 6) d.setDate(d.getDate() - 1);
+    return d;
+  }
+
+  private currentTrimestre(): { ejercicio: number; trimestre: number } {
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const trimestre = month <= 3 ? 1 : month <= 6 ? 2 : month <= 9 ? 3 : 4;
+    return { ejercicio: now.getFullYear(), trimestre };
+  }
+
+  private evalPlazoContratacion(
+    _config: AlertaConfig,
+    obra: ObraWithRelations,
+  ): AlertaMatch | null {
+    if (!this.isProaguaObra(obra)) return null;
+    const excluded: EstatusObra[] = [EstatusObra.concluida, EstatusObra.cancelada, EstatusObra.cerrada];
+    if (excluded.includes(obra.estatus)) return null;
+    if (obra.numContrato) return null;
+    const year = new Date().getFullYear();
+    const deadline = this.lastBusinessDayOfAugust(year);
+    if (Date.now() <= deadline.getTime()) return null;
+    return {
+      obraId: obra.id,
+      folio: obra.folio,
+      nombre: obra.nombre,
+      municipio: obra.municipio.nombre,
+      municipioId: obra.municipioId,
+      titulo: `Plazo contratacion vencido: ${obra.folio}`,
+      descripcion: `Obra sin contrato despues del ultimo dia habil de agosto ${year} (Art. 5 U074).`,
+    };
+  }
+
+  private evalPlazoConclusion(
+    _config: AlertaConfig,
+    obra: ObraWithRelations,
+  ): AlertaMatch | null {
+    if (!this.isProaguaObra(obra)) return null;
+    const excluded: EstatusObra[] = [EstatusObra.concluida, EstatusObra.cancelada, EstatusObra.cerrada];
+    if (excluded.includes(obra.estatus)) return null;
+    const year = new Date().getFullYear();
+    const deadline = new Date(year, 11, 31, 23, 59, 59);
+    if (Date.now() <= deadline.getTime()) return null;
+    return {
+      obraId: obra.id,
+      folio: obra.folio,
+      nombre: obra.nombre,
+      municipio: obra.municipio.nombre,
+      municipioId: obra.municipioId,
+      titulo: `Plazo conclusion vencido: ${obra.folio}`,
+      descripcion: `Obra no concluida al 31 de diciembre ${year} (Art. 5 U074).`,
+    };
+  }
+
+  private evalInformeTrimestralPendiente(
+    _config: AlertaConfig,
+    obra: ObraWithRelations,
+  ): AlertaMatch | null {
+    if (!this.isProaguaObra(obra)) return null;
+    if (!ACTIVE_OBRA_STATUSES.includes(obra.estatus)) return null;
+    const { ejercicio, trimestre } = this.currentTrimestre();
+    const reported = obra.avancesTrimestrales.some(
+      (a) => a.ejercicioFiscal === ejercicio && a.trimestre === trimestre,
+    );
+    if (reported) return null;
+    return {
+      obraId: obra.id,
+      folio: obra.folio,
+      nombre: obra.nombre,
+      municipio: obra.municipio.nombre,
+      municipioId: obra.municipioId,
+      titulo: `Informe trimestral pendiente: ${obra.folio}`,
+      descripcion: `Falta informe trimestral T${trimestre} ${ejercicio} (Anexo XVIII).`,
+    };
+  }
+
+  private evalSancionAnexosTardios(
+    config: AlertaConfig,
+    obra: ObraWithRelations,
+  ): AlertaMatch | null {
+    if (!this.isProaguaObra(obra)) return null;
+    if (obra.anexoTecnicoId) return null;
+    const umbral = config.umbralDias ?? 10;
+    const days = this.daysSince(obra.createdAt);
+    if (days < umbral) return null;
+    return {
+      obraId: obra.id,
+      folio: obra.folio,
+      nombre: obra.nombre,
+      municipio: obra.municipio.nombre,
+      municipioId: obra.municipioId,
+      titulo: `Sancion anexos tardios: ${obra.folio}`,
+      descripcion: `Anexo tecnico no formalizado tras ${days} dias (plazo: ${umbral} dias habiles, sancion -15% presupuesto).`,
+    };
+  }
+
+  private evalReintegroPendiente(
+    _config: AlertaConfig,
+    obra: ObraWithRelations,
+  ): AlertaMatch | null {
+    if (!this.isProaguaObra(obra)) return null;
+    const ejercido = Number(obra.montoEjercido);
+    const autorizado = Number(obra.montoAutorizado);
+    if (autorizado <= 0) return null;
+    const year = new Date().getFullYear();
+    const deadline = new Date(year + 1, 0, 15, 23, 59, 59);
+    if (Date.now() <= deadline.getTime()) return null;
+    const porReintegrar = autorizado - ejercido;
+    if (porReintegrar <= 0) return null;
+    return {
+      obraId: obra.id,
+      folio: obra.folio,
+      nombre: obra.nombre,
+      municipio: obra.municipio.nombre,
+      municipioId: obra.municipioId,
+      titulo: `Reintegro pendiente: ${obra.folio}`,
+      descripcion: `Reintegro a TESOFE pendiente: $${porReintegrar.toLocaleString('es-MX')} (plazo 15 dias naturales post-cierre).`,
+    };
+  }
+
+  private evalDispersionRetrasada(
+    config: AlertaConfig,
+    obra: ObraWithRelations,
+  ): AlertaMatch | null {
+    if (!this.isProaguaObra(obra)) return null;
+    if (!ACTIVE_OBRA_STATUSES.includes(obra.estatus)) return null;
+    const autorizado = Number(obra.montoAutorizado);
+    const ejercido = Number(obra.montoEjercido);
+    if (autorizado <= 0) return null;
+    const pctUmbral = config.umbralPorcentaje != null ? Number(config.umbralPorcentaje) : 20;
+    const pctDispersado = (ejercido / autorizado) * 100;
+    if (pctDispersado >= pctUmbral) return null;
+    if (!obra.fechaInicio) return null;
+    const days = this.daysSince(new Date(obra.fechaInicio));
+    const umbralDias = config.umbralDias ?? 60;
+    if (days < umbralDias) return null;
+    return {
+      obraId: obra.id,
+      folio: obra.folio,
+      nombre: obra.nombre,
+      municipio: obra.municipio.nombre,
+      municipioId: obra.municipioId,
+      titulo: `Dispersion retrasada: ${obra.folio}`,
+      descripcion: `Solo ${pctDispersado.toFixed(1)}% dispersado tras ${days} dias (umbral ${pctUmbral}%).`,
     };
   }
 }

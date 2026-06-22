@@ -75,6 +75,17 @@ export class ScopeService {
     return { id: '00000000-0000-0000-0000-000000000000' };
   }
 
+  organismoOperadorWhere(user: Usuario): Prisma.OrganismoOperadorWhereInput {
+    if (user.rol === Rol.estatal) return {};
+    if (user.rol === Rol.municipal && user.municipioId) {
+      return { OR: [{ municipioId: user.municipioId }, { municipioId: null }] };
+    }
+    if (user.rol === Rol.contratista) {
+      return { id: '00000000-0000-0000-0000-000000000000' };
+    }
+    return { id: '00000000-0000-0000-0000-000000000000' };
+  }
+
   alertaConfigWhere(user: Usuario): Prisma.AlertaConfigWhereInput {
     if (user.rol === Rol.estatal) return {};
     if (user.rol === Rol.municipal && user.municipioId) {

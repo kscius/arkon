@@ -56,6 +56,11 @@ $env:TENANT_ID = "conagua"
 npx prisma db seed
 ```
 
+
+## Documentacion PROAGUA (anexos y lineamientos)
+
+Formularios, fichas tecnicas y lineamientos U074 del programa PROAGUA: [proagua/README.md](./proagua/README.md).
+
 ### Trazabilidad y alcance del demo
 
 - Tabla de fuentes, montos publicados vs ilustrativos y URLs: [CONAGUA-datos.md](./CONAGUA-datos.md).

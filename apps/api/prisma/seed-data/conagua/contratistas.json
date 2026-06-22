@@ -110,5 +110,13 @@
     "email": "contacto@capa.gob.mx",
     "telefono": "983-832-0000",
     "registro_padron": "ORG-CAPA-001"
+  },
+  {
+    "nombre": "Secretaria de Recursos Hidricos y Desarrollo Sustentable de Tamaulipas (SRHDS)",
+    "rfc": "RFC-PENDIENTE-15",
+    "representante": "Secretario SRHDS",
+    "email": "contacto@tamaulipas.gob.mx",
+    "telefono": "834-107-0000",
+    "registro_padron": "ORG-SRHDS-001"
   }
 ]

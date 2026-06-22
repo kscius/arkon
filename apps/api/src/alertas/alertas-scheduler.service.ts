@@ -24,11 +24,67 @@ export class AlertasSchedulerService {
     await this.checkDesvioFinanciero();
     await this.checkDocumentacionIncompleta();
     await this.checkAlertaConfigs();
+    await this.checkProaguaNormativa();
   }
 
   private async checkAlertaConfigs(): Promise<void> {
     const created = await this.alertaConfigs.processActiveConfigs();
     this.logger.log(`Custom alert configs processed: ${created} new alert(s)`);
+  }
+
+  private async checkProaguaNormativa(): Promise<void> {
+    const obras = await this.prisma.obra.findMany({
+      where: { programa: { contains: 'PROAGUA', mode: 'insensitive' } },
+      include: {
+        municipio: true,
+        avancesTrimestrales: true,
+      },
+    });
+
+    for (const obra of obras) {
+      if (!obra.numContrato) {
+        const year = new Date().getFullYear();
+        const aug = new Date(year, 8, 0);
+        while (aug.getDay() === 0 || aug.getDay() === 6) aug.setDate(aug.getDate() - 1);
+        if (Date.now() > aug.getTime()) {
+          await this.createSystemAlert({
+            obraId: obra.id,
+            municipio: obra.municipio.nombre,
+            municipioId: obra.municipioId,
+            titulo: `Plazo contratacion: ${obra.folio}`,
+            descripcion: 'Obra PROAGUA sin contrato despues del plazo de agosto.',
+            tipo: 'plazo_contratacion',
+            severidad: 'alta',
+          });
+        }
+      }
+
+      const now = new Date();
+      const trimestre = now.getMonth() < 3 ? 1 : now.getMonth() < 6 ? 2 : now.getMonth() < 9 ? 3 : 4;
+      const hasTrimestral = obra.avancesTrimestrales.some(
+        (a) => a.ejercicioFiscal === now.getFullYear() && a.trimestre === trimestre,
+      );
+      if (
+        !hasTrimestral &&
+        (
+          [
+            EstatusObra.en_ejecucion_a_tiempo,
+            EstatusObra.en_ejecucion_retraso,
+            EstatusObra.en_riesgo,
+          ] as EstatusObra[]
+        ).includes(obra.estatus)
+      ) {
+        await this.createSystemAlert({
+          obraId: obra.id,
+          municipio: obra.municipio.nombre,
+          municipioId: obra.municipioId,
+          titulo: `Informe trimestral pendiente: ${obra.folio}`,
+          descripcion: `Falta informe T${trimestre} ${now.getFullYear()}.`,
+          tipo: 'informe_trimestral_pendiente',
+          severidad: 'media',
+        });
+      }
+    }
   }
 
   private today(): string {

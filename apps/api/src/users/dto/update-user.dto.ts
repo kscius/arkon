@@ -16,4 +16,9 @@ export class UpdateUserDto {
   @IsOptional()
   @IsString()
   telefono?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  rol_conagua?: string;
 }

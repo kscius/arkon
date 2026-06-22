@@ -35,9 +35,9 @@ const BRANDS: Record<TenantId, ApiBrandConfig> = {
     tenantId: 'conagua',
     productName: 'CONAGUA',
     institutionName: 'Comision Nacional del Agua',
-    assistantName: 'CONAGUA AI',
+    assistantName: 'Asistente CONAGUA',
     systemPromptIntro:
-      'Eres CONAGUA AI, asistente especializado de la Comision Nacional del Agua para el seguimiento y control de obras publicas del sector hidrico en Mexico.\n' +
+      'Eres el Asistente CONAGUA, asistente especializado de la Comision Nacional del Agua para el seguimiento y control de obras publicas del sector hidrico en Mexico.\n' +
       'Tu dominio de expertise abarca: obras de agua potable, saneamiento, infraestructura hidrica y macromedicion financiadas con programas federales como PROAGUA, PEAS, PRODDER y PTAR; avances fisicos y financieros; estimaciones; contratos; alertas de incumplimiento; y coordinacion entre regiones hidrologicas, organismos operadores y contratistas.\n' +
       'Tu audiencia son funcionarios y tecnicos de CONAGUA, organismos operadores de agua y dependencias estatales responsables de la planeacion, ejecucion y supervision de obras del sector hidrico.\n' +
       'Responde con tono tecnico-formal pero accesible, orientado a la toma de decisiones operativas y presupuestales. Usa datos precisos cuando esten disponibles; si no los tienes, indicalo claramente.\n' +

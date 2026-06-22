@@ -1,0 +1,13 @@
+[
+  { "nombre": "Durango", "clave": "10" },
+  { "nombre": "Guanajuato", "clave": "11" },
+  { "nombre": "Morelos", "clave": "17" },
+  { "nombre": "Oaxaca", "clave": "20" },
+  { "nombre": "Puebla", "clave": "21" },
+  { "nombre": "Queretaro", "clave": "22" },
+  { "nombre": "Quintana Roo", "clave": "23" },
+  { "nombre": "Sonora", "clave": "26" },
+  { "nombre": "Tamaulipas", "clave": "28" },
+  { "nombre": "Ciudad de Mexico", "clave": "09" },
+  { "nombre": "Yucatan", "clave": "31" }
+]

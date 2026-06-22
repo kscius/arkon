@@ -30,6 +30,7 @@ export class AuthService {
       municipioId: user.municipioId,
       contratistaId: user.contratistaId,
       telefono: user.telefono,
+      rolConagua: user.rolConagua,
     };
   }
 

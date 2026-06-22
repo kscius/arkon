@@ -1,0 +1,152 @@
+[
+  {
+    "nombre": "Comision del Agua del Estado de Durango",
+    "siglas": "CAD",
+    "tipo_organismo": "ESTADO",
+    "entidad_clave": "10",
+    "rfc": "RFC-PENDIENTE-01",
+    "director": "Director General CAD",
+    "email": "contacto@cad.gob.mx",
+    "telefono": "618-137-0000"
+  },
+  {
+    "nombre": "Comision Estatal del Agua y Saneamiento de Oaxaca",
+    "siglas": "CEABIEN",
+    "tipo_organismo": "ESTADO",
+    "entidad_clave": "20",
+    "rfc": "RFC-PENDIENTE-02",
+    "director": "Director General CEABIEN",
+    "email": "contacto@ceabien.gob.mx",
+    "telefono": "951-501-0000"
+  },
+  {
+    "nombre": "Comision Estatal del Agua de Sonora",
+    "siglas": "CEA Sonora",
+    "tipo_organismo": "ESTADO",
+    "entidad_clave": "26",
+    "rfc": "RFC-PENDIENTE-03",
+    "director": "Director General CEA Sonora",
+    "email": "contacto@cea.gob.mx",
+    "telefono": "662-213-0000"
+  },
+  {
+    "nombre": "Sistema de Agua Potable y Alcantarillado de Cuernavaca",
+    "siglas": "SAPAC",
+    "tipo_organismo": "OAPAS",
+    "entidad_clave": "17",
+    "rfc": "RFC-PENDIENTE-04",
+    "director": "Director General SAPAC",
+    "email": "contacto@sapac.gob.mx",
+    "telefono": "777-312-0000"
+  },
+  {
+    "nombre": "Sistema de Agua Potable y Alcantarillado de Leon",
+    "siglas": "SAPAL",
+    "tipo_organismo": "OAPAS",
+    "entidad_clave": "11",
+    "rfc": "RFC-PENDIENTE-05",
+    "director": "Director General SAPAL",
+    "email": "contacto@sapal.gob.mx",
+    "telefono": "477-710-0000"
+  },
+  {
+    "nombre": "Junta de Agua Potable y Alcantarillado de Irapuato",
+    "siglas": "JAPAMI",
+    "tipo_organismo": "OAPAS",
+    "entidad_clave": "11",
+    "rfc": "RFC-PENDIENTE-06",
+    "director": "Director General JAPAMI",
+    "email": "contacto@japami.gob.mx",
+    "telefono": "462-623-0000"
+  },
+  {
+    "nombre": "Junta Municipal de Agua Potable y Alcantarillado de Celaya",
+    "siglas": "JUMAPA",
+    "tipo_organismo": "OAPAS",
+    "entidad_clave": "11",
+    "rfc": "RFC-PENDIENTE-07",
+    "director": "Director General JUMAPA",
+    "email": "contacto@jumapa.gob.mx",
+    "telefono": "461-612-0000"
+  },
+  {
+    "nombre": "Junta Municipal de Agua Potable y Alcantarillado de Cortazar",
+    "siglas": "JUMAPAC",
+    "tipo_organismo": "OAPAS",
+    "entidad_clave": "11",
+    "rfc": "RFC-PENDIENTE-08",
+    "director": "Director General JUMAPAC",
+    "email": "contacto@jumapac.gob.mx",
+    "telefono": "411-693-0000"
+  },
+  {
+    "nombre": "Sistema Intermunicipal de Agua Potable y Alcantarillado de Guanajuato",
+    "siglas": "SIMAPAG",
+    "tipo_organismo": "SMAPAS",
+    "entidad_clave": "11",
+    "rfc": "RFC-PENDIENTE-09",
+    "director": "Director General SIMAPAG",
+    "email": "contacto@simapag.gob.mx",
+    "telefono": "473-732-0000"
+  },
+  {
+    "nombre": "Junta de Agua Potable y Alcantarillado de San Juan del Rio",
+    "siglas": "JAPAM",
+    "tipo_organismo": "OAPAS",
+    "entidad_clave": "22",
+    "rfc": "RFC-PENDIENTE-10",
+    "director": "Director General JAPAM",
+    "email": "contacto@japam.gob.mx",
+    "telefono": "427-272-0000"
+  },
+  {
+    "nombre": "Sistema Operador de Agua Potable y Alcantarillado de Puebla",
+    "siglas": "SOAPAP",
+    "tipo_organismo": "SMAPAS",
+    "entidad_clave": "21",
+    "rfc": "RFC-PENDIENTE-11",
+    "director": "Director General SOAPAP",
+    "email": "contacto@soapap.gob.mx",
+    "telefono": "222-246-0000"
+  },
+  {
+    "nombre": "Sistema de Aguas de la Ciudad de Mexico",
+    "siglas": "SACMEX",
+    "tipo_organismo": "SMAPAS",
+    "entidad_clave": "09",
+    "rfc": "RFC-PENDIENTE-12",
+    "director": "Director General SACMEX",
+    "email": "contacto@sacmex.cdmx.gob.mx",
+    "telefono": "55-5174-0000"
+  },
+  {
+    "nombre": "Junta de Agua Potable y Alcantarillado de Yucatan",
+    "siglas": "JAPAY",
+    "tipo_organismo": "ESTADO",
+    "entidad_clave": "31",
+    "rfc": "RFC-PENDIENTE-13",
+    "director": "Director General JAPAY",
+    "email": "contacto@japay.gob.mx",
+    "telefono": "999-942-0000"
+  },
+  {
+    "nombre": "Comision de Agua Potable y Alcantarillado de Quintana Roo",
+    "siglas": "CAPA",
+    "tipo_organismo": "ESTADO",
+    "entidad_clave": "23",
+    "rfc": "RFC-PENDIENTE-14",
+    "director": "Director General CAPA",
+    "email": "contacto@capa.gob.mx",
+    "telefono": "983-832-0000"
+  },
+  {
+    "nombre": "Secretaria de Recursos Hidricos y Desarrollo Sustentable de Tamaulipas",
+    "siglas": "SRHDS",
+    "tipo_organismo": "ESTADO",
+    "entidad_clave": "28",
+    "rfc": "RFC-PENDIENTE-15",
+    "director": "Secretario SRHDS",
+    "email": "contacto@tamaulipas.gob.mx",
+    "telefono": "834-107-0000"
+  }
+]

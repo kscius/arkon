@@ -86,20 +86,88 @@ enum EstatusObservacion {
   cerrada
 }
 
-model Municipio {
+model EntidadFederativa {
   id        String   @id @default(uuid()) @db.Uuid
   nombre    String   @unique
-  latitud   Decimal? @db.Decimal(10, 6)
-  longitud  Decimal? @db.Decimal(10, 6)
+  clave     String   @unique
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
-  users          Usuario[]
-  obras          Obra[]
-  alertas        Alerta[]
-  alertaConfigs  AlertaConfig[]
+  municipios           Municipio[]
+  obras                Obra[]
+  organismosOperadores OrganismoOperador[]
+  solicitudesPrograma  SolicitudPrograma[]
 
+  @@map("entidades_federativas")
+}
+
+model Municipio {
+  id            String   @id @default(uuid()) @db.Uuid
+  nombre        String   @unique
+  latitud       Decimal? @db.Decimal(10, 6)
+  longitud      Decimal? @db.Decimal(10, 6)
+  claveInegi    String?  @map("clave_inegi")
+  tipoLocalidad String?  @map("tipo_localidad")
+  marginacion   String?
+  esZap         Boolean  @default(false) @map("es_zap")
+  poblacion     Int?
+  entidadId     String?  @map("entidad_id") @db.Uuid
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  entidad              EntidadFederativa?  @relation(fields: [entidadId], references: [id])
+  users                Usuario[]
+  obras                Obra[]
+  alertas              Alerta[]
+  alertaConfigs        AlertaConfig[]
+  organismosOperadores OrganismoOperador[]
+  solicitudesPrograma  SolicitudPrograma[]
+
+  @@index([entidadId])
   @@map("municipios")
+}
+
+model OrganismoOperador {
+  id            String   @id @default(uuid()) @db.Uuid
+  nombre        String
+  siglas        String?
+  tipoOrganismo String   @map("tipo_organismo")
+  entidadId     String?  @map("entidad_id") @db.Uuid
+  municipioId   String?  @map("municipio_id") @db.Uuid
+  rfc           String?
+  director      String?
+  email         String?
+  telefono      String?
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  entidad        EntidadFederativa? @relation(fields: [entidadId], references: [id])
+  municipio      Municipio?         @relation(fields: [municipioId], references: [id])
+  obras          Obra[]             @relation("ObraOrganismoOperador")
+  anexosTecnicos AnexoTecnico[]
+
+  @@index([entidadId])
+  @@index([municipioId])
+  @@map("organismos_operadores")
+}
+
+model AccionPrograma {
+  id            String   @id @default(uuid()) @db.Uuid
+  programa      String
+  componente    String
+  subcomponente String
+  clave         String   @unique
+  descripcion   String
+  unidad        String
+  tipoLocalidad String   @map("tipo_localidad")
+  activo        Boolean  @default(true)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  obras Obra[]
+
+  @@index([programa, componente])
+  @@map("acciones_programa")
 }
 
 model Contratista {
@@ -126,6 +194,7 @@ model Usuario {
   fullName       String    @map("full_name")
   telefono       String?
   rol            Rol
+  rolConagua     String?   @map("rol_conagua")
   avatarInitials String    @default("US") @map("avatar_initials")
   isActive       Boolean   @default(true) @map("is_active")
   lastLogin      DateTime? @map("last_login")
@@ -184,21 +253,55 @@ model Obra {
   evidenciaFotografica     Json         @default("[]") @map("evidencia_fotografica")
   municipioId              String       @map("municipio_id") @db.Uuid
   contratistaId            String?      @map("contratista_id") @db.Uuid
+  cua                      String?      @map("cua")
+  idSisba                  String?      @map("id_sisba")
+  numContrato              String?      @map("num_contrato")
+  comprasMxFolio           String?      @map("compras_mx_folio")
+  tipoAdjudicacion         String?      @map("tipo_adjudicacion")
+  fechaFallo               String?      @map("fecha_fallo")
+  tipoLocalidad            String?      @map("tipo_localidad")
+  subcomponente            String?
+  accionProgramaId         String?      @map("accion_programa_id") @db.Uuid
+  coberturaApAntes         Decimal?     @map("cobertura_ap_antes") @db.Decimal(5, 2)
+  coberturaApMeta          Decimal?     @map("cobertura_ap_meta") @db.Decimal(5, 2)
+  coberturaTarAntes        Decimal?     @map("cobertura_tar_antes") @db.Decimal(5, 2)
+  coberturaTarMeta         Decimal?     @map("cobertura_tar_meta") @db.Decimal(5, 2)
+  caudalLps                Decimal?     @map("caudal_lps") @db.Decimal(8, 2)
+  pobIncorporar            Int?         @map("pob_incorporar")
+  pobMejorar               Int?         @map("pob_mejorar")
+  pobMujeres               Int?         @map("pob_mujeres")
+  pobIndigena              Int?         @map("pob_indigena")
+  pobAfromexicano          Int?         @map("pob_afromexicano")
+  entidadFederativaId      String?      @map("entidad_federativa_id") @db.Uuid
+  organismoOperadorId      String?      @map("organismo_operador_id") @db.Uuid
+  anexoTecnicoId           String?      @map("anexo_tecnico_id") @db.Uuid
   createdAt                DateTime     @default(now()) @map("created_at")
   updatedAt                DateTime     @updatedAt @map("updated_at")
 
-  municipio     Municipio      @relation(fields: [municipioId], references: [id])
-  contratista   Contratista?   @relation(fields: [contratistaId], references: [id])
-  avances       AvanceMensual[]
-  estimaciones  Estimacion[]
-  documentos    Documento[]
-  observaciones Observacion[]
-  alertas       Alerta[]
-  alertaConfigs AlertaConfig[]
+  municipio           Municipio           @relation(fields: [municipioId], references: [id])
+  contratista         Contratista?        @relation(fields: [contratistaId], references: [id])
+  entidadFederativa   EntidadFederativa?  @relation(fields: [entidadFederativaId], references: [id])
+  organismoOperador   OrganismoOperador?  @relation("ObraOrganismoOperador", fields: [organismoOperadorId], references: [id])
+  accionPrograma      AccionPrograma?     @relation(fields: [accionProgramaId], references: [id])
+  anexoTecnico        AnexoTecnico?       @relation(fields: [anexoTecnicoId], references: [id])
+  avances             AvanceMensual[]
+  estimaciones        Estimacion[]
+  documentos          Documento[]
+  observaciones       Observacion[]
+  alertas             Alerta[]
+  alertaConfigs       AlertaConfig[]
+  cofinanciamientos   Cofinanciamiento[]
+  avancesTrimestrales AvanceTrimestral[]
+  solicitudesResultado SolicitudPrograma[] @relation("SolicitudObraResultante")
 
   @@index([municipioId])
   @@index([contratistaId])
   @@index([estatus])
+  @@index([entidadFederativaId])
+  @@index([organismoOperadorId])
+  @@index([accionProgramaId])
+  @@index([anexoTecnicoId])
+  @@index([cua])
   @@map("obras")
 }
 
@@ -337,4 +440,134 @@ model Alerta {
   @@index([atendida, severidad])
   @@index([municipioId])
   @@map("alertas")
+}
+
+model Cofinanciamiento {
+  id          String   @id @default(uuid()) @db.Uuid
+  obraId      String   @map("obra_id") @db.Uuid
+  fuente      String
+  monto       Decimal  @db.Decimal(14, 2)
+  porcentaje  Decimal  @default(0) @db.Decimal(5, 2)
+  descripcion String?
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  obra Obra @relation(fields: [obraId], references: [id], onDelete: Cascade)
+
+  @@index([obraId])
+  @@map("cofinanciamientos")
+}
+
+model AnexoEjecucion {
+  id                String   @id @default(uuid()) @db.Uuid
+  numero            String   @unique
+  ejercicioFiscal   Int      @map("ejercicio_fiscal")
+  entidadFederativa String   @map("entidad_federativa")
+  montoFederal      Decimal  @map("monto_federal") @db.Decimal(14, 2)
+  montoEstatal      Decimal  @map("monto_estatal") @db.Decimal(14, 2)
+  fechaFirma        String?  @map("fecha_firma")
+  fechaVigenciaFin  String?  @map("fecha_vigencia_fin")
+  estatus           String   @default("vigente")
+  archivoUrl        String?  @map("archivo_url")
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  anexosTecnicos  AnexoTecnico[]
+  cierresEjercicio CierreEjercicio[]
+
+  @@index([ejercicioFiscal])
+  @@map("anexos_ejecucion")
+}
+
+model AnexoTecnico {
+  id                  String   @id @default(uuid()) @db.Uuid
+  anexoEjecucionId    String   @map("anexo_ejecucion_id") @db.Uuid
+  organismoOperadorId String?  @map("organismo_operador_id") @db.Uuid
+  ejercicioFiscal     Int      @map("ejercicio_fiscal")
+  tipoLocalidad       String   @map("tipo_localidad")
+  estatus             String   @default("vigente")
+  archivoUrl          String?  @map("archivo_url")
+  createdAt           DateTime @default(now()) @map("created_at")
+  updatedAt           DateTime @updatedAt @map("updated_at")
+
+  anexoEjecucion    AnexoEjecucion     @relation(fields: [anexoEjecucionId], references: [id])
+  organismoOperador OrganismoOperador? @relation(fields: [organismoOperadorId], references: [id])
+  obras             Obra[]
+
+  @@index([anexoEjecucionId])
+  @@index([organismoOperadorId])
+  @@map("anexos_tecnicos")
+}
+
+model AvanceTrimestral {
+  id                    String        @id @default(uuid()) @db.Uuid
+  obraId                String        @map("obra_id") @db.Uuid
+  ejercicioFiscal       Int           @map("ejercicio_fiscal")
+  trimestre             Int
+  avanceFisicoAnterior  Decimal       @default(0) @map("avance_fisico_anterior") @db.Decimal(5, 2)
+  avanceFisicoTrimestre Decimal       @default(0) @map("avance_fisico_trimestre") @db.Decimal(5, 2)
+  avanceFisicoAcumulado Decimal       @default(0) @map("avance_fisico_acumulado") @db.Decimal(5, 2)
+  avanceFinAnterior     Decimal       @default(0) @map("avance_fin_anterior") @db.Decimal(14, 2)
+  avanceFinTrimestre    Decimal       @default(0) @map("avance_fin_trimestre") @db.Decimal(14, 2)
+  avanceFinAcumulado    Decimal       @default(0) @map("avance_fin_acumulado") @db.Decimal(14, 2)
+  fechaEntrega          String?       @map("fecha_entrega")
+  estatus               EstatusAvance @default(pendiente)
+  observaciones         String        @default("")
+  createdAt             DateTime      @default(now()) @map("created_at")
+  updatedAt             DateTime      @updatedAt @map("updated_at")
+
+  obra Obra @relation(fields: [obraId], references: [id], onDelete: Cascade)
+
+  @@unique([obraId, ejercicioFiscal, trimestre])
+  @@index([obraId])
+  @@map("avances_trimestrales")
+}
+
+model CierreEjercicio {
+  id                    String   @id @default(uuid()) @db.Uuid
+  anexoEjecucionId      String   @map("anexo_ejecucion_id") @db.Uuid
+  ejercicioFiscal       Int      @map("ejercicio_fiscal")
+  tipoApoyo             String   @map("tipo_apoyo")
+  montoTransferido      Decimal  @map("monto_transferido") @db.Decimal(14, 2)
+  montoReintegradoEj    Decimal  @default(0) @map("monto_reintegrado_ejercicio") @db.Decimal(14, 2)
+  montoModificado31dic  Decimal  @default(0) @map("monto_modificado_31dic") @db.Decimal(14, 2)
+  montoInformeFinal     Decimal  @default(0) @map("monto_informe_final") @db.Decimal(14, 2)
+  montoReintegrado15ene Decimal  @default(0) @map("monto_reintegrado_15ene") @db.Decimal(14, 2)
+  montoPorReintegrar    Decimal  @default(0) @map("monto_por_reintegrar") @db.Decimal(14, 2)
+  fechaCierre           String?  @map("fecha_cierre")
+  estatus               String   @default("pendiente")
+  archivoUrl            String?  @map("archivo_url")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @updatedAt @map("updated_at")
+
+  anexoEjecucion AnexoEjecucion @relation(fields: [anexoEjecucionId], references: [id])
+
+  @@unique([anexoEjecucionId, tipoApoyo])
+  @@index([anexoEjecucionId])
+  @@map("cierres_ejercicio")
+}
+
+model SolicitudPrograma {
+  id               String   @id @default(uuid()) @db.Uuid
+  programa         String
+  ejercicioFiscal  Int      @map("ejercicio_fiscal")
+  entidadId        String   @map("entidad_id") @db.Uuid
+  municipioId      String   @map("municipio_id") @db.Uuid
+  tipoApoyo        String   @map("tipo_apoyo")
+  componente       String
+  montoSolicitado  Decimal  @map("monto_solicitado") @db.Decimal(14, 2)
+  estatus          String   @default("borrador")
+  obraResultanteId String?  @map("obra_resultante_id") @db.Uuid
+  createdAt        DateTime @default(now()) @map("created_at")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  entidad          EntidadFederativa @relation(fields: [entidadId], references: [id])
+  municipio        Municipio         @relation(fields: [municipioId], references: [id])
+  obraResultante   Obra?             @relation("SolicitudObraResultante", fields: [obraResultanteId], references: [id])
+
+  @@index([entidadId])
+  @@index([municipioId])
+  @@index([obraResultanteId])
+  @@index([estatus])
+  @@map("solicitudes_programa")
 }

@@ -36,7 +36,33 @@ export type ObservacionStatus = 'abierta' | 'en_atencion' | 'atendida' | 'cerrad
 /** Valores conocidos; la BD puede usar otros (p. ej. retraso_fisico, documentacion_incompleta). */
 export type AlertaType = string;
 
-export interface Obra {
+export interface ObraProaguaFields {
+  cua?: string | null;
+  idSisba?: string | null;
+  numContrato?: string | null;
+  comprasMxFolio?: string | null;
+  subcomponente?: string | null;
+  tipoLocalidad?: string | null;
+  coberturaApAntes?: number | null;
+  coberturaApMeta?: number | null;
+  coberturaTarAntes?: number | null;
+  coberturaTarMeta?: number | null;
+  caudalLps?: number | null;
+  pobIncorporar?: number | null;
+  pobMejorar?: number | null;
+  pobMujeres?: number | null;
+  pobIndigena?: number | null;
+  pobAfromexicano?: number | null;
+  entidadFederativaId?: string | null;
+  entidadFederativaNombre?: string | null;
+  organismoOperadorId?: string | null;
+  organismoOperadorNombre?: string | null;
+  accionProgramaId?: string | null;
+  accionProgramaClave?: string | null;
+  anexoTecnicoId?: string | null;
+}
+
+export interface Obra extends ObraProaguaFields {
   id: string;
   folio: string;
   nombre: string;
@@ -67,6 +93,80 @@ export interface Obra {
   latitud: number;
   longitud: number;
   evidenciaFotografica: string[];
+}
+
+export type CofinanciamientoFuente = 'federal' | 'estatal' | 'municipal' | 'organismo_operador';
+
+export interface Cofinanciamiento {
+  id: string;
+  obraId: string;
+  fuente: CofinanciamientoFuente | string;
+  monto: number;
+  porcentaje: number;
+  descripcion?: string | null;
+}
+
+export interface AvanceTrimestral {
+  id: string;
+  obraId: string;
+  ejercicioFiscal: number;
+  trimestre: number;
+  avanceFisicoAnterior: number;
+  avanceFisicoTrimestre: number;
+  avanceFisicoAcumulado: number;
+  avanceFinAnterior: number;
+  avanceFinTrimestre: number;
+  avanceFinAcumulado: number;
+  fechaEntrega?: string | null;
+  estatus: AvanceMensual['estatus'];
+  observaciones?: string;
+}
+
+export interface OrganismoOperador {
+  id: string;
+  nombre: string;
+  siglas?: string | null;
+  tipoOrganismo: string;
+  entidadId?: string | null;
+  municipioId?: string | null;
+  rfc?: string | null;
+  director?: string | null;
+}
+
+export interface AccionPrograma {
+  id: string;
+  programa: string;
+  componente: string;
+  subcomponente: string;
+  clave: string;
+  descripcion: string;
+  unidad: string;
+  tipoLocalidad: string;
+}
+
+export type SolicitudEstatus = 'borrador' | 'presentada' | 'aprobada' | 'rechazada' | 'observada';
+
+export interface SolicitudPrograma {
+  id: string;
+  programa: string;
+  ejercicioFiscal: number;
+  entidadId: string;
+  entidadNombre?: string;
+  municipioId: string;
+  municipioNombre?: string;
+  tipoApoyo: string;
+  componente: string;
+  montoSolicitado: number;
+  estatus: SolicitudEstatus | string;
+  obraResultanteId?: string | null;
+  obraResultanteFolio?: string | null;
+  createdAt?: string;
+}
+
+export interface EntidadFederativa {
+  id: string;
+  nombre: string;
+  clave: string;
 }
 
 export interface AvanceMensual {

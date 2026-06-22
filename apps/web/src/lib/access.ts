@@ -16,6 +16,9 @@ export function canAccessRoute(
     return role === 'estatal' || role === 'municipal';
   }
   if (route === '/obras' || route.startsWith('/obras/')) return true;
+  if (route === '/solicitudes') {
+    return role === 'estatal' || role === 'municipal';
+  }
 
   if (role === 'estatal') {
     if (route.startsWith('/admin/')) return route === '/admin/usuarios';
@@ -27,6 +30,7 @@ export function canAccessRoute(
       route === '/dashboard' ||
       route === '/obras' ||
       route.startsWith('/obras/') ||
+      route === '/solicitudes' ||
       route === '/municipios' ||
       route.startsWith('/municipios/') ||
       route === '/contratistas' ||

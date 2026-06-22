@@ -16,6 +16,8 @@ import { createObra, fetchContratistas, fetchMunicipios, updateObra, type Create
 import { ApiError } from '@/lib/api-client';
 import { getBrand } from '@/config/brand';
 import { getProgramaName, getTipoObraLabel } from '@/lib/utils';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { OrganismoOperadorSelect } from '@/components/proagua/OrganismoOperadorSelect';
 import type { Obra, User } from '@/types';
 
 const DEFAULT_PROGRAMAS = ['FAPAA', 'CAM', 'FAIS', 'FORTAMUN', 'FOMAGUA', 'FOISE', 'PEF', 'SISPLADE'];
@@ -70,6 +72,14 @@ const schema = z.object({
   fecha_inicio: z.string().optional(),
   fecha_termino_programada: z.string().optional(),
   plazo_ejecucion: z.number().int().min(0).optional(),
+  cua: z.string().optional(),
+  subcomponente: z.string().optional(),
+  organismo_operador_id: z.string().optional(),
+  tipo_localidad: z.string().optional(),
+  cobertura_ap_antes: z.number().min(0).max(100).optional(),
+  cobertura_ap_meta: z.number().min(0).max(100).optional(),
+  pob_incorporar: z.number().int().min(0).optional(),
+  pob_mejorar: z.number().int().min(0).optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -94,6 +104,7 @@ function resolveDependenciaOptions(catalog: string[], current?: string): string[
 
 export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: ObraFormModalProps) {
   const brand = getBrand();
+  const isConagua = brand.tenantId === 'conagua';
   const programas = brand.programas ?? DEFAULT_PROGRAMAS;
   const dependenciasCatalog = brand.dependencias ?? DEFAULT_DEPENDENCIAS;
   const defaultDependencia = dependenciasCatalog[0] ?? '';
@@ -120,6 +131,14 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
       fecha_inicio: '',
       fecha_termino_programada: '',
       plazo_ejecucion: undefined,
+      cua: '',
+      subcomponente: '',
+      organismo_operador_id: '',
+      tipo_localidad: '',
+      cobertura_ap_antes: undefined,
+      cobertura_ap_meta: undefined,
+      pob_incorporar: undefined,
+      pob_mejorar: undefined,
     },
   });
 
@@ -155,6 +174,14 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
         fecha_inicio: toDateInputValue(obra.fechaInicio),
         fecha_termino_programada: toDateInputValue(obra.fechaTerminoProgramada),
         plazo_ejecucion: obra.plazoEjecucion > 0 ? obra.plazoEjecucion : undefined,
+        cua: obra.cua ?? '',
+        subcomponente: obra.subcomponente ?? '',
+        organismo_operador_id: obra.organismoOperadorId ?? '',
+        tipo_localidad: obra.tipoLocalidad ?? '',
+        cobertura_ap_antes: obra.coberturaApAntes ?? undefined,
+        cobertura_ap_meta: obra.coberturaApMeta ?? undefined,
+        pob_incorporar: obra.pobIncorporar ?? undefined,
+        pob_mejorar: obra.pobMejorar ?? undefined,
       });
     } else {
       form.reset({
@@ -170,6 +197,14 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
         fecha_inicio: '',
         fecha_termino_programada: '',
         plazo_ejecucion: undefined,
+        cua: '',
+        subcomponente: '',
+        organismo_operador_id: '',
+        tipo_localidad: '',
+        cobertura_ap_antes: undefined,
+        cobertura_ap_meta: undefined,
+        pob_incorporar: undefined,
+        pob_mejorar: undefined,
       });
     }
   }, [open, obra, forcedMunicipioId, form, programas, defaultDependencia]);
@@ -212,6 +247,17 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
       avance_financiero: 0,
     };
 
+    if (isConagua) {
+      if (values.cua?.trim()) payload.cua = values.cua.trim();
+      if (values.subcomponente?.trim()) payload.subcomponente = values.subcomponente.trim();
+      if (values.organismo_operador_id) payload.organismo_operador_id = values.organismo_operador_id;
+      if (values.tipo_localidad?.trim()) payload.tipo_localidad = values.tipo_localidad.trim();
+      if (values.cobertura_ap_antes != null) payload.cobertura_ap_antes = values.cobertura_ap_antes;
+      if (values.cobertura_ap_meta != null) payload.cobertura_ap_meta = values.cobertura_ap_meta;
+      if (values.pob_incorporar != null) payload.pob_incorporar = values.pob_incorporar;
+      if (values.pob_mejorar != null) payload.pob_mejorar = values.pob_mejorar;
+    }
+
     try {
       if (isEdit && obra) {
         await updateObra(obra.id, payload);
@@ -235,112 +281,53 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
           <DialogTitle>{isEdit ? 'Editar obra' : 'Nueva obra'}</DialogTitle>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-3">
-          {isEdit && obra ? (
-            <Field label="Folio">
-              <p className="h-9 px-2 flex items-center text-xs text-gray-700 bg-gray-50 border border-gray-200 rounded-md">
-                {obra.folio}
-              </p>
-            </Field>
+          {isConagua ? (
+            <Tabs defaultValue="general" className="w-full">
+              <TabsList className="w-full h-auto flex">
+                <TabsTrigger value="general" className="flex-1 text-xs data-[state=active]:bg-brand-primary data-[state=active]:text-white">
+                  General
+                </TabsTrigger>
+                <TabsTrigger value="proagua" className="flex-1 text-xs data-[state=active]:bg-brand-primary data-[state=active]:text-white">
+                  PROAGUA
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent value="general" className="space-y-3 mt-3">
+                <ObraGeneralFields
+                  form={form}
+                  isEdit={isEdit}
+                  obra={obra}
+                  programas={programas}
+                  dependenciaOptions={dependenciaOptions}
+                  isEstatal={isEstatal}
+                  municipios={municipios}
+                  contratistas={contratistas}
+                  loadingCatalogs={loadingCatalogs}
+                  showFieldError={showFieldError}
+                  inputClass={inputClass}
+                />
+              </TabsContent>
+              <TabsContent value="proagua" className="space-y-3 mt-3">
+                <ProaguaFields
+                  form={form}
+                  municipioId={forcedMunicipioId ?? form.watch('municipio_id')}
+                />
+              </TabsContent>
+            </Tabs>
           ) : (
-            <p className="text-[11px] text-gray-500 bg-gray-50 border border-gray-100 rounded-md px-2 py-1.5">
-              El folio se generará automáticamente al guardar (formato PROGRAMA-AÑO-###).
-            </p>
-          )}
-          <Field label="Programa *">
-            <select {...form.register('programa')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white">
-              {programas.map((p) => (
-                <option key={p} value={p}>
-                  {getProgramaName(p)}
-                </option>
-              ))}
-            </select>
-          </Field>
-          <Field label="Nombre *">
-            <input {...form.register('nombre')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" />
-          </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Localidad *">
-              <input {...form.register('localidad')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" />
-            </Field>
-            <Field label="Dependencia *">
-              <select {...form.register('dependencia')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white">
-                {dependenciaOptions.map((d) => (
-                  <option key={d} value={d}>
-                    {d}
-                  </option>
-                ))}
-              </select>
-            </Field>
-          </div>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Tipo de obra *">
-              <select {...form.register('tipo_obra')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white">
-                {TIPOS_OBRA.map((t) => (
-                  <option key={t} value={t}>
-                    {getTipoObraLabel(t)}
-                  </option>
-                ))}
-              </select>
-            </Field>
-            <Field label="Estatus">
-              <select {...form.register('estatus')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white">
-                {ESTATUS_OBRA.map((e) => (
-                  <option key={e} value={e}>
-                    {e.replace(/_/g, ' ')}
-                  </option>
-                ))}
-              </select>
-            </Field>
-          </div>
-          <Field label="Monto autorizado (MXN) *">
-            <input type="number" {...form.register('monto_autorizado', { valueAsNumber: true })} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" />
-          </Field>
-          <div className="grid grid-cols-2 gap-3">
-            <Field label="Fecha de inicio">
-              <input type="date" {...form.register('fecha_inicio')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" />
-            </Field>
-            <Field label="Fecha término programada">
-              <input type="date" {...form.register('fecha_termino_programada')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" />
-            </Field>
-          </div>
-          <Field label="Plazo de ejecución (meses)" required error={showFieldError('plazo_ejecucion')}>
-            <input
-              type="number"
-              min={1}
-              {...form.register('plazo_ejecucion', {
-                valueAsNumber: true,
-                setValueAs: (v) => (v === '' || Number.isNaN(Number(v)) ? undefined : Number(v)),
-              })}
-              className={inputClass('plazo_ejecucion')}
-              placeholder="Ej. 12"
+            <ObraGeneralFields
+              form={form}
+              isEdit={isEdit}
+              obra={obra}
+              programas={programas}
+              dependenciaOptions={dependenciaOptions}
+              isEstatal={isEstatal}
+              municipios={municipios}
+              contratistas={contratistas}
+              loadingCatalogs={loadingCatalogs}
+              showFieldError={showFieldError}
+              inputClass={inputClass}
             />
-          </Field>
-          {isEstatal && (
-            <Field label="Municipio" required error={showFieldError('municipio_id')}>
-              <select
-                {...form.register('municipio_id')}
-                className={inputClass('municipio_id')}
-                disabled={loadingCatalogs}
-              >
-                <option value="">Seleccionar...</option>
-                {municipios.map((m) => (
-                  <option key={m.id} value={m.id}>
-                    {m.nombre}
-                  </option>
-                ))}
-              </select>
-            </Field>
           )}
-          <Field label="Contratista (opcional)">
-            <select {...form.register('contratista_id')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" disabled={loadingCatalogs}>
-              <option value="">Sin asignar</option>
-              {contratistas.map((c) => (
-                <option key={c.id} value={c.id}>
-                  {c.nombre}
-                </option>
-              ))}
-            </select>
-          </Field>
           {form.formState.errors.root && (
             <p className="text-xs text-red-600">{form.formState.errors.root.message}</p>
           )}
@@ -355,6 +342,229 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
         </form>
       </DialogContent>
     </Dialog>
+  );
+}
+
+function ProaguaFields({
+  form,
+  municipioId,
+}: {
+  form: ReturnType<typeof useForm<FormValues>>;
+  municipioId?: string;
+}) {
+  const ooId = form.watch('organismo_operador_id');
+
+  return (
+    <>
+      <Field label="CUA (Clave Unica de Accion)">
+        <input {...form.register('cua')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" placeholder="Ej. CUA-2026-001" />
+      </Field>
+      <Field label="Subcomponente">
+        <input {...form.register('subcomponente')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" />
+      </Field>
+      <Field label="Tipo de localidad">
+        <select {...form.register('tipo_localidad')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white">
+          <option value="">Seleccionar...</option>
+          <option value="urbana">Urbana</option>
+          <option value="rural">Rural</option>
+          <option value="indigena">Indigena</option>
+        </select>
+      </Field>
+      <Field label="Organismo operador">
+        <OrganismoOperadorSelect
+          value={ooId}
+          onValueChange={(v) => form.setValue('organismo_operador_id', v)}
+          municipioId={municipioId}
+        />
+      </Field>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Cobertura AP antes (%)">
+          <input
+            type="number"
+            min={0}
+            max={100}
+            {...form.register('cobertura_ap_antes', {
+              valueAsNumber: true,
+              setValueAs: (v) => (v === '' || Number.isNaN(Number(v)) ? undefined : Number(v)),
+            })}
+            className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white"
+          />
+        </Field>
+        <Field label="Cobertura AP meta (%)">
+          <input
+            type="number"
+            min={0}
+            max={100}
+            {...form.register('cobertura_ap_meta', {
+              valueAsNumber: true,
+              setValueAs: (v) => (v === '' || Number.isNaN(Number(v)) ? undefined : Number(v)),
+            })}
+            className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white"
+          />
+        </Field>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Poblacion a incorporar">
+          <input
+            type="number"
+            min={0}
+            {...form.register('pob_incorporar', {
+              valueAsNumber: true,
+              setValueAs: (v) => (v === '' || Number.isNaN(Number(v)) ? undefined : Number(v)),
+            })}
+            className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white"
+          />
+        </Field>
+        <Field label="Poblacion a mejorar">
+          <input
+            type="number"
+            min={0}
+            {...form.register('pob_mejorar', {
+              valueAsNumber: true,
+              setValueAs: (v) => (v === '' || Number.isNaN(Number(v)) ? undefined : Number(v)),
+            })}
+            className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white"
+          />
+        </Field>
+      </div>
+    </>
+  );
+}
+
+function ObraGeneralFields({
+  form,
+  isEdit,
+  obra,
+  programas,
+  dependenciaOptions,
+  isEstatal,
+  municipios,
+  contratistas,
+  loadingCatalogs,
+  showFieldError,
+  inputClass,
+}: {
+  form: ReturnType<typeof useForm<FormValues>>;
+  isEdit: boolean;
+  obra?: Obra | null;
+  programas: string[];
+  dependenciaOptions: string[];
+  isEstatal: boolean;
+  municipios: { id: string; nombre: string }[];
+  contratistas: { id: string; nombre: string }[];
+  loadingCatalogs: boolean;
+  showFieldError: (name: keyof FormValues) => string | undefined;
+  inputClass: (name: keyof FormValues) => string;
+}) {
+  return (
+    <>
+      {isEdit && obra ? (
+        <Field label="Folio">
+          <p className="h-9 px-2 flex items-center text-xs text-gray-700 bg-gray-50 border border-gray-200 rounded-md">
+            {obra.folio}
+          </p>
+        </Field>
+      ) : (
+        <p className="text-[11px] text-gray-500 bg-gray-50 border border-gray-100 rounded-md px-2 py-1.5">
+          El folio se generará automáticamente al guardar (formato PROGRAMA-AÑO-###).
+        </p>
+      )}
+      <Field label="Programa *">
+        <select {...form.register('programa')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white">
+          {programas.map((p) => (
+            <option key={p} value={p}>
+              {getProgramaName(p)}
+            </option>
+          ))}
+        </select>
+      </Field>
+      <Field label="Nombre *">
+        <input {...form.register('nombre')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" />
+      </Field>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Localidad *">
+          <input {...form.register('localidad')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" />
+        </Field>
+        <Field label="Dependencia *">
+          <select {...form.register('dependencia')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white">
+            {dependenciaOptions.map((d) => (
+              <option key={d} value={d}>
+                {d}
+              </option>
+            ))}
+          </select>
+        </Field>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Tipo de obra *">
+          <select {...form.register('tipo_obra')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white">
+            {TIPOS_OBRA.map((t) => (
+              <option key={t} value={t}>
+                {getTipoObraLabel(t)}
+              </option>
+            ))}
+          </select>
+        </Field>
+        <Field label="Estatus">
+          <select {...form.register('estatus')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white">
+            {ESTATUS_OBRA.map((e) => (
+              <option key={e} value={e}>
+                {e.replace(/_/g, ' ')}
+              </option>
+            ))}
+          </select>
+        </Field>
+      </div>
+      <Field label="Monto autorizado (MXN) *">
+        <input type="number" {...form.register('monto_autorizado', { valueAsNumber: true })} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" />
+      </Field>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Fecha de inicio">
+          <input type="date" {...form.register('fecha_inicio')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" />
+        </Field>
+        <Field label="Fecha término programada">
+          <input type="date" {...form.register('fecha_termino_programada')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" />
+        </Field>
+      </div>
+      <Field label="Plazo de ejecución (meses)" required error={showFieldError('plazo_ejecucion')}>
+        <input
+          type="number"
+          min={1}
+          {...form.register('plazo_ejecucion', {
+            valueAsNumber: true,
+            setValueAs: (v) => (v === '' || Number.isNaN(Number(v)) ? undefined : Number(v)),
+          })}
+          className={inputClass('plazo_ejecucion')}
+          placeholder="Ej. 12"
+        />
+      </Field>
+      {isEstatal && (
+        <Field label="Municipio" required error={showFieldError('municipio_id')}>
+          <select
+            {...form.register('municipio_id')}
+            className={inputClass('municipio_id')}
+            disabled={loadingCatalogs}
+          >
+            <option value="">Seleccionar...</option>
+            {municipios.map((m) => (
+              <option key={m.id} value={m.id}>
+                {m.nombre}
+              </option>
+            ))}
+          </select>
+        </Field>
+      )}
+      <Field label="Contratista (opcional)">
+        <select {...form.register('contratista_id')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" disabled={loadingCatalogs}>
+          <option value="">Sin asignar</option>
+          {contratistas.map((c) => (
+            <option key={c.id} value={c.id}>
+              {c.nombre}
+            </option>
+          ))}
+        </select>
+      </Field>
+    </>
   );
 }
 

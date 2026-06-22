@@ -38,6 +38,7 @@ export class UsersService {
       municipio_id: base.municipioId,
       contratista_id: base.contratistaId,
       telefono: base.telefono ?? null,
+      rol_conagua: base.rolConagua ?? null,
     };
   }
 
@@ -60,6 +61,7 @@ export class UsersService {
       municipio_id?: string;
       contratista_id?: string;
       telefono?: string;
+      rol_conagua?: string;
     },
     user: Usuario,
   ) {
@@ -74,6 +76,7 @@ export class UsersService {
         municipioId: data.municipio_id,
         contratistaId: data.contratista_id,
         telefono: data.telefono?.trim() || null,
+        rolConagua: data.rol_conagua?.trim() || null,
       },
     });
     return this.toSnakeUserResponse(created);
@@ -81,14 +84,15 @@ export class UsersService {
 
   async update(
     id: string,
-    data: { is_active?: boolean; full_name?: string; telefono?: string },
+    data: { is_active?: boolean; full_name?: string; telefono?: string; rol_conagua?: string },
     user: Usuario,
   ) {
     if (user.rol !== Rol.estatal) throw new ForbiddenException('Only estatal');
     if (
       data.is_active === undefined &&
       data.full_name === undefined &&
-      data.telefono === undefined
+      data.telefono === undefined &&
+      data.rol_conagua === undefined
     ) {
       throw new BadRequestException('At least one field is required');
     }
@@ -103,6 +107,7 @@ export class UsersService {
         ...(data.is_active !== undefined && { isActive: data.is_active }),
         ...(data.full_name !== undefined && { fullName: data.full_name.trim() }),
         ...(data.telefono !== undefined && { telefono: data.telefono.trim() || null }),
+        ...(data.rol_conagua !== undefined && { rolConagua: data.rol_conagua.trim() || null }),
       },
     });
     return this.toSnakeUserResponse(updated);

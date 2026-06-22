@@ -7,6 +7,7 @@ import {
   type ReactNode,
 } from 'react';
 import { canAccessRoute } from '@/lib/access';
+import { getBrand } from '@/config/brand';
 import { getToken, setToken, setUnauthorizedHandler } from '@/lib/api-client';
 import { fetchAlertas, fetchMe, login as apiLogin } from '@/lib/api';
 import type { User } from '@/types';
@@ -106,6 +107,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const getMenuItems = (): MenuItem[] => {
     if (!user) return [];
     const { role } = user;
+    const isConagua = getBrand().tenantId === 'conagua';
+    const solicitudesItem: MenuItem | null = isConagua
+      ? { path: '/solicitudes', label: 'Solicitudes', icon: 'FileText' }
+      : null;
 
     if (role === 'estatal') {
       const munPath = selectedMunicipio
@@ -117,6 +122,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return [
         { path: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
         { path: '/obras', label: 'Obras', icon: 'HardHat' },
+        ...(solicitudesItem ? [solicitudesItem] : []),
         { path: munPath, label: 'Municipios', icon: 'MapPin' },
         { path: conPath, label: 'Contratistas', icon: 'Users' },
         { path: '/admin/usuarios', label: 'Usuarios', icon: 'Shield' },
@@ -130,6 +136,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return [
         { path: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
         { path: '/obras', label: 'Obras', icon: 'HardHat' },
+        ...(solicitudesItem ? [solicitudesItem] : []),
         {
           path: `/municipios/${user.municipioId ?? selectedMunicipio}`,
           label: 'Mi Municipio',
