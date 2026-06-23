@@ -636,6 +636,21 @@ async function main() {
     return match?.id ?? accionesPrograma[0]?.id ?? null;
   };
 
+  const resolveMunicipioId = (o: ObraSeed, fallbackIndex: number): string => {
+    const parts = o.localidad.split(',').map((p) => p.trim()).filter(Boolean);
+    for (let j = parts.length - 1; j >= 0; j--) {
+      const hit = municipioByName.get(parts[j]);
+      if (hit) return hit.id;
+    }
+    const locKey = parts[0]?.toLowerCase() ?? '';
+    const partial = municipios.find(
+      (m) =>
+        locKey.includes(m.nombre.toLowerCase()) || m.nombre.toLowerCase().includes(locKey),
+    );
+    if (partial) return partial.id;
+    return municipios[fallbackIndex % municipios.length].id;
+  };
+
   const obras = await Promise.all(
     obrasData.map((o, i) => {
       const organismoOperadorId = conagua
@@ -670,7 +685,7 @@ async function main() {
           latitud: o.latitud,
           longitud: o.longitud,
           evidenciaFotografica: [],
-          municipioId: municipios[i % municipios.length].id,
+          municipioId: resolveMunicipioId(o, i),
           contratistaId: resolveContratistaId(contratistas, o.contratista_nombre, i),
           ...(conagua
             ? {

@@ -9,9 +9,12 @@ import {
 } from '@/lib/api-client';
 import {
   mapAlerta,
+  mapAccionPrograma,
+  mapAnexoEjecucion,
+  mapAnexoTecnico,
   mapAvance,
   mapAvanceTrimestral,
-  mapAccionPrograma,
+  mapCierreEjercicio,
   mapCofinanciamiento,
   mapContratista,
   mapDocumento,
@@ -32,7 +35,10 @@ import type {
   AlertaConfigDestinatario,
   AlertaConfigTipo,
   AdminUser,
+  AnexoEjecucion,
+  AnexoTecnico,
   AvanceTrimestral,
+  CierreEjercicio,
   Cofinanciamiento,
   Contratista,
   Documento,
@@ -40,6 +46,7 @@ import type {
   MunicipioData,
   Obra,
   OrganismoOperador,
+  ProaguaImportResult,
   Severidad,
   SolicitudPrograma,
   TopContratistaChartRow,
@@ -165,6 +172,12 @@ function mapAdminUser(row: Record<string, unknown>): AdminUser {
     email: String(row.email),
     fullName: String(row.full_name ?? row.fullName ?? ''),
     role: String(row.role ?? row.rol) as User['role'],
+    rolConagua:
+      row.rol_conagua != null
+        ? String(row.rol_conagua)
+        : row.rolConagua != null
+          ? String(row.rolConagua)
+          : null,
     avatarInitials: String(row.avatar_initials ?? row.avatarInitials ?? 'US'),
     municipioId: row.municipio_id != null ? String(row.municipio_id) : undefined,
     contratistaId: row.contratista_id != null ? String(row.contratista_id) : undefined,
@@ -224,6 +237,7 @@ export interface CreateUserInput {
   municipio_id?: string;
   contratista_id?: string;
   telefono?: string;
+  rol_conagua?: string;
 }
 
 export async function createUser(body: CreateUserInput): Promise<AdminUser> {
@@ -238,6 +252,7 @@ export interface UpdateUserInput {
   isActive?: boolean;
   full_name?: string;
   telefono?: string | null;
+  rol_conagua?: string | null;
 }
 
 export async function updateUser(id: string, body: UpdateUserInput): Promise<AdminUser> {
@@ -245,6 +260,7 @@ export async function updateUser(id: string, body: UpdateUserInput): Promise<Adm
   if (body.isActive !== undefined) payload.is_active = body.isActive;
   if (body.full_name !== undefined) payload.full_name = body.full_name;
   if (body.telefono !== undefined) payload.telefono = body.telefono ?? '';
+  if (body.rol_conagua !== undefined) payload.rol_conagua = body.rol_conagua ?? '';
   const row = await apiFetch<Record<string, unknown>>(`/users/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(payload),
@@ -733,4 +749,141 @@ export type ProaguaExportKind =
 export async function downloadProaguaExport(kind: ProaguaExportKind, id: string): Promise<void> {
   const { blob, filename } = await apiFetchBlob(`/proagua/export/${kind}/${id}`);
   triggerBlobDownload(blob, filename ?? `${kind}-${id}.xlsx`);
+}
+
+export async function fetchAnexosEjecucion(): Promise<AnexoEjecucion[]> {
+  const rows = await apiFetch<Record<string, unknown>[]>('/anexos-ejecucion');
+  return rows.map(mapAnexoEjecucion);
+}
+
+export async function createAnexoEjecucion(body: {
+  numero: string;
+  ejercicio_fiscal: number;
+  entidad_federativa: string;
+  monto_federal: number;
+  monto_estatal: number;
+  fecha_firma?: string;
+  fecha_vigencia_fin?: string;
+  estatus?: string;
+}): Promise<AnexoEjecucion> {
+  const row = await apiFetch<Record<string, unknown>>('/anexos-ejecucion', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+  return mapAnexoEjecucion(row);
+}
+
+export async function fetchAnexosTecnicos(anexoEjecucionId: string): Promise<AnexoTecnico[]> {
+  const rows = await apiFetch<Record<string, unknown>[]>(
+    `/anexos-ejecucion/${anexoEjecucionId}/tecnicos`,
+  );
+  return rows.map(mapAnexoTecnico);
+}
+
+export async function createAnexoTecnico(
+  anexoEjecucionId: string,
+  body: {
+    organismo_operador_id?: string;
+    ejercicio_fiscal: number;
+    tipo_localidad: string;
+    estatus?: string;
+  },
+): Promise<AnexoTecnico> {
+  const row = await apiFetch<Record<string, unknown>>(
+    `/anexos-ejecucion/${anexoEjecucionId}/tecnicos`,
+    { method: 'POST', body: JSON.stringify(body) },
+  );
+  return mapAnexoTecnico(row);
+}
+
+export async function fetchCierresEjercicio(): Promise<CierreEjercicio[]> {
+  const rows = await apiFetch<Record<string, unknown>[]>('/cierres-ejercicio');
+  return rows.map(mapCierreEjercicio);
+}
+
+export async function createCierreEjercicio(body: {
+  anexo_ejecucion_id: string;
+  ejercicio_fiscal: number;
+  tipo_apoyo: string;
+  monto_transferido: number;
+  monto_reintegrado_ejercicio?: number;
+  monto_modificado_31dic?: number;
+  monto_informe_final?: number;
+  monto_reintegrado_15ene?: number;
+  monto_por_reintegrar?: number;
+  fecha_cierre?: string;
+  estatus?: string;
+}): Promise<CierreEjercicio> {
+  const row = await apiFetch<Record<string, unknown>>('/cierres-ejercicio', {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+  return mapCierreEjercicio(row);
+}
+
+export async function importProaguaObrasCsv(file: File): Promise<ProaguaImportResult> {
+  const fd = new FormData();
+  fd.append('file', file);
+  return apiFetchFormData<ProaguaImportResult>('/proagua/import/obras/csv', fd);
+}
+
+export async function importProaguaObrasJson(
+  obras: Record<string, unknown>[],
+): Promise<ProaguaImportResult> {
+  return apiFetch<ProaguaImportResult>('/proagua/import/obras', {
+    method: 'POST',
+    body: JSON.stringify({ obras }),
+  });
+}
+
+export interface CreateAvanceTrimestralInput {
+  ejercicio_fiscal: number;
+  trimestre: number;
+  avance_fisico_trimestre?: number;
+  avance_fisico_acumulado?: number;
+  avance_fin_trimestre?: number;
+  avance_fin_acumulado?: number;
+  fecha_entrega?: string;
+  observaciones?: string;
+}
+
+export async function createAvanceTrimestral(
+  obraId: string,
+  body: CreateAvanceTrimestralInput,
+): Promise<AvanceTrimestral> {
+  const row = await apiFetch<Record<string, unknown>>(`/obras/${obraId}/avances-trimestrales`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+  return mapAvanceTrimestral(row, obraId);
+}
+
+export async function updateAvanceTrimestral(
+  obraId: string,
+  id: string,
+  body: Partial<CreateAvanceTrimestralInput> & { estatus?: string },
+): Promise<AvanceTrimestral> {
+  const row = await apiFetch<Record<string, unknown>>(
+    `/obras/${obraId}/avances-trimestrales/${id}`,
+    { method: 'PATCH', body: JSON.stringify(body) },
+  );
+  return mapAvanceTrimestral(row, obraId);
+}
+
+export async function transitionSolicitud(
+  id: string,
+  estatus: string,
+  obraResultanteId?: string,
+): Promise<SolicitudPrograma> {
+  const body: Record<string, string> = { estatus };
+  if (obraResultanteId) body.obra_resultante_id = obraResultanteId;
+  const row = await apiFetch<Record<string, unknown>>(`/solicitudes-programa/${id}/transicion`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+  return mapSolicitudPrograma(row);
+}
+
+export async function deleteSolicitud(id: string): Promise<void> {
+  await apiFetch<void>(`/solicitudes-programa/${id}`, { method: 'DELETE' });
 }

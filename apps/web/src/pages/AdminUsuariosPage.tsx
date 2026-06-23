@@ -13,6 +13,8 @@ import {
 } from '@/lib/api';
 import { ApiError } from '@/lib/api-client';
 import { toast } from 'sonner';
+import { getBrand } from '@/config/brand';
+import { ROL_CONAGUA_LABELS } from '@/lib/proagua-access';
 import type { UserRole } from '@/types';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -57,6 +59,7 @@ export default function AdminUsuariosPage() {
   const [municipioId, setMunicipioId] = useState('');
   const [contratistaId, setContratistaId] = useState('');
   const [telefono, setTelefono] = useState('');
+  const [rolConagua, setRolConagua] = useState('');
   const [editPhoneUser, setEditPhoneUser] = useState<AdminUser | null>(null);
   const [editPhoneValue, setEditPhoneValue] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -90,6 +93,7 @@ export default function AdminUsuariosPage() {
       municipio_id: role === 'municipal' ? municipioId : undefined,
       contratista_id: role === 'contratista' ? contratistaId : undefined,
       telefono: telefono.trim() || undefined,
+      rol_conagua: getBrand().tenantId === 'conagua' && rolConagua ? rolConagua : undefined,
     };
 
     setSubmitting(true);
@@ -164,6 +168,21 @@ export default function AdminUsuariosPage() {
   const roleLabel = (r: UserRole) =>
     ({ estatal: 'Estatal', municipal: 'Municipal', contratista: 'Contratista' })[r] ?? r;
 
+  const isConagua = getBrand().tenantId === 'conagua';
+
+  const handleRolConaguaChange = async (u: AdminUser, value: string) => {
+    setBusyId(u.id);
+    try {
+      await updateUser(u.id, { rol_conagua: value || null });
+      toast.success('Rol CONAGUA actualizado');
+      reload();
+    } catch (err) {
+      toast.error(err instanceof ApiError ? err.message : 'No se pudo actualizar');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   return (
     <PageState loading={loading} error={error} onRetry={reload}>
       <div className="space-y-4">
@@ -187,6 +206,9 @@ export default function AdminUsuariosPage() {
                     <th className="text-left py-2 px-2 text-gray-500">Nombre</th>
                     <th className="text-left py-2 px-2 text-gray-500">Email</th>
                     <th className="text-left py-2 px-2 text-gray-500">Rol</th>
+                    {isConagua && (
+                      <th className="text-left py-2 px-2 text-gray-500">Rol CONAGUA</th>
+                    )}
                     <th className="text-left py-2 px-2 text-gray-500">Telefono</th>
                     <th className="text-left py-2 px-2 text-gray-500">Alcance</th>
                     <th className="text-center py-2 px-2 text-gray-500">Estado</th>
@@ -208,6 +230,23 @@ export default function AdminUsuariosPage() {
                         <td className="py-2 px-2 font-medium">{u.fullName}</td>
                         <td className="py-2 px-2 text-gray-600">{u.email}</td>
                         <td className="py-2 px-2">{roleLabel(u.role)}</td>
+                        {isConagua && (
+                          <td className="py-2 px-2">
+                            <select
+                              className="h-7 px-1 text-[10px] border border-gray-200 rounded bg-white max-w-[140px]"
+                              value={u.rolConagua ?? ''}
+                              disabled={busyId === u.id}
+                              onChange={(e) => void handleRolConaguaChange(u, e.target.value)}
+                            >
+                              <option value="">—</option>
+                              {Object.entries(ROL_CONAGUA_LABELS).map(([k, label]) => (
+                                <option key={k} value={k}>
+                                  {label}
+                                </option>
+                              ))}
+                            </select>
+                          </td>
+                        )}
                         <td className="py-2 px-2 text-gray-500">
                           {u.telefono ? (
                             <button
@@ -374,6 +413,23 @@ export default function AdminUsuariosPage() {
                   <option value="contratista">Contratista</option>
                 </select>
               </div>
+              {isConagua && (
+                <div>
+                  <label className="text-[10px] text-gray-500 uppercase">Rol CONAGUA (opcional)</label>
+                  <select
+                    value={rolConagua}
+                    onChange={(e) => setRolConagua(e.target.value)}
+                    className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md mt-1 bg-white"
+                  >
+                    <option value="">Ninguno</option>
+                    {Object.entries(ROL_CONAGUA_LABELS).map(([k, label]) => (
+                      <option key={k} value={k}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               {role === 'municipal' && (
                 <div>
                   <label className="text-[10px] text-gray-500 uppercase">Municipio</label>

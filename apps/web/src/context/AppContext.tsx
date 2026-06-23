@@ -108,6 +108,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (!user) return [];
     const { role } = user;
     const isConagua = getBrand().tenantId === 'conagua';
+    const proaguaItems: MenuItem[] = isConagua
+      ? [
+          { path: '/anexos', label: 'Anexos XII/XIII', icon: 'FileStack' },
+          { path: '/cierres-ejercicio', label: 'Cierre ejercicio', icon: 'Landmark' },
+          { path: '/proagua/import', label: 'Importar PROAGUA', icon: 'Upload' },
+        ]
+      : [];
     const solicitudesItem: MenuItem | null = isConagua
       ? { path: '/solicitudes', label: 'Solicitudes', icon: 'FileText' }
       : null;
@@ -123,6 +130,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         { path: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
         { path: '/obras', label: 'Obras', icon: 'HardHat' },
         ...(solicitudesItem ? [solicitudesItem] : []),
+        ...proaguaItems,
         { path: munPath, label: 'Municipios', icon: 'MapPin' },
         { path: conPath, label: 'Contratistas', icon: 'Users' },
         { path: '/admin/usuarios', label: 'Usuarios', icon: 'Shield' },

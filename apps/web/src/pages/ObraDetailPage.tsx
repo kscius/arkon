@@ -25,6 +25,7 @@ import { ApiError } from '@/lib/api-client';
 import type { DocCategoria, Documento } from '@/types';
 import { formatCurrency, formatPercentage, formatDate, formatNumber as formatCount, getObraStatusColor, getObraStatusLabel, getRiesgoColor, getRiesgoLabel, getProgramaColor, getProgramaName, getSeverityColor, getSeverityLabel, getTipoObraLabel } from '@/lib/utils';
 import { getBrand } from '@/config/brand';
+import { parseEjercicioFromFolio } from '@/lib/proagua-access';
 import { FichaProaguaSection } from '@/components/proagua/FichaProaguaSection';
 import { CofinanciamientoTable } from '@/components/proagua/CofinanciamientoTable';
 import { AvanceTrimestralPanel } from '@/components/proagua/AvanceTrimestralPanel';
@@ -769,7 +770,10 @@ export default function ObraDetailPage() {
             <TabsContent value="proagua" className="mt-4">
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="space-y-4">
                 <CofinanciamientoTable obraId={obraId} />
-                <AvanceTrimestralPanel obraId={obraId} />
+                <AvanceTrimestralPanel
+                  obraId={obraId}
+                  ejercicioFiscal={parseEjercicioFromFolio(obra.folio)}
+                />
               </motion.div>
             </TabsContent>
           )}

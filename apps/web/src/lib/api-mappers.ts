@@ -35,12 +35,15 @@ export function mapUser(raw: {
   avatarInitials: string;
   municipioId?: string | null;
   contratistaId?: string | null;
+  rolConagua?: string | null;
+  rol_conagua?: string | null;
 }): User {
   return {
     id: raw.id,
     name: raw.fullName,
     email: raw.email,
     role: raw.role,
+    rolConagua: raw.rolConagua ?? raw.rol_conagua ?? undefined,
     avatar: raw.avatarInitials,
     municipioId: raw.municipioId ?? undefined,
     contratistaId: raw.contratistaId ?? undefined,
@@ -367,5 +370,56 @@ export function mapAlerta(raw: Record<string, unknown>): Alerta {
         : raw.accionTomada != null
           ? String(raw.accionTomada)
           : null,
+  };
+}
+
+export function mapAnexoEjecucion(raw: Record<string, unknown>): import('@/types').AnexoEjecucion {
+  return {
+    id: String(raw.id),
+    numero: String(raw.numero ?? ''),
+    ejercicioFiscal: Number(raw.ejercicio_fiscal ?? raw.ejercicioFiscal ?? 0),
+    entidadFederativa: String(raw.entidad_federativa ?? raw.entidadFederativa ?? ''),
+    montoFederal: Number(raw.monto_federal ?? raw.montoFederal ?? 0),
+    montoEstatal: Number(raw.monto_estatal ?? raw.montoEstatal ?? 0),
+    fechaFirma: raw.fecha_firma != null ? String(raw.fecha_firma) : null,
+    fechaVigenciaFin: raw.fecha_vigencia_fin != null ? String(raw.fecha_vigencia_fin) : null,
+    estatus: String(raw.estatus ?? 'vigente'),
+    archivoUrl: raw.archivo_url != null ? String(raw.archivo_url) : null,
+  };
+}
+
+export function mapAnexoTecnico(raw: Record<string, unknown>): import('@/types').AnexoTecnico {
+  return {
+    id: String(raw.id),
+    anexoEjecucionId: String(raw.anexo_ejecucion_id ?? raw.anexoEjecucionId ?? ''),
+    organismoOperadorId: raw.organismo_operador_id != null ? String(raw.organismo_operador_id) : null,
+    organismoOperadorNombre:
+      raw.organismo_operador_nombre != null ? String(raw.organismo_operador_nombre) : undefined,
+    ejercicioFiscal: Number(raw.ejercicio_fiscal ?? raw.ejercicioFiscal ?? 0),
+    tipoLocalidad: String(raw.tipo_localidad ?? raw.tipoLocalidad ?? ''),
+    estatus: String(raw.estatus ?? 'vigente'),
+    archivoUrl: raw.archivo_url != null ? String(raw.archivo_url) : null,
+  };
+}
+
+export function mapCierreEjercicio(raw: Record<string, unknown>): import('@/types').CierreEjercicio {
+  return {
+    id: String(raw.id),
+    anexoEjecucionId: String(raw.anexo_ejecucion_id ?? raw.anexoEjecucionId ?? ''),
+    anexoEjecucionNumero:
+      raw.anexo_ejecucion_numero != null ? String(raw.anexo_ejecucion_numero) : undefined,
+    ejercicioFiscal: Number(raw.ejercicio_fiscal ?? raw.ejercicioFiscal ?? 0),
+    tipoApoyo: String(raw.tipo_apoyo ?? raw.tipoApoyo ?? ''),
+    montoTransferido: Number(raw.monto_transferido ?? raw.montoTransferido ?? 0),
+    montoReintegradoEjercicio: Number(
+      raw.monto_reintegrado_ejercicio ?? raw.montoReintegradoEjercicio ?? 0,
+    ),
+    montoModificado31dic: Number(raw.monto_modificado_31dic ?? raw.montoModificado31dic ?? 0),
+    montoInformeFinal: Number(raw.monto_informe_final ?? raw.montoInformeFinal ?? 0),
+    montoReintegrado15ene: Number(raw.monto_reintegrado_15ene ?? raw.montoReintegrado15ene ?? 0),
+    montoPorReintegrar: Number(raw.monto_por_reintegrar ?? raw.montoPorReintegrar ?? 0),
+    fechaCierre: raw.fecha_cierre != null ? String(raw.fecha_cierre) : null,
+    estatus: String(raw.estatus ?? 'pendiente'),
+    archivoUrl: raw.archivo_url != null ? String(raw.archivo_url) : null,
   };
 }

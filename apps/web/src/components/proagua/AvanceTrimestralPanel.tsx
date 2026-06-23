@@ -1,13 +1,28 @@
 import { useCallback, useState } from 'react';
-import { Download } from 'lucide-react';
+import { Download, Plus } from 'lucide-react';
 import { PageState } from '@/components/PageState';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
+import { useApp } from '@/context/AppContext';
 import { useAsyncData } from '@/hooks/use-async-data';
-import { downloadProaguaExport, fetchAvancesTrimestralesByObra } from '@/lib/api';
+import {
+  createAvanceTrimestral,
+  downloadProaguaExport,
+  fetchAvancesTrimestralesByObra,
+  updateAvanceTrimestral,
+} from '@/lib/api';
+import { canCaptureTrimestral, canValidateTrimestral } from '@/lib/proagua-access';
 import { formatCurrency, formatPercentage } from '@/lib/utils';
 import { toast } from 'sonner';
+import type { AvanceTrimestral } from '@/types';
 
 const TRIMESTRE_LABELS = ['', 'T1 (Ene–Mar)', 'T2 (Abr–Jun)', 'T3 (Jul–Sep)', 'T4 (Oct–Dic)'];
 
@@ -24,7 +39,21 @@ interface AvanceTrimestralPanelProps {
 }
 
 export function AvanceTrimestralPanel({ obraId, ejercicioFiscal }: AvanceTrimestralPanelProps) {
+  const { user } = useApp();
   const [exporting, setExporting] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
+  const [busyId, setBusyId] = useState<string | null>(null);
+
+  const [trimestre, setTrimestre] = useState(1);
+  const [ef, setEf] = useState(ejercicioFiscal ?? new Date().getFullYear());
+  const [fisTri, setFisTri] = useState('');
+  const [fisAcum, setFisAcum] = useState('');
+  const [finTri, setFinTri] = useState('');
+  const [finAcum, setFinAcum] = useState('');
+  const [fechaEntrega, setFechaEntrega] = useState('');
+
+  const canCapture = canCaptureTrimestral(user);
+  const canValidate = canValidateTrimestral(user);
 
   const handleExport = async () => {
     setExporting(true);
@@ -51,6 +80,40 @@ export function AvanceTrimestralPanel({ obraId, ejercicioFiscal }: AvanceTrimest
 
   const { data, loading, error, reload } = useAsyncData(load, [load]);
 
+  const handleCreate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      await createAvanceTrimestral(obraId, {
+        ejercicio_fiscal: ef,
+        trimestre,
+        avance_fisico_trimestre: Number(fisTri) || 0,
+        avance_fisico_acumulado: Number(fisAcum) || 0,
+        avance_fin_trimestre: Number(finTri) || 0,
+        avance_fin_acumulado: Number(finAcum) || 0,
+        fecha_entrega: fechaEntrega || undefined,
+        observaciones: 'Captura desde ARKON',
+      });
+      toast.success('Avance trimestral registrado');
+      setFormOpen(false);
+      reload();
+    } catch {
+      toast.error('No se pudo registrar el avance trimestral');
+    }
+  };
+
+  const updateEstatus = async (av: AvanceTrimestral, estatus: string) => {
+    setBusyId(av.id);
+    try {
+      await updateAvanceTrimestral(obraId, av.id, { estatus });
+      toast.success('Estatus actualizado');
+      reload();
+    } catch {
+      toast.error('No se pudo actualizar el estatus');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   if (!data) {
     return (
       <Card>
@@ -71,17 +134,31 @@ export function AvanceTrimestralPanel({ obraId, ejercicioFiscal }: AvanceTrimest
       <CardHeader className="pb-2">
         <div className="flex items-center justify-between gap-2">
           <CardTitle className="text-sm font-semibold">Avances Trimestrales (Anexo XVIII)</CardTitle>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="h-7 text-[10px]"
-            disabled={exporting}
-            onClick={() => void handleExport()}
-          >
-            <Download className="w-3 h-3 mr-1" />
-            {exporting ? 'Exportando...' : 'Exportar XVIII'}
-          </Button>
+          <div className="flex items-center gap-2">
+            {canCapture && (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="h-7 text-[10px]"
+                onClick={() => setFormOpen(true)}
+              >
+                <Plus className="w-3 h-3 mr-1" />
+                Capturar
+              </Button>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="h-7 text-[10px]"
+              disabled={exporting}
+              onClick={() => void handleExport()}
+            >
+              <Download className="w-3 h-3 mr-1" />
+              {exporting ? 'Exportando...' : 'Exportar XVIII'}
+            </Button>
+          </div>
         </div>
         {ejercicioFiscal && (
           <p className="text-[10px] text-gray-500">Ejercicio fiscal {ejercicioFiscal}</p>
@@ -96,6 +173,7 @@ export function AvanceTrimestralPanel({ obraId, ejercicioFiscal }: AvanceTrimest
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             {data.map((av) => {
               const est = ESTATUS_STYLES[av.estatus] ?? ESTATUS_STYLES.pendiente;
+              const busy = busyId === av.id;
               return (
                 <div
                   key={av.id}
@@ -138,12 +216,131 @@ export function AvanceTrimestralPanel({ obraId, ejercicioFiscal }: AvanceTrimest
                   {av.fechaEntrega && (
                     <p className="text-[10px] text-gray-400 mt-2">Entrega: {av.fechaEntrega}</p>
                   )}
+                  {canValidate && av.estatus !== 'validado' && (
+                    <div className="flex gap-1 mt-2 justify-end">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-6 text-[9px] px-2"
+                        disabled={busy}
+                        onClick={() => void updateEstatus(av, 'en_revision')}
+                      >
+                        CORESE
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="h-6 text-[9px] px-2"
+                        disabled={busy}
+                        onClick={() => void updateEstatus(av, 'validado')}
+                      >
+                        Validar
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 text-[9px] px-2 text-red-600"
+                        disabled={busy}
+                        onClick={() => void updateEstatus(av, 'observado')}
+                      >
+                        Observar
+                      </Button>
+                    </div>
+                  )}
                 </div>
               );
             })}
           </div>
         )}
       </CardContent>
+
+      <Dialog open={formOpen} onOpenChange={setFormOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Capturar avance trimestral</DialogTitle>
+          </DialogHeader>
+          <form onSubmit={(e) => void handleCreate(e)} className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-gray-500">Ejercicio fiscal</label>
+                <input
+                  type="number"
+                  className="w-full h-9 px-2 text-sm border rounded-md"
+                  value={ef}
+                  onChange={(e) => setEf(Number(e.target.value))}
+                />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">Trimestre</label>
+                <select
+                  className="w-full h-9 px-2 text-sm border rounded-md"
+                  value={trimestre}
+                  onChange={(e) => setTrimestre(Number(e.target.value))}
+                >
+                  <option value={1}>T1</option>
+                  <option value={2}>T2</option>
+                  <option value={3}>T3</option>
+                  <option value={4}>T4</option>
+                </select>
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-gray-500">Avance fisico trimestre (%)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  className="w-full h-9 px-2 text-sm border rounded-md"
+                  value={fisTri}
+                  onChange={(e) => setFisTri(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">Avance fisico acumulado (%)</label>
+                <input
+                  type="number"
+                  step="0.1"
+                  className="w-full h-9 px-2 text-sm border rounded-md"
+                  value={fisAcum}
+                  onChange={(e) => setFisAcum(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-gray-500">Avance financiero trimestre</label>
+                <input
+                  type="number"
+                  className="w-full h-9 px-2 text-sm border rounded-md"
+                  value={finTri}
+                  onChange={(e) => setFinTri(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="text-xs text-gray-500">Avance financiero acumulado</label>
+                <input
+                  type="number"
+                  className="w-full h-9 px-2 text-sm border rounded-md"
+                  value={finAcum}
+                  onChange={(e) => setFinAcum(e.target.value)}
+                />
+              </div>
+            </div>
+            <div>
+              <label className="text-xs text-gray-500">Fecha de entrega</label>
+              <input
+                className="w-full h-9 px-2 text-sm border rounded-md"
+                placeholder="DD-MM-YYYY"
+                value={fechaEntrega}
+                onChange={(e) => setFechaEntrega(e.target.value)}
+              />
+            </div>
+            <DialogFooter>
+              <Button type="submit">Guardar avance</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </Card>
   );
 }

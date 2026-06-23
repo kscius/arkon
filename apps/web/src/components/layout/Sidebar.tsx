@@ -19,6 +19,9 @@ import {
   BellRing,
   Settings,
   Shield,
+  FileStack,
+  Landmark,
+  Upload,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -35,6 +38,9 @@ const iconMap: Record<string, LucideIcon> = {
   BellRing,
   Settings,
   Shield,
+  FileStack,
+  Landmark,
+  Upload,
 };
 
 export function Sidebar() {

@@ -1,12 +1,21 @@
 export type UserRole = 'estatal' | 'municipal' | 'contratista';
 
+export type RolConagua =
+  | 'director_conagua'
+  | 'coordinador_regional'
+  | 'corese'
+  | 'ejecutor_municipal'
+  | 'contratista_oo'
+  | 'responsable_estatal';
+
 export interface User {
   id: string;
   name: string;
   email: string;
   role: UserRole;
-  municipioId?: string;     // para servidor municipal
-  contratistaId?: string;   // para contratista
+  rolConagua?: RolConagua | string | null;
+  municipioId?: string;
+  contratistaId?: string;
   avatar: string;
 }
 
@@ -146,7 +155,13 @@ export interface AccionPrograma {
   tipoLocalidad: string;
 }
 
-export type SolicitudEstatus = 'borrador' | 'presentada' | 'aprobada' | 'rechazada' | 'observada';
+export type SolicitudEstatus =
+  | 'borrador'
+  | 'presentada'
+  | 'en_revision'
+  | 'aprobada'
+  | 'rechazada'
+  | 'observada';
 
 export interface SolicitudPrograma {
   id: string;
@@ -285,11 +300,60 @@ export interface AdminUser {
   email: string;
   fullName: string;
   role: UserRole;
+  rolConagua?: RolConagua | string | null;
   avatarInitials: string;
   municipioId?: string;
   contratistaId?: string;
   isActive: boolean;
   telefono?: string | null;
+}
+
+export interface AnexoEjecucion {
+  id: string;
+  numero: string;
+  ejercicioFiscal: number;
+  entidadFederativa: string;
+  montoFederal: number;
+  montoEstatal: number;
+  fechaFirma?: string | null;
+  fechaVigenciaFin?: string | null;
+  estatus: string;
+  archivoUrl?: string | null;
+}
+
+export interface AnexoTecnico {
+  id: string;
+  anexoEjecucionId: string;
+  organismoOperadorId?: string | null;
+  organismoOperadorNombre?: string;
+  ejercicioFiscal: number;
+  tipoLocalidad: string;
+  estatus: string;
+  archivoUrl?: string | null;
+}
+
+export interface CierreEjercicio {
+  id: string;
+  anexoEjecucionId: string;
+  anexoEjecucionNumero?: string;
+  ejercicioFiscal: number;
+  tipoApoyo: string;
+  montoTransferido: number;
+  montoReintegradoEjercicio: number;
+  montoModificado31dic: number;
+  montoInformeFinal: number;
+  montoReintegrado15ene: number;
+  montoPorReintegrar: number;
+  fechaCierre?: string | null;
+  estatus: string;
+  archivoUrl?: string | null;
+}
+
+export interface ProaguaImportResult {
+  imported: number;
+  created: number;
+  updated: number;
+  results?: Array<{ cua: string; action: string; id: string }>;
 }
 
 export interface Contratista {

@@ -19,6 +19,9 @@ export function canAccessRoute(
   if (route === '/solicitudes') {
     return role === 'estatal' || role === 'municipal';
   }
+  if (route === '/anexos' || route === '/cierres-ejercicio' || route === '/proagua/import') {
+    return role === 'estatal' || role === 'municipal';
+  }
 
   if (role === 'estatal') {
     if (route.startsWith('/admin/')) return route === '/admin/usuarios';

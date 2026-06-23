@@ -7,9 +7,16 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useApp } from '@/context/AppContext';
 import { useAsyncData } from '@/hooks/use-async-data';
-import { fetchSolicitudes } from '@/lib/api';
+import {
+  deleteSolicitud,
+  fetchSolicitudes,
+  presentarSolicitud,
+  transitionSolicitud,
+} from '@/lib/api';
+import { canManageSolicitudEstatal } from '@/lib/proagua-access';
 import { formatCurrency, getProgramaName } from '@/lib/utils';
-import type { SolicitudEstatus } from '@/types';
+import { toast } from 'sonner';
+import type { SolicitudEstatus, SolicitudPrograma } from '@/types';
 import { FileText, Plus } from 'lucide-react';
 
 const ALL = '__all__';
@@ -17,6 +24,7 @@ const ALL = '__all__';
 const ESTATUS_STYLES: Record<string, { bg: string; color: string; label: string }> = {
   borrador: { bg: '#A0AEC015', color: '#718096', label: 'Borrador' },
   presentada: { bg: '#3182CE15', color: '#3182CE', label: 'Presentada' },
+  en_revision: { bg: '#D69E2E15', color: '#D69E2E', label: 'En revision' },
   aprobada: { bg: '#38A16915', color: '#38A169', label: 'Aprobada' },
   rechazada: { bg: '#DC262615', color: '#DC2626', label: 'Rechazada' },
   observada: { bg: '#D69E2E15', color: '#D69E2E', label: 'Observada' },
@@ -27,6 +35,7 @@ export default function SolicitudesPage() {
   const { user } = useApp();
   const [estatusFilter, setEstatusFilter] = useState(ALL);
   const [wizardOpen, setWizardOpen] = useState(false);
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   const load = useCallback(async () => {
     const params = estatusFilter !== ALL ? { estatus: estatusFilter } : undefined;
@@ -41,6 +50,33 @@ export default function SolicitudesPage() {
   }, [data]);
 
   const canCreate = user?.role === 'estatal' || user?.role === 'municipal';
+  const isEstatal = canManageSolicitudEstatal(user);
+
+  const runAction = async (id: string, fn: () => Promise<SolicitudPrograma>) => {
+    setBusyId(id);
+    try {
+      await fn();
+      toast.success('Solicitud actualizada');
+      reload();
+    } catch {
+      toast.error('No se pudo actualizar la solicitud');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    setBusyId(id);
+    try {
+      await deleteSolicitud(id);
+      toast.success('Solicitud eliminada');
+      reload();
+    } catch {
+      toast.error('No se pudo eliminar');
+    } finally {
+      setBusyId(null);
+    }
+  };
 
   if (!user) return null;
 
@@ -102,18 +138,18 @@ export default function SolicitudesPage() {
                       <th className="text-left py-2 px-2 font-medium text-gray-500">Programa</th>
                       <th className="text-center py-2 px-2 font-medium text-gray-500">EF</th>
                       <th className="text-left py-2 px-2 font-medium text-gray-500">Municipio</th>
-                      <th className="text-left py-2 px-2 font-medium text-gray-500">Tipo apoyo</th>
                       <th className="text-left py-2 px-2 font-medium text-gray-500">Componente</th>
                       <th className="text-right py-2 px-2 font-medium text-gray-500">Monto</th>
                       <th className="text-center py-2 px-2 font-medium text-gray-500">Estatus</th>
                       <th className="text-center py-2 px-2 font-medium text-gray-500">Obra</th>
+                      <th className="text-right py-2 px-2 font-medium text-gray-500">Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
                     {data.map((sol) => {
                       const est =
-                        ESTATUS_STYLES[sol.estatus] ??
-                        ESTATUS_STYLES.borrador;
+                        ESTATUS_STYLES[sol.estatus] ?? ESTATUS_STYLES.borrador;
+                      const busy = busyId === sol.id;
                       return (
                         <tr key={sol.id} className="border-b border-gray-100 hover:bg-gray-50">
                           <td className="py-2 px-2 font-medium">
@@ -121,7 +157,6 @@ export default function SolicitudesPage() {
                           </td>
                           <td className="py-2 px-2 text-center">{sol.ejercicioFiscal}</td>
                           <td className="py-2 px-2">{sol.municipioNombre ?? '—'}</td>
-                          <td className="py-2 px-2 capitalize">{sol.tipoApoyo.replace(/_/g, ' ')}</td>
                           <td className="py-2 px-2">{sol.componente}</td>
                           <td className="py-2 px-2 text-right font-medium">
                             {formatCurrency(sol.montoSolicitado)}
@@ -146,6 +181,98 @@ export default function SolicitudesPage() {
                             ) : (
                               <span className="text-gray-300">—</span>
                             )}
+                          </td>
+                          <td className="py-2 px-2 text-right">
+                            <div className="flex flex-wrap justify-end gap-1">
+                              {sol.estatus === 'borrador' && canCreate && (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-6 text-[9px] px-2"
+                                    disabled={busy}
+                                    onClick={() =>
+                                      void runAction(sol.id, () => presentarSolicitud(sol.id))
+                                    }
+                                  >
+                                    Presentar
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-6 text-[9px] px-2 text-red-600"
+                                    disabled={busy}
+                                    onClick={() => void handleDelete(sol.id)}
+                                  >
+                                    Eliminar
+                                  </Button>
+                                </>
+                              )}
+                              {sol.estatus === 'presentada' && isEstatal && (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-6 text-[9px] px-2"
+                                    disabled={busy}
+                                    onClick={() =>
+                                      void runAction(sol.id, () =>
+                                        transitionSolicitud(sol.id, 'en_revision'),
+                                      )
+                                    }
+                                  >
+                                    A revision
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-6 text-[9px] px-2 text-red-600"
+                                    disabled={busy}
+                                    onClick={() =>
+                                      void runAction(sol.id, () =>
+                                        transitionSolicitud(sol.id, 'rechazada'),
+                                      )
+                                    }
+                                  >
+                                    Rechazar
+                                  </Button>
+                                </>
+                              )}
+                              {sol.estatus === 'en_revision' && isEstatal && (
+                                <>
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="h-6 text-[9px] px-2"
+                                    disabled={busy}
+                                    onClick={() =>
+                                      void runAction(sol.id, () =>
+                                        transitionSolicitud(
+                                          sol.id,
+                                          'aprobada',
+                                          sol.obraResultanteId ?? undefined,
+                                        ),
+                                      )
+                                    }
+                                  >
+                                    Aprobar
+                                  </Button>
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-6 text-[9px] px-2 text-red-600"
+                                    disabled={busy}
+                                    onClick={() =>
+                                      void runAction(sol.id, () =>
+                                        transitionSolicitud(sol.id, 'rechazada'),
+                                      )
+                                    }
+                                  >
+                                    Rechazar
+                                  </Button>
+                                </>
+                              )}
+                            </div>
                           </td>
                         </tr>
                       );

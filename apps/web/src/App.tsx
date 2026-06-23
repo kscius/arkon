@@ -17,6 +17,9 @@ import AlertasPage from '@/pages/AlertasPage';
 import ConfiguradorAlertasPage from '@/pages/ConfiguradorAlertasPage';
 import AdminUsuariosPage from '@/pages/AdminUsuariosPage';
 import SolicitudesPage from '@/pages/SolicitudesPage';
+import AnexosPage from '@/pages/AnexosPage';
+import CierresEjercicioPage from '@/pages/CierresEjercicioPage';
+import ProaguaImportPage from '@/pages/ProaguaImportPage';
 import { ContratistasRedirect, MunicipiosRedirect } from '@/components/CatalogRedirect';
 
 const { Routes, Route, Navigate, useLocation } = ReactRouter;
@@ -180,6 +183,36 @@ function AppRoutes() {
           <ProtectedRoute>
             <AppLayout>
               <SolicitudesPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/anexos"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <AnexosPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/cierres-ejercicio"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <CierresEjercicioPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/proagua/import"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <ProaguaImportPage />
             </AppLayout>
           </ProtectedRoute>
         }
