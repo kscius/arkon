@@ -16,6 +16,8 @@ WORKDIR /app/apps/api
 RUN pnpm exec prisma generate
 RUN pnpm run build
 RUN test -f dist/main.js || (echo "Expected dist/main.js after build" && ls -la dist && exit 1)
+RUN test -f prisma/seed.js || (echo "Expected prisma/seed.js after build" && exit 1)
+RUN grep -q "cierres ejercicio" prisma/seed.js || (echo "seed.js missing cierre ejercicio block" && exit 1)
 
 FROM base AS runner
 ENV NODE_ENV=production
@@ -27,6 +29,7 @@ COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/api/node_modules ./apps/api/node_modules
 COPY --from=build /app/apps/api/dist ./apps/api/dist
 COPY --from=build /app/apps/api/prisma ./apps/api/prisma
+COPY --from=build /app/apps/api/tsconfig.seed.json ./apps/api/tsconfig.seed.json
 COPY apps/api/docker-entrypoint.sh /app/docker-entrypoint.sh
 
 RUN chmod +x /app/docker-entrypoint.sh && mkdir -p /app/uploads

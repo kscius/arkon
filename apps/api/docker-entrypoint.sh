@@ -33,6 +33,17 @@ else
   npx prisma db push
 fi
 
+if [ -f "prisma/seed.ts" ]; then
+  if [ ! -f "prisma/seed.js" ] || [ "prisma/seed.ts" -nt "prisma/seed.js" ]; then
+    echo "Compiling prisma/seed.ts..."
+    if [ -f "tsconfig.seed.json" ]; then
+      npx tsc -p tsconfig.seed.json
+    else
+      echo "tsconfig.seed.json not found; using existing prisma/seed.js"
+    fi
+  fi
+fi
+
 if [ -f "prisma/seed.js" ] || [ -f "prisma/seed.ts" ]; then
   echo "Seeding database..."
   npx prisma db seed || echo "Seed skipped (already seeded or seed error)."
