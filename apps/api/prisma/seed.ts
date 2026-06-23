@@ -829,6 +829,103 @@ async function main() {
         });
       }
       console.log('  Seeded AnexoEjecucion + 2 AnexoTecnico (Guanajuato 2026)');
+
+      const transferidoGto = montoFederal + montoEstatal;
+      await prisma.cierreEjercicio.create({
+        data: {
+          anexoEjecucionId: anexoEjecucion.id,
+          ejercicioFiscal: 2026,
+          tipoApoyo: 'infraestructura',
+          montoTransferido: transferidoGto,
+          montoModificado31dic: Math.round(transferidoGto * 0.92),
+          montoInformeFinal: Math.round(transferidoGto * 0.88),
+          montoReintegradoEj: Math.round(transferidoGto * 0.04),
+          montoReintegrado15ene: 0,
+          montoPorReintegrar: Math.round(transferidoGto * 0.04),
+          fechaCierre: '31-12-2026',
+          estatus: 'pendiente',
+        },
+      });
+      await prisma.cierreEjercicio.create({
+        data: {
+          anexoEjecucionId: anexoEjecucion.id,
+          ejercicioFiscal: 2026,
+          tipoApoyo: 'fortalecimiento',
+          montoTransferido: 39500000,
+          montoModificado31dic: 38000000,
+          montoInformeFinal: 37500000,
+          montoReintegradoEj: 2000000,
+          montoReintegrado15ene: 1500000,
+          montoPorReintegrar: 0,
+          fechaCierre: '31-12-2026',
+          estatus: 'cerrado',
+        },
+      });
+      console.log('  Seeded 2 cierres ejercicio (Guanajuato 2026, Anexo XXII)');
+    }
+
+    const durangoEntidad = entidades.find((e) => e.clave === '10');
+    const cadOrg = organismos.find((o) => o.siglas === 'CAD');
+    const obrasDgoProagua = obras.filter((o) =>
+      ['PROAGUA-2023-001', 'PROAGUA-2024-001'].includes(o.folio),
+    );
+
+    if (durangoEntidad && cadOrg && obrasDgoProagua.length > 0) {
+      const montoFedDgo = obrasDgoProagua.reduce(
+        (sum, o) => sum + Number(o.montoAutorizado) / 2,
+        0,
+      );
+      const montoEstDgo = montoFedDgo;
+
+      const anexoDgo = await prisma.anexoEjecucion.create({
+        data: {
+          numero: 'AE-DGO-2024-001',
+          ejercicioFiscal: 2024,
+          entidadFederativa: durangoEntidad.nombre,
+          montoFederal: montoFedDgo,
+          montoEstatal: montoEstDgo,
+          fechaFirma: '20-01-2024',
+          fechaVigenciaFin: '31-12-2024',
+          estatus: 'vigente',
+        },
+      });
+
+      const anexoCad = await prisma.anexoTecnico.create({
+        data: {
+          anexoEjecucionId: anexoDgo.id,
+          organismoOperadorId: cadOrg.id,
+          ejercicioFiscal: 2024,
+          tipoLocalidad: 'rural',
+          estatus: 'vigente',
+        },
+      });
+
+      for (const obra of obrasDgoProagua) {
+        await prisma.obra.update({
+          where: { id: obra.id },
+          data: { anexoTecnicoId: anexoCad.id },
+        });
+      }
+
+      const transferidoDgo = montoFedDgo + montoEstDgo;
+      await prisma.cierreEjercicio.create({
+        data: {
+          anexoEjecucionId: anexoDgo.id,
+          ejercicioFiscal: 2024,
+          tipoApoyo: 'infraestructura',
+          montoTransferido: transferidoDgo,
+          montoModificado31dic: transferidoDgo,
+          montoInformeFinal: Math.round(transferidoDgo * 0.98),
+          montoReintegradoEj: Math.round(transferidoDgo * 0.02),
+          montoReintegrado15ene: Math.round(transferidoDgo * 0.02),
+          montoPorReintegrar: 0,
+          fechaCierre: '31-01-2025',
+          estatus: 'cerrado',
+        },
+      });
+      console.log(
+        '  Seeded AnexoEjecucion + 1 AnexoTecnico + 1 cierre (Durango 2024)',
+      );
     }
 
     let proaguaEnriched = 0;

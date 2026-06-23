@@ -51,7 +51,7 @@ export default function AnexosPage() {
     data: tecnicos,
     loading: tecnicosLoading,
     reload: reloadTecnicos,
-  } = useAsyncData(loadTecnicos, [loadTecnicos]);
+  } = useAsyncData(loadTecnicos, [selectedId, loadTecnicos]);
 
   const loadEntidades = useCallback(() => fetchEntidadesFederativas(), []);
   const { data: entidades } = useAsyncData(loadEntidades, [loadEntidades]);
