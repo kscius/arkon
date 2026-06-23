@@ -1,5 +1,6 @@
 import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Rol, Usuario } from '@prisma/client';
+import { canManageSolicitudInstitutional } from '../common/proagua-roles.util';
 import { PrismaService } from '../prisma/prisma.service';
 
 const VALID_TRANSITIONS: Record<string, string[]> = {
@@ -27,6 +28,7 @@ export class SolicitudesProgramaService {
     obraResultanteId: string | null;
     entidad?: { nombre: string } | null;
     municipio?: { nombre: string } | null;
+    obraResultante?: { folio: string } | null;
   }) {
     return {
       id: s.id,
@@ -39,6 +41,7 @@ export class SolicitudesProgramaService {
       monto_solicitado: Number(s.montoSolicitado),
       estatus: s.estatus,
       obra_resultante_id: s.obraResultanteId,
+      obra_resultante_folio: s.obraResultante?.folio ?? null,
       entidad_nombre: s.entidad?.nombre ?? '',
       municipio_nombre: s.municipio?.nombre ?? '',
     };
@@ -58,7 +61,7 @@ export class SolicitudesProgramaService {
         ...this.solicitudWhere(user),
         ...(estatus ? { estatus } : {}),
       },
-      include: { entidad: true, municipio: true },
+      include: { entidad: true, municipio: true, obraResultante: true },
       orderBy: [{ ejercicioFiscal: 'desc' }, { createdAt: 'desc' }],
     });
     return list.map((s) => this.map(s));
@@ -67,7 +70,7 @@ export class SolicitudesProgramaService {
   async findOne(id: string, user: Usuario) {
     const s = await this.prisma.solicitudPrograma.findFirst({
       where: { id, ...this.solicitudWhere(user) },
-      include: { entidad: true, municipio: true },
+      include: { entidad: true, municipio: true, obraResultante: true },
     });
     if (!s) throw new NotFoundException('Solicitud not found');
     return this.map(s);
@@ -99,7 +102,7 @@ export class SolicitudesProgramaService {
         montoSolicitado: data.monto_solicitado,
         estatus: 'borrador',
       },
-      include: { entidad: true, municipio: true },
+      include: { entidad: true, municipio: true, obraResultante: true },
     });
     return this.map(s);
   }
@@ -126,7 +129,7 @@ export class SolicitudesProgramaService {
         montoSolicitado: data.monto_solicitado,
         obraResultanteId: data.obra_resultante_id,
       },
-      include: { entidad: true, municipio: true },
+      include: { entidad: true, municipio: true, obraResultante: true },
     });
     return this.map(s);
   }
@@ -142,18 +145,26 @@ export class SolicitudesProgramaService {
     if (nuevoEstatus === 'presentada' && user.rol === Rol.contratista) {
       throw new ForbiddenException();
     }
-    if (['aprobada', 'rechazada'].includes(nuevoEstatus) && user.rol !== Rol.estatal) {
-      throw new ForbiddenException('Only estatal can approve or reject');
+    if (['aprobada', 'rechazada', 'en_revision'].includes(nuevoEstatus)) {
+      if (!canManageSolicitudInstitutional(user)) {
+        throw new ForbiddenException('Insufficient institutional role for this transition');
+      }
+    }
+    if (nuevoEstatus === 'aprobada') {
+      const obraId = obraResultanteId ?? existing.obra_resultante_id;
+      if (!obraId) {
+        throw new BadRequestException('obra_resultante_id is required to approve a solicitud');
+      }
     }
     const s = await this.prisma.solicitudPrograma.update({
       where: { id },
       data: {
         estatus: nuevoEstatus,
-        ...(nuevoEstatus === 'aprobada' && obraResultanteId
-          ? { obraResultanteId }
+        ...(nuevoEstatus === 'aprobada'
+          ? { obraResultanteId: obraResultanteId ?? existing.obra_resultante_id ?? undefined }
           : {}),
       },
-      include: { entidad: true, municipio: true },
+      include: { entidad: true, municipio: true, obraResultante: true },
     });
     return this.map(s);
   }

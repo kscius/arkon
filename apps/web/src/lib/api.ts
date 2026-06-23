@@ -676,6 +676,33 @@ export async function fetchCofinanciamientosByObra(obraId: string): Promise<Cofi
   return rows.map((r) => mapCofinanciamiento(r, obraId));
 }
 
+export async function createCofinanciamiento(
+  obraId: string,
+  body: { fuente: string; monto: number; porcentaje?: number; descripcion?: string },
+): Promise<Cofinanciamiento> {
+  const row = await apiFetch<Record<string, unknown>>(`/obras/${obraId}/cofinanciamientos`, {
+    method: 'POST',
+    body: JSON.stringify(body),
+  });
+  return mapCofinanciamiento(row, obraId);
+}
+
+export async function updateCofinanciamiento(
+  id: string,
+  obraId: string,
+  body: { fuente?: string; monto?: number; porcentaje?: number; descripcion?: string },
+): Promise<Cofinanciamiento> {
+  const row = await apiFetch<Record<string, unknown>>(`/cofinanciamientos/${id}`, {
+    method: 'PATCH',
+    body: JSON.stringify(body),
+  });
+  return mapCofinanciamiento(row, obraId);
+}
+
+export async function deleteCofinanciamiento(id: string): Promise<void> {
+  await apiFetch<void>(`/cofinanciamientos/${id}`, { method: 'DELETE' });
+}
+
 export async function fetchAvancesTrimestralesByObra(obraId: string): Promise<AvanceTrimestral[]> {
   const rows = await apiFetch<Record<string, unknown>[]>(`/obras/${obraId}/avances-trimestrales`);
   return rows.map((r) => mapAvanceTrimestral(r, obraId));

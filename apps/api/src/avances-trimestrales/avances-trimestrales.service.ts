@@ -1,5 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { EstatusAvance, Rol, Usuario } from '@prisma/client';
+import { canValidateTrimestralInstitutional } from '../common/proagua-roles.util';
 import { ScopeService } from '../common/scope.service';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -99,6 +100,15 @@ export class AvancesTrimestralesService {
     if (!existing) throw new NotFoundException('Avance trimestral not found');
     if (user.rol === Rol.contratista && data.estatus) {
       throw new ForbiddenException('Contratistas cannot change estatus');
+    }
+    const nextEstatus = data.estatus as EstatusAvance | undefined;
+    if (
+      nextEstatus &&
+      nextEstatus !== existing.estatus &&
+      (nextEstatus === EstatusAvance.validado || nextEstatus === EstatusAvance.observado) &&
+      !canValidateTrimestralInstitutional(user)
+    ) {
+      throw new ForbiddenException('Insufficient role to validate trimestral reports');
     }
     const a = await this.prisma.avanceTrimestral.update({
       where: { id },

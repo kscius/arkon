@@ -1,14 +1,22 @@
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PageState } from '@/components/PageState';
 import { SolicitudFormWizard } from '@/components/proagua/SolicitudFormWizard';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { useApp } from '@/context/AppContext';
 import { useAsyncData } from '@/hooks/use-async-data';
 import {
   deleteSolicitud,
+  fetchObras,
   fetchSolicitudes,
   presentarSolicitud,
   transitionSolicitud,
@@ -16,10 +24,19 @@ import {
 import { canManageSolicitudEstatal } from '@/lib/proagua-access';
 import { formatCurrency, getProgramaName } from '@/lib/utils';
 import { toast } from 'sonner';
-import type { SolicitudEstatus, SolicitudPrograma } from '@/types';
+import type { Obra, SolicitudEstatus, SolicitudPrograma } from '@/types';
 import { FileText, Plus } from 'lucide-react';
 
 const ALL = '__all__';
+
+const FILTER_ESTATUS: SolicitudEstatus[] = [
+  'borrador',
+  'presentada',
+  'en_revision',
+  'aprobada',
+  'rechazada',
+  'observada',
+];
 
 const ESTATUS_STYLES: Record<string, { bg: string; color: string; label: string }> = {
   borrador: { bg: '#A0AEC015', color: '#718096', label: 'Borrador' },
@@ -36,6 +53,10 @@ export default function SolicitudesPage() {
   const [estatusFilter, setEstatusFilter] = useState(ALL);
   const [wizardOpen, setWizardOpen] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [approveTarget, setApproveTarget] = useState<SolicitudPrograma | null>(null);
+  const [obraPickerId, setObraPickerId] = useState('');
+  const [obrasOptions, setObrasOptions] = useState<Obra[]>([]);
+  const [loadingObras, setLoadingObras] = useState(false);
 
   const load = useCallback(async () => {
     const params = estatusFilter !== ALL ? { estatus: estatusFilter } : undefined;
@@ -43,11 +64,6 @@ export default function SolicitudesPage() {
   }, [estatusFilter]);
 
   const { data, loading, error, reload } = useAsyncData(load, [load]);
-
-  const estatusOptions = useMemo(() => {
-    if (!data) return [];
-    return [...new Set(data.map((s) => s.estatus))];
-  }, [data]);
 
   const canCreate = user?.role === 'estatal' || user?.role === 'municipal';
   const isEstatal = canManageSolicitudEstatal(user);
@@ -60,6 +76,46 @@ export default function SolicitudesPage() {
       reload();
     } catch {
       toast.error('No se pudo actualizar la solicitud');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
+  const openApproveDialog = async (sol: SolicitudPrograma) => {
+    setApproveTarget(sol);
+    setObraPickerId(sol.obraResultanteId ?? '');
+    setLoadingObras(true);
+    try {
+      const obras = await fetchObras();
+      const filtered = obras.filter(
+        (o) =>
+          o.programa === sol.programa &&
+          (!sol.municipioId || o.municipioId === sol.municipioId),
+      );
+      setObrasOptions(filtered.length > 0 ? filtered : obras.filter((o) => o.programa === sol.programa));
+    } catch {
+      toast.error('No se pudieron cargar las obras');
+      setObrasOptions([]);
+    } finally {
+      setLoadingObras(false);
+    }
+  };
+
+  const handleApprove = async () => {
+    if (!approveTarget) return;
+    const obraId = obraPickerId || approveTarget.obraResultanteId;
+    if (!obraId) {
+      toast.error('Seleccione la obra resultante');
+      return;
+    }
+    setBusyId(approveTarget.id);
+    try {
+      await transitionSolicitud(approveTarget.id, 'aprobada', obraId);
+      toast.success('Solicitud aprobada');
+      setApproveTarget(null);
+      reload();
+    } catch {
+      toast.error('No se pudo aprobar la solicitud');
     } finally {
       setBusyId(null);
     }
@@ -117,7 +173,7 @@ export default function SolicitudesPage() {
             className="h-8 px-2 text-xs border border-gray-200 rounded-md bg-white"
           >
             <option value={ALL}>Todos los estatus</option>
-            {estatusOptions.map((e) => (
+            {FILTER_ESTATUS.map((e) => (
               <option key={e} value={e}>
                 {ESTATUS_STYLES[e]?.label ?? e}
               </option>
@@ -245,15 +301,7 @@ export default function SolicitudesPage() {
                                     variant="outline"
                                     className="h-6 text-[9px] px-2"
                                     disabled={busy}
-                                    onClick={() =>
-                                      void runAction(sol.id, () =>
-                                        transitionSolicitud(
-                                          sol.id,
-                                          'aprobada',
-                                          sol.obraResultanteId ?? undefined,
-                                        ),
-                                      )
-                                    }
+                                    onClick={() => void openApproveDialog(sol)}
                                   >
                                     Aprobar
                                   </Button>
@@ -284,6 +332,41 @@ export default function SolicitudesPage() {
           </PageState>
         </CardContent>
       </Card>
+
+      <Dialog open={!!approveTarget} onOpenChange={(open) => !open && setApproveTarget(null)}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-sm">Aprobar solicitud</DialogTitle>
+          </DialogHeader>
+          <p className="text-xs text-gray-600">
+            Vincule la obra resultante que se generara o actualizara con esta solicitud aprobada.
+          </p>
+          <div>
+            <label className="text-[10px] text-gray-500 uppercase tracking-wide">Obra resultante</label>
+            <select
+              value={obraPickerId}
+              onChange={(e) => setObraPickerId(e.target.value)}
+              disabled={loadingObras}
+              className="mt-1 w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white"
+            >
+              <option value="">Seleccione una obra...</option>
+              {obrasOptions.map((o) => (
+                <option key={o.id} value={o.id}>
+                  {o.folio} — {o.nombre.slice(0, 60)}
+                </option>
+              ))}
+            </select>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setApproveTarget(null)}>
+              Cancelar
+            </Button>
+            <Button size="sm" disabled={busyId === approveTarget?.id} onClick={() => void handleApprove()}>
+              Confirmar aprobacion
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
