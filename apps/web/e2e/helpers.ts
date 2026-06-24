@@ -17,18 +17,27 @@ export const DEMO_ASSISTANT_LABEL =
 
 /** Skip tests when API health is not available (stack not started or not seeded). */
 export async function skipIfApiDown(request: APIRequestContext): Promise<void> {
-  try {
-    const res = await request.get('/api/health', { timeout: 5_000 });
-    if (!res.ok()) {
-      test.skip(true, `API health returned ${res.status()}`);
+  const base = (process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:8080').replace(/\/$/, '');
+  const candidates = [
+    `${base}/api/health`,
+    process.env.PLAYWRIGHT_API_URL
+      ? `${process.env.PLAYWRIGHT_API_URL.replace(/\/$/, '')}/api/health`
+      : null,
+    'http://localhost:8000/api/health',
+  ].filter((url): url is string => Boolean(url));
+
+  for (const url of [...new Set(candidates)]) {
+    try {
+      const res = await request.get(url, { timeout: 5_000 });
+      if (!res.ok()) continue;
+      const body = await res.json();
+      if (body?.status === 'ok') return;
+    } catch {
+      /* try next candidate */
     }
-    const body = await res.json();
-    if (body?.status !== 'ok') {
-      test.skip(true, 'API health body unexpected');
-    }
-  } catch {
-    test.skip(true, 'API not reachable — start docker compose or dev:api + dev:web');
   }
+
+  test.skip(true, 'API not reachable — start docker compose or dev:api + dev:web');
 }
 
 export async function login(page: Page, email: string): Promise<void> {

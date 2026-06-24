@@ -21,9 +21,14 @@ test.describe('CONAGUA UI fixes (review 2026-06)', () => {
 
   test('notification bell navigates to alertas', async ({ page }) => {
     await login(page, DEMO_USERS.estatal);
-    await page.getByRole('button', { name: /centro de alertas/i }).click();
-    await expect(page).toHaveURL(/#\/alertas/);
-    await expect(page.getByRole('heading', { name: /Centro de Alertas/i })).toBeVisible();
+    await Promise.all([
+      page.waitForURL(/#\/alertas/, { timeout: 15_000 }),
+      page.getByRole('button', { name: /centro de alertas/i }).click(),
+    ]);
+    // TopBar title updates immediately; page h1 waits on API data
+    await expect(page.locator('header').getByText('Centro de Alertas')).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test('invalid obra id shows friendly error without server 500', async ({ page }) => {

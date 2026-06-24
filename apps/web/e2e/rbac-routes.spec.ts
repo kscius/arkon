@@ -33,6 +33,6 @@ test.describe('RBAC route guards', () => {
     await login(page, DEMO_USERS.municipal);
     await page.getByRole('link', { name: 'Asistente IA' }).click();
     await expect(page).toHaveURL(/#\/asistente/, { timeout: 10_000 });
-    await expect(page.getByText(DEMO_ASSISTANT_LABEL)).toBeVisible();
+    await expect(page.getByText(DEMO_ASSISTANT_LABEL).first()).toBeVisible();
   });
 });

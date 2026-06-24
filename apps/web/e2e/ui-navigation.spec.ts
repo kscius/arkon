@@ -37,11 +37,7 @@ test.describe('Full navigation smoke by role', () => {
       await expect(page.locator('main')).not.toBeEmpty();
     }
     await page.getByRole('link', { name: 'Mis Obras' }).click();
-    await page
-      .locator('main')
-      .getByText('Obras asignadas')
-      .locator('xpath=following::div[contains(@class,"cursor-pointer")][1]')
-      .click();
+    await page.locator('main tbody tr').first().click();
     await expect(page).toHaveURL(/#\/obras\//, { timeout: 15_000 });
   });
 });

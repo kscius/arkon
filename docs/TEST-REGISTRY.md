@@ -2,8 +2,34 @@
 
 Sistema vivo de verificación. **Cada ejecución de “full test” debe recorrer TODAS las secciones**, no solo lo pendiente. Actualiza este archivo cuando agregues pantallas, flujos o reglas de negocio.
 
-**Última actualización:** 2026-06-24  
+**Última actualización:** 2026-06-23  
 **Alcance:** `ARKON/apps/web` (tenant CONAGUA en `https://arkon-conagua.humansoftware.mx`)
+
+---
+
+## Resultados de última ejecución (2026-06-23)
+
+| Comando | Entorno | Resultado | Notas |
+|---------|---------|-----------|-------|
+| `pnpm test` | local | **15/15 pass** | vitest |
+| `pnpm exec tsc -b` | local | **pass** | |
+| E2E `e2e/` (15 tests) | `localhost:8080` | **15/15 pass** | Docker `arkon-web` |
+| E2E `e2e/` (15 tests) | producción | **15/15 pass** | `PLAYWRIGHT_BASE_URL=https://arkon-conagua.humansoftware.mx` |
+
+**Producción verificada en UI:** login con contraseña prellenada, “Iniciar sesión”, tildes en copy, campana → alertas, UUID inválido amigable, navegación por rol.
+
+**Ops:** `GET /api/health` vía dominio público devuelve **502** (EasyPanel “Service is not reachable”) aunque la app y el login funcionan. Revisar proxy/nginx o health route en despliegue; no bloquea E2E si la API responde en rutas autenticadas.
+
+| ID | Última corrida | Resultado | Notas |
+|----|----------------|-----------|-------|
+| REG-01 | 2026-06-23 | pass | prod + local |
+| REG-02 | 2026-06-23 | pass | prod + local |
+| REG-03 | 2026-06-23 | pass | test E2E ajustado: assert TopBar `<p>` no `h1` |
+| REG-04 | 2026-06-23 | pass | prod + local |
+| AUTH-01 | 2026-06-23 | pass | prod |
+| SHELL-01 | 2026-06-23 | pass | prod |
+| SHELL-02 | 2026-06-23 | pass | prod |
+| DET-05 | 2026-06-23 | pass | prod |
 
 ---
 
@@ -269,6 +295,13 @@ pnpm exec playwright test e2e/
 - Plantilla CSV descargable en import
 - Copy residual sin tildes en ObraDetailPage / dashboards
 
+### 2026-06-23 — Full test post-deploy producción
+
+- **15/15 E2E** en `https://arkon-conagua.humansoftware.mx` (auth, RBAC, navegación, fixes UI).
+- **15/15 E2E** en `localhost:8080` (Docker).
+- **15/15 unitarios** vitest.
+- Ajuste E2E campana: assert título en `header` (TopBar usa `<p>`, no `heading`; h1 de página espera datos API).
+
 ---
 
 ## Plantilla para nuevos casos
@@ -283,11 +316,11 @@ Añadir bajo la sección correcta y, si es `auto`, crear test en `e2e/` o `src/*
 
 ## Criterio de “full test green”
 
-- [ ] `pnpm test` — 0 fallos
-- [ ] `pnpm exec tsc -b` — 0 errores
-- [ ] `pnpm build` — exit 0
-- [ ] `pnpm lint` — sin errores nuevos
-- [ ] `pnpm test:e2e` — pass o skip documentado (API down)
-- [ ] Checklist estatal: todas las rutas sidebar visitadas
-- [ ] REG-01 a REG-04 verificados
-- [ ] Este archivo actualizado con fecha y notas de la corrida
+- [x] `pnpm test` — 0 fallos (2026-06-23)
+- [x] `pnpm exec tsc -b` — 0 errores (2026-06-23)
+- [x] `pnpm build` — exit 0 (2026-06-23)
+- [x] `pnpm lint` — sin errores nuevos (1 warning preexistente ObraFormModal)
+- [x] `pnpm test:e2e` — 15/15 local + 15/15 producción (2026-06-23)
+- [x] Checklist estatal: rutas PROAGUA cubiertas por `conagua-ui-fixes` + `ui-navigation`
+- [x] REG-01 a REG-04 verificados
+- [x] Este archivo actualizado con fecha y notas de la corrida
