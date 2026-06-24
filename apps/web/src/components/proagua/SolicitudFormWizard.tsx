@@ -27,7 +27,13 @@ const COMPONENTES = [
   { value: 'saneamiento', label: 'Saneamiento (SAN)' },
 ];
 
-const STEPS = ['Programa', 'Componente', 'Accion VII', 'Monto y confirmacion'];
+/** Wizard uses obra-style tipo; AccionPrograma catalog uses AP/alcantarillado/saneamiento. */
+export function componenteToCatalogKey(componente: string): string {
+  if (componente === 'agua_potable') return 'AP';
+  return componente;
+}
+
+const STEPS = ['Programa', 'Componente', 'Acción VII', 'Monto y confirmación'];
 
 function resolveTipoApoyo(programa: string): string {
   if (programa === 'PEAS') return 'fortalecimiento';
@@ -97,10 +103,15 @@ export function SolicitudFormWizard({ open, onOpenChange, user, onSuccess }: Sol
       .catch(() => setAcciones([]));
   }, [open, programa, accionClave]);
 
-  const accionesFiltradas = useMemo(
-    () => acciones.filter((a) => a.componente === componente),
-    [acciones, componente],
-  );
+  const accionesFiltradas = useMemo(() => {
+    const catalogKey = componenteToCatalogKey(componente);
+    return acciones.filter(
+      (a) =>
+        a.componente === catalogKey ||
+        a.componente === componente ||
+        (catalogKey === 'AP' && a.componente.toUpperCase() === 'AP'),
+    );
+  }, [acciones, componente]);
 
   const selectedAccion = useMemo(
     () => accionesFiltradas.find((a) => a.id === accionClave) ?? accionesFiltradas[0],
@@ -243,6 +254,17 @@ export function SolicitudFormWizard({ open, onOpenChange, user, onSuccess }: Sol
                   )}
                 </Field>
               )}
+              {user.role === 'municipal' && user.municipioId && (
+                <Field label="Municipio">
+                  <p className="text-xs font-medium text-gray-800 py-2 px-2 bg-gray-50 rounded-md border border-gray-200">
+                    {municipios.find((m) => m.id === user.municipioId)?.nombre ??
+                      'Municipio asignado a su cuenta'}
+                  </p>
+                  <p className="text-[10px] text-gray-500 mt-1">
+                    Municipio preasignado según su perfil municipal.
+                  </p>
+                </Field>
+              )}
             </>
           )}
 
@@ -277,10 +299,10 @@ export function SolicitudFormWizard({ open, onOpenChange, user, onSuccess }: Sol
           )}
 
           {step === 2 && (
-            <Field label="Accion especifica (Anexo VII)">
+            <Field label="Acción específica (Anexo VII)">
               {accionesFiltradas.length === 0 ? (
                 <p className="text-xs text-gray-500">
-                  No hay acciones del catalogo para {programa} / {componente}.
+                  No hay acciones del catálogo para {programa} / {componente}.
                 </p>
               ) : (
                 <select
@@ -329,7 +351,7 @@ export function SolicitudFormWizard({ open, onOpenChange, user, onSuccess }: Sol
                 </p>
                 {selectedAccion && (
                   <p>
-                    <span className="text-gray-500">Accion VII:</span>{' '}
+                    <span className="text-gray-500">Acción VII:</span>{' '}
                     <span className="font-medium">{selectedAccion.label}</span>
                   </p>
                 )}

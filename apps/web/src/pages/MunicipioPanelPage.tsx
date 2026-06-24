@@ -74,7 +74,7 @@ export default function MunicipioPanelPage() {
                 <Badge variant="outline">{municipio.nombre}</Badge>
               )}
             </div>
-            <p className="text-xs text-gray-500">Gestion de obras publicas municipales</p>
+            <p className="text-xs text-gray-500">Gestión de obras publicas municipales</p>
           </div>
         </div>
 

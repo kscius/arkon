@@ -75,7 +75,7 @@ export default function AsistentePage() {
       const message =
         err instanceof ApiError
           ? err.message
-          : 'No se pudo obtener respuesta del asistente. Verifique que la API este en ejecucion.';
+          : 'No se pudo obtener respuesta del asistente. Verifique que la API esté en ejecución.';
       setError(message);
       setMessages((prev) => [
         ...prev,

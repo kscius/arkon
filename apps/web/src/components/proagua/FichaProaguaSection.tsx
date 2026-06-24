@@ -144,7 +144,7 @@ export function FichaProaguaSection({ obra, defaultOpen = false }: FichaProaguaS
 
             <div>
               <h4 className="text-[10px] font-semibold text-gray-500 uppercase tracking-wider mb-2">
-                Catalogo y ejecutor
+                Catálogo y ejecutor
               </h4>
               <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3">
                 <Field label="Programa" value={obra.programa} />

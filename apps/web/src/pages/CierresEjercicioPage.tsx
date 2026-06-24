@@ -88,7 +88,7 @@ export default function CierresEjercicioPage() {
             Cierre de Ejercicio (Anexo XXII)
           </h1>
           <p className="text-xs text-gray-500 mt-1">
-            Conciliacion fiscal, informe final y reintegros post-ejercicio
+            Conciliación fiscal, informe final y reintegros post-ejercicio
           </p>
         </div>
         <Button size="sm" onClick={() => setCreateOpen(true)}>
@@ -191,7 +191,7 @@ export default function CierresEjercicioPage() {
                 >
                   <option value="infraestructura">Infraestructura</option>
                   <option value="fortalecimiento">Fortalecimiento</option>
-                  <option value="desinfeccion">Desinfeccion</option>
+                  <option value="desinfeccion">Desinfección</option>
                 </select>
               </div>
             </div>

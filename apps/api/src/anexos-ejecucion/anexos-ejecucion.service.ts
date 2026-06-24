@@ -40,7 +40,7 @@ export class AnexosEjecucionService {
     tipoLocalidad: string;
     estatus: string;
     archivoUrl: string | null;
-    organismoOperador?: { nombre: string } | null;
+    organismoOperador?: { nombre: string; siglas: string | null } | null;
   }) {
     return {
       id: t.id,
@@ -50,7 +50,8 @@ export class AnexosEjecucionService {
       tipo_localidad: t.tipoLocalidad,
       estatus: t.estatus,
       archivo_url: t.archivoUrl,
-      organismo_operador_nombre: t.organismoOperador?.nombre ?? '',
+      organismo_operador_nombre:
+        t.organismoOperador?.siglas ?? t.organismoOperador?.nombre ?? '',
     };
   }
 

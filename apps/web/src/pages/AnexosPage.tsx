@@ -61,7 +61,7 @@ export default function AnexosPage() {
   const handleCreateAnexo = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!numero.trim() || !entidad.trim()) {
-      toast.error('Complete numero y entidad federativa.');
+      toast.error('Complete número y entidad federativa.');
       return;
     }
     try {
@@ -78,7 +78,7 @@ export default function AnexosPage() {
       setSelectedId(created.id);
       reload();
     } catch {
-      toast.error('No se pudo crear el anexo de ejecucion');
+      toast.error('No se pudo crear el anexo de ejecución');
     }
   };
 
@@ -121,7 +121,7 @@ export default function AnexosPage() {
             Anexos XII y XIII
           </h1>
           <p className="text-xs text-gray-500 mt-1">
-            Formalizacion de ejecucion (XII) y anexos tecnicos por organismo operador (XIII)
+            Formalización de ejecución (XII) y anexos técnicos por organismo operador (XIII)
           </p>
         </div>
         <Button size="sm" onClick={() => setCreateOpen(true)}>
@@ -133,7 +133,7 @@ export default function AnexosPage() {
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">Anexos de Ejecucion (XII)</CardTitle>
+            <CardTitle className="text-sm font-semibold">Anexos de Ejecución (XII)</CardTitle>
           </CardHeader>
           <CardContent>
             <PageState loading={loading} error={error} onRetry={reload}>
@@ -175,7 +175,7 @@ export default function AnexosPage() {
 
         <Card>
           <CardHeader className="pb-2 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm font-semibold">Anexos Tecnicos (XIII)</CardTitle>
+            <CardTitle className="text-sm font-semibold">Anexos Técnicos (XIII)</CardTitle>
             {selected && (
               <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => setTecnicoOpen(true)}>
                 <Plus className="w-3 h-3 mr-1" />
@@ -186,13 +186,13 @@ export default function AnexosPage() {
           <CardContent>
             {!selected ? (
               <p className="text-xs text-gray-500 text-center py-8">
-                Seleccione un Anexo XII para ver sus anexos tecnicos.
+                Seleccione un Anexo XII para ver sus anexos técnicos.
               </p>
             ) : (
               <PageState loading={tecnicosLoading} error={null} onRetry={reloadTecnicos}>
                 {!tecnicos?.length ? (
                   <p className="text-xs text-gray-500 text-center py-6">
-                    Sin anexos tecnicos para {selected.numero}.
+                    Sin anexos técnicos para {selected.numero}.
                   </p>
                 ) : (
                   <table className="w-full text-xs">
@@ -236,11 +236,11 @@ export default function AnexosPage() {
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Nuevo Anexo de Ejecucion (XII)</DialogTitle>
+            <DialogTitle>Nuevo Anexo de Ejecución (XII)</DialogTitle>
           </DialogHeader>
           <form onSubmit={(e) => void handleCreateAnexo(e)} className="space-y-3">
             <div>
-              <label className="text-xs text-gray-500">Numero</label>
+              <label className="text-xs text-gray-500">Número</label>
               <input
                 className="w-full h-9 px-2 text-sm border rounded-md"
                 value={numero}
@@ -304,7 +304,7 @@ export default function AnexosPage() {
       <Dialog open={tecnicoOpen} onOpenChange={setTecnicoOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Nuevo Anexo Tecnico (XIII)</DialogTitle>
+            <DialogTitle>Nuevo Anexo Técnico (XIII)</DialogTitle>
           </DialogHeader>
           <form onSubmit={(e) => void handleCreateTecnico(e)} className="space-y-3">
             <div>
@@ -330,7 +330,7 @@ export default function AnexosPage() {
                 >
                   <option value="urbana">Urbana</option>
                   <option value="rural">Rural</option>
-                  <option value="indigena">Indigena</option>
+                  <option value="indigena">Indígena</option>
                 </select>
               </div>
             </div>

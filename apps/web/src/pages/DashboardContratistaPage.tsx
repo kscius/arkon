@@ -196,7 +196,7 @@ export default function DashboardContratistaPage() {
   const avancePromedio = totalObras > 0 ? misObras.reduce((s, o) => s + o.avanceFisicoReal, 0) / totalObras : 0;
 
   const kpis = [
-    { label: 'Mis Obras', value: totalObras.toString(), sub: `${obrasEjecucion} en ejecucion`, icon: Building2, color: brand.colors.primary },
+    { label: 'Mis Obras', value: totalObras.toString(), sub: `${obrasEjecucion} en ejecución`, icon: Building2, color: brand.colors.primary },
     { label: 'Inversion Total', value: formatCurrencyM(montoTotal), sub: 'Monto contratado', icon: DollarSign, color: brand.colors.accent },
     { label: 'Avance Promedio', value: formatPercentage(avancePromedio), sub: 'Avance fisico', icon: TrendingUp, color: '#3182CE', trend: avancePromedio },
     { label: 'Obras con Retraso', value: obrasRetraso.toString(), sub: 'Requieren atencion', icon: AlertTriangle, color: '#DC2626' },
@@ -207,7 +207,7 @@ export default function DashboardContratistaPage() {
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
       <div>
         <h1 className="text-lg font-bold text-brand-primary">Panel del Contratista</h1>
-        <p className="text-xs text-gray-500 mt-1">Bienvenido, {user?.name}. Aqui puede gestionar sus obras asignadas y reportar avances.</p>
+        <p className="text-xs text-gray-500 mt-1">Bienvenido, {user?.name}. Aquí puede gestionar sus obras asignadas y reportar avances.</p>
       </div>
 
       {/* KPIs */}

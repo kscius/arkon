@@ -188,14 +188,14 @@ export function getAlertaTipoColor(tipo: string): string {
 
 export function getTipoObraLabel(tipo: string): string {
   const labels: Record<string, string> = {
-    'pavimentacion_urbana': 'Pavimentacion',
-    'infraestructura_educativa': 'Educacion',
+    'pavimentacion_urbana': 'Pavimentación',
+    'infraestructura_educativa': 'Educación',
     'drenaje_saneamiento': 'Drenaje',
-    'electrificacion': 'Electrificacion',
+    'electrificacion': 'Electrificación',
     'agua_potable': 'Agua Potable',
     'espacios_publicos': 'Espacios Publicos',
     'salud': 'Salud',
-    'proteccion_civil': 'Proteccion Civil',
+    'proteccion_civil': 'Protección Civil',
     'infraestructura_comercial': 'Comercial',
     'patrimonio_cultural': 'Patrimonio',
     'puentes_vialidades': 'Puentes',

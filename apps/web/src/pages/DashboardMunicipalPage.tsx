@@ -206,7 +206,7 @@ export default function DashboardMunicipalPage() {
   const alertasPendientes = munAlertas.filter(a => !a.atendida);
 
   const kpis = [
-    { label: 'Obras Municipales', value: totalObras.toString(), sub: `${obrasEjecucion} en ejecucion`, icon: Building2, color: brand.colors.primary },
+    { label: 'Obras Municipales', value: totalObras.toString(), sub: `${obrasEjecucion} en ejecución`, icon: Building2, color: brand.colors.primary },
     { label: 'Inversion Autorizada', value: formatCurrencyM(montoAutorizado), sub: 'Para su municipio', icon: DollarSign, color: brand.colors.accent },
     { label: 'Avance Promedio', value: formatPercentage(avancePromedio), sub: 'Avance fisico', icon: TrendingUp, color: '#3182CE', trend: avancePromedio },
     { label: 'Obras con Retraso', value: obrasRetraso.toString(), sub: `${Math.round((obrasRetraso / totalObras) * 100)}% del total`, icon: AlertTriangle, color: '#DC2626' },
@@ -220,7 +220,7 @@ export default function DashboardMunicipalPage() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-lg font-bold text-brand-primary">Dashboard Municipal — {municipioNombre}</h1>
-          <p className="text-xs text-gray-500 mt-1">Gestion de obras, contratistas y avances de su municipio</p>
+          <p className="text-xs text-gray-500 mt-1">Gestión de obras, contratistas y avances de su municipio</p>
         </div>
         <div className="flex flex-wrap gap-2 items-center">
           <DashboardExportActions />
@@ -350,7 +350,7 @@ export default function DashboardMunicipalPage() {
         {/* Validar Avances Tab */}
         <TabsContent value="validar" className="mt-4">
           <Card>
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Avances Pendientes de Validacion</CardTitle></CardHeader>
+            <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Avances Pendientes de Validación</CardTitle></CardHeader>
             <CardContent>
               {actionError && <p className="text-xs text-red-600 mb-3">{actionError}</p>}
               <div className="space-y-3">

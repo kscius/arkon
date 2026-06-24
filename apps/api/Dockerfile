@@ -32,7 +32,7 @@ COPY --from=build /app/apps/api/prisma ./apps/api/prisma
 COPY --from=build /app/apps/api/tsconfig.seed.json ./apps/api/tsconfig.seed.json
 COPY apps/api/docker-entrypoint.sh /app/docker-entrypoint.sh
 
-RUN chmod +x /app/docker-entrypoint.sh && mkdir -p /app/uploads
+RUN sed -i 's/\r$//' /app/docker-entrypoint.sh && chmod +x /app/docker-entrypoint.sh && mkdir -p /app/uploads
 
 WORKDIR /app/apps/api
 RUN npx prisma generate

@@ -2,7 +2,7 @@
   {
     "obra_id": null,
     "municipio": "León",
-    "titulo": "Retraso en dispersion de devolucion PRODDER 2025",
+    "titulo": "Retraso en dispersión de devolución PRODDER 2025",
     "descripcion": "SAPAL reporta $58.4 MDP federales del ejercicio 2025 sin dispersar; obras ejecutadas con recursos propios en riesgo financiero.",
     "tipo": "presupuestaria",
     "severidad": "alta",
@@ -22,8 +22,8 @@
   {
     "obra_id": null,
     "municipio": "Guanajuato",
-    "titulo": "Federal PRODDER/PEAS pendiente de pago post-ejecucion",
-    "descripcion": "SIMAPAG ejecuto paquete 2025 ($13.2 MDP); devolucion federal ~$6.6 MDP no dispersada.",
+    "titulo": "Federal PRODDER/PEAS pendiente de pago post-ejecución",
+    "descripcion": "SIMAPAG ejecutó paquete 2025 ($13.2 MDP); devolución federal ~$6.6 MDP no dispersada.",
     "tipo": "presupuestaria",
     "severidad": "alta",
     "fecha_generacion": "08-04-2026",
@@ -33,7 +33,7 @@
     "obra_id": null,
     "municipio": "Tulum",
     "titulo": "Retraso en saneamiento integral Sahcabmucuy",
-    "descripcion": "Obra PROAGUA 2022 con avance fisico por debajo del programado; revision de cronograma CAPA-CONAGUA.",
+    "descripcion": "Obra PROAGUA 2022 con avance físico por debajo del programado; revisión de cronograma CAPA-CONAGUA.",
     "tipo": "plazo",
     "severidad": "media",
     "fecha_generacion": "20-05-2024",
@@ -42,8 +42,8 @@
   {
     "obra_id": null,
     "municipio": "Irapuato",
-    "titulo": "Validacion de estimacion PTAR y alcantarillado pluvial pendiente",
-    "descripcion": "Contrato PRODDER 2024-13 en etapa 2 de 5; estimacion municipal sin validar por mas de 15 dias.",
+    "titulo": "Validación de estimación PTAR y alcantarillado pluvial pendiente",
+    "descripcion": "Contrato PRODDER 2024-13 en etapa 2 de 5; estimación municipal sin validar por más de 15 días.",
     "tipo": "administrativa",
     "severidad": "media",
     "fecha_generacion": "01-06-2024",
@@ -52,30 +52,30 @@
   {
     "obra_id": null,
     "municipio": "CDMX",
-    "titulo": "Estiaje y presion en redes de distribucion",
+    "titulo": "Estiaje y presión en redes de distribución",
     "descripcion": "Temporada de estiaje: monitoreo reforzado en acciones PEAS 2026 de eficiencia en redes metropolitanas.",
     "tipo": "operativa",
     "severidad": "alta",
     "fecha_generacion": "10-05-2024",
     "atendida": true,
-    "accion_tomada": "Plan de contingencia activado; priorizacion de pozos de mayor rendimiento."
+    "accion_tomada": "Plan de contingencia activado; priorización de pozos de mayor rendimiento."
   },
   {
     "obra_id": null,
     "municipio": "San Juan del Río",
-    "titulo": "Macromedicion PRODDER 2025 concluida — cierre documental",
-    "descripcion": "Obra de 10 macromedidores concluida; pendiente acta de entrega-recepcion en expediente.",
+    "titulo": "Macromedición PRODDER 2025 concluida — cierre documental",
+    "descripcion": "Obra de 10 macromedidores concluida; pendiente acta de entrega-recepción en expediente.",
     "tipo": "documentacion",
     "severidad": "baja",
     "fecha_generacion": "28-02-2026",
     "atendida": true,
-    "accion_tomada": "Supervision programo visita de cierre para marzo 2026."
+    "accion_tomada": "Supervisión programó visita de cierre para marzo 2026."
   },
   {
     "obra_id": null,
     "municipio": "Cuernavaca",
     "titulo": "Arranque pozo Tepeyac 2000 PROAGUA 2025",
-    "descripcion": "Obra autorizada por Cabildo; verificar liberacion de aportacion estatal y municipal del paquete.",
+    "descripcion": "Obra autorizada por Cabildo; verificar liberación de aportación estatal y municipal del paquete.",
     "tipo": "presupuestaria",
     "severidad": "media",
     "fecha_generacion": "15-06-2025",

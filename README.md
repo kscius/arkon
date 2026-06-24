@@ -55,13 +55,37 @@ El contenedor **api** al arrancar:
 
 Nginx en **web** sirve el frontend y reenvía `/api/*` al servicio `api`.
 
-## Desarrollo local (sin Docker)
+## Desarrollo local (sin Docker en API/Web)
+
+**Recomendado para iterar con hot reload** (DB sigue en Docker):
+
+```powershell
+# Desde ARKON/
+.\scripts\dev-local.ps1              # Native: DB Docker + API :8000 + Vite :3000
+.\scripts\dev-local.ps1 -Mode Docker # Stack completo en :8080
+.\scripts\stop-dev.ps1               # Detener procesos dev + contenedores api/web
+.\scripts\smoke-conagua.ps1          # Smoke API + roles CONAGUA
+```
+
+| Modo | Web | API | DB |
+|------|-----|-----|-----|
+| Native (`dev-local.ps1`) | http://localhost:3000 | http://localhost:8000/api | Docker `:5433` |
+| Docker (`docker-up.ps1`) | http://localhost:8080 | proxy `/api` + :8000 | Docker `:5433` |
+
+E2E contra dev nativo:
+
+```powershell
+cd apps/web
+$env:PLAYWRIGHT_BASE_URL='http://localhost:3000'
+$env:TENANT_ID='conagua'
+pnpm exec playwright test e2e/
+```
+
+### Manual (tres terminales)
 
 ```bash
 cp .env.example .env
 pnpm install
-
-En Windows, si `prisma db seed` falla con error de módulo nativo de `bcrypt`, ejecute `pnpm install --force` en la raíz del monorepo (el `package.json` raíz declara `pnpm.onlyBuiltDependencies` para compilar bcrypt).
 
 # Terminal 1 — base de datos (o use solo el servicio db de Compose)
 docker compose up db
@@ -70,7 +94,7 @@ docker compose up db
 cd apps/api
 pnpm exec prisma generate
 pnpm exec prisma migrate deploy   # o en dev: pnpm exec prisma migrate dev
-pnpm exec prisma db seed
+TENANT_ID=conagua pnpm exec prisma db seed
 pnpm run dev
 
 # Terminal 3 — Web

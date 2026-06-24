@@ -9,6 +9,11 @@ import { defineConfig, devices } from '@playwright/test';
  */
 const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:8080';
 
+// Docker Compose and .env.example default to CONAGUA; helpers.ts reads TENANT_ID at import time.
+if (!process.env.TENANT_ID?.trim()) {
+  process.env.TENANT_ID = 'conagua';
+}
+
 export default defineConfig({
   testDir: './e2e',
   fullyParallel: false,

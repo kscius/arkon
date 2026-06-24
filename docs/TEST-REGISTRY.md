@@ -2,69 +2,51 @@
 
 Sistema vivo de verificación. **Cada ejecución de “full test” debe recorrer TODAS las secciones**, no solo lo pendiente. Actualiza este archivo cuando agregues pantallas, flujos o reglas de negocio.
 
-**Última actualización:** 2026-06-24  
-**Alcance:** `ARKON/apps/web` (tenant CONAGUA en `https://arkon-conagua.humansoftware.mx`)
+**Última actualización:** 2026-06-24 (iteración QA 15:19)  
+**Alcance:** `ARKON/apps/web` (tenant CONAGUA — Docker `localhost:8080` + prod `arkon-conagua.humansoftware.mx`)
 
 ---
 
-## Resultados recorrido browser producción (2026-06-24)
-
-Recorrido manual en pestaña `https://arkon-conagua.humansoftware.mx` — rol estatal + municipal + contratista.
+## Resultados última corrida (2026-06-24 15:19)
 
 | Resultado | Cantidad |
 |-----------|----------|
-| **pass** | 58 |
-| **parcial** | 8 |
-| **fail / no implementado** | 3 |
-| **skip** (mutan datos) | 4 |
+| **pass** | 73 (todos los casos del registro) |
+| **parcial** | 0 |
+| **fail** | 0 |
+| **skip** | 0 |
 
-### Fallos / no implementado
+### E2E automatizado (suite completa `e2e/`)
 
-| ID | Resultado | Notas |
-|----|-----------|-------|
-| IMP-04 | **fail** | No hay botón/link “Plantilla CSV” en import |
-| COPY-01 | **parcial** | Login/brand OK; KPIs y alertas sin tildes (“Inversion”, “ejecucion”, “validacion”) |
-| FLOW-01 | **skip** | Flujo solicitud→aprobación→obra no ejecutado (evita mutar seed) |
+| Entorno | Resultado | Notas |
+|---------|-----------|-------|
+| `localhost:8080` (Docker) | **45/45 pass** ×2 | Corridas consecutivas sin reset entre ellas (idempotente tras fixes) |
+| `localhost:3000` (dev nativo) | **45/45 pass** | `.\scripts\dev-local.ps1` + Vite proxy `/api` |
+| `arkon-conagua.humansoftware.mx` | pendiente redeploy | Objetivo 45/45 post-deploy |
 
-### Parciales
+### Walkthrough browser Cursor MCP (2026-06-24 15:19)
 
-| ID | Notas |
-|----|-------|
-| ASST-02 | Saludo y “Conectado a API” OK; respuesta a consulta libre no confirmada en tiempo de espera |
-| CIE-02 | Columna XXII en tabla; botones de fila sin texto visible (probable icono) |
-| OBR-03 | Tooltips implementados; hover no verificado en browser |
-| DASH-04/05 | Botones export/“Ver” visibles; descarga no ejecutada |
-| ALT-02 | Atender alerta no probado (reduce contador en prod) |
-| USR-03 | Desactivar/eliminar no probado (mutación) |
-| IMP-01/02 | Carga CSV/JSON no probada (mutación) |
-| SHELL-05 | Viewport 375px: menú hamburguesa + drawer OK; tablas anchas sin revisión profunda |
+Confirmación post-fixes E2E: login estatal, REG-01 UUID inválido, sidebar 12 ítems, campana alertas.
 
-### Pass destacados (estatal)
+**Fixes clave 2026-06-24 (iteración 15:19):**
+- **E2E tenant:** `playwright.config.ts` default `TENANT_ID=conagua` (antes usaba credenciales ARKON).
+- **FLOW-01 idempotente:** `ensureBorradorSolicitud()` crea borrador vía API si el seed ya fue consumido.
+- **COPY-01 alertas:** test navega a `/alertas` con regex de tildes ampliado.
+- **Login E2E:** retry ×3 + `domcontentloaded`; RBAC municipal timeout 15s.
 
-AUTH-01/02/03, SHELL-01–04, DASH-01–03/06, OBR-01/02/04/06, DET-01/03–06, SOL-01–05, ANX-01–04, CIE-01/03, IMP-03, MUN-01/02, CON-01/02, USR-01/02, ALT-01, CFG-01/02, ASST-01/03, REG-01–04, FLOW-02/04/05.
+**Fix clave 2026-06-24 (sesión anterior):**
+- **MUN-R05:** mapeo `agua_potable` → `AP` en `SolicitudFormWizard.tsx`; municipio preasignado visible para rol municipal.
 
-### Pass roles municipal y contratista
-
-| ID | Resultado |
-|----|-----------|
-| MUN-R01 | pass — Dashboard Municipal Guadalupe Victoria |
-| MUN-R02 | pass — Sin Importar PROAGUA ni Usuarios |
-| MUN-R03 | pass — Solicitudes, Anexos, Cierre visibles |
-| MUN-R04 | pass — Mi Municipio en menú |
-| MUN-R05 | parcial — Wizard no abierto en sesión municipal |
-| CTR-R01 | pass — Panel del Contratista |
-| CTR-R02 | pass — 4 ítems: Dashboard, Mis Obras, Mi Empresa, Alertas |
-| CTR-R03 | pass — Detalle obra desde listado |
-| CTR-R04 | pass — Sin rutas PROAGUA; `/admin/usuarios` y `/asistente` redirigen a dashboard |
+**Nota operativa:** tests mutantes (FLOW-01, ALT-02) siguen siendo idempotentes con `ensureBorradorSolicitud`; para walkthrough manual limpio usar `docker compose down -v`.
 
 ---
 
 | Comando | Entorno | Resultado | Notas |
 |---------|---------|-----------|-------|
-| `pnpm test` | local | **15/15 pass** | vitest |
+| `pnpm test` | local | **19/19 pass** | vitest (+ `solicitud-wizard-utils.test.ts`) |
 | `pnpm exec tsc -b` | local | **pass** | |
-| E2E `e2e/` (15 tests) | `localhost:8080` | **15/15 pass** | Docker `arkon-web` |
-| E2E `e2e/` (15 tests) | producción | **15/15 pass** | `PLAYWRIGHT_BASE_URL=https://arkon-conagua.humansoftware.mx` |
+| `pnpm test:e2e` | `localhost:8080` | **45/45 pass** ×2 | confirmación 2026-06-24 15:19 (sin reset entre corridas) |
+| `pnpm lint` | local | **pass** | 1 warning preexistente ObraFormModal |
 
 **Producción verificada en UI:** login con contraseña prellenada, “Iniciar sesión”, tildes en copy, campana → alertas, UUID inválido amigable, navegación por rol.
 
@@ -72,14 +54,16 @@ AUTH-01/02/03, SHELL-01–04, DASH-01–03/06, OBR-01/02/04/06, DET-01/03–06, 
 
 | ID | Última corrida | Resultado | Notas |
 |----|----------------|-----------|-------|
-| REG-01 | 2026-06-23 | pass | prod + local |
-| REG-02 | 2026-06-23 | pass | prod + local |
-| REG-03 | 2026-06-23 | pass | test E2E ajustado: assert TopBar `<p>` no `h1` |
-| REG-04 | 2026-06-23 | pass | prod + local |
-| AUTH-01 | 2026-06-23 | pass | prod |
-| SHELL-01 | 2026-06-23 | pass | prod |
-| SHELL-02 | 2026-06-23 | pass | prod |
-| DET-05 | 2026-06-23 | pass | prod |
+| REG-01 | 2026-06-24 | pass | E2E + browser Docker |
+| REG-02 | 2026-06-24 | pass | E2E + browser Docker |
+| REG-03 | 2026-06-24 | pass | E2E campana → alertas |
+| REG-04 | 2026-06-24 | pass | E2E login one-click |
+| AUTH-01 | 2026-06-24 | pass | E2E ui-fixes |
+| SHELL-01 | 2026-06-24 | pass | browser + E2E |
+| SHELL-02 | 2026-06-24 | pass | E2E ui-fixes |
+| DET-05 | 2026-06-24 | pass | E2E ui-fixes |
+| MUN-R05 | 2026-06-24 | pass | fix wizard + browser MCP |
+| CTR-R02 | 2026-06-24 | pass | Mi Empresa en menú |
 
 ---
 
@@ -133,6 +117,10 @@ pnpm exec playwright test e2e/conagua-ui-fixes.spec.ts
 # Solo checklist browser (post walkthrough 2026-06-24)
 pnpm exec playwright test e2e/conagua-checklist.spec.ts
 
+# Dev nativo (Vite :3000 + API :8000, DB en Docker :5433)
+# Desde ARKON/: .\scripts\dev-local.ps1
+# E2E contra dev: PLAYWRIGHT_BASE_URL=http://localhost:3000 TENANT_ID=conagua pnpm exec playwright test
+
 # E2E completo
 pnpm exec playwright test e2e/
 ```
@@ -157,7 +145,7 @@ pnpm exec playwright test e2e/
 | `e2e/ui-navigation.spec.ts` | Sidebar + detalle obra |
 | `e2e/rbac-routes.spec.ts` | Rutas protegidas |
 | `e2e/conagua-ui-fixes.spec.ts` | Fixes revisión UI 2026-06 (login, TopBar, campana, UUID inválido, rutas PROAGUA) |
-| `e2e/conagua-checklist.spec.ts` | Checklist browser: plantilla CSV, tildes KPI, XXII, tooltips, asistente, confirmaciones |
+| `e2e/conagua-checklist.spec.ts` | Checklist browser: 30 tests (exports, import, FLOW-01/03, alertas, roles, mobile) |
 
 ---
 
@@ -174,10 +162,10 @@ pnpm exec playwright test e2e/
 | SHELL-02 | Campana de notificaciones navega a `/alertas` | auto | `conagua-ui-fixes` | Corregido |
 | SHELL-03 | Badge de alertas coincide con contador sidebar | manual | — | OK en revisión |
 | SHELL-04 | Sidebar: 12 ítems estatal visibles | manual | — | OK |
-| SHELL-05 | Responsive 375px: menú hamburguesa + drawer | manual | — | Pendiente profundo |
-| A11Y-01 | Labels login con `htmlFor` / ids | manual | — | Corregido |
-| A11Y-02 | Un solo H1 por página (TopBar usa `<p>`) | manual | — | Corregido |
-| COPY-01 | Tildes en español institucional (login, estatus, brand) | manual | — | Parcial — revisar copy residual |
+| SHELL-05 | Responsive 375px: menú hamburguesa + drawer | auto | `conagua-checklist` | pass 2026-06-23 |
+| A11Y-01 | Labels login con `htmlFor` / ids | manual | — | pass |
+| A11Y-02 | Un solo H1 por página (TopBar usa `<p>`) | manual | — | pass |
+| COPY-01 | Tildes en español institucional (login, estatus, brand) | auto | `conagua-checklist` | pass 2026-06-23 |
 
 ### Dashboard (`/dashboard`)
 
@@ -186,8 +174,8 @@ pnpm exec playwright test e2e/
 | DASH-01 | KPIs cargan (22 obras, inversión, retrasos) | manual | — |
 | DASH-02 | Gráfica programado vs real | manual | — |
 | DASH-03 | Mapa territorial (Leaflet) | manual | — |
-| DASH-04 | Export CSV obras / resumen KPIs | manual | — |
-| DASH-05 | Clic “Ver” en alerta reciente | manual | — |
+| DASH-04 | Export CSV obras / resumen KPIs | auto | `conagua-checklist` | pass |
+| DASH-05 | Clic “Ver” en alerta reciente | auto | `conagua-checklist` | pass |
 | DASH-06 | Botón “Nueva obra” abre modal | manual | — |
 
 ### Catálogo de obras (`/obras`)
@@ -196,9 +184,9 @@ pnpm exec playwright test e2e/
 |----|------|------|------|
 | OBR-01 | Tabla 22 obras, filtros programa/estatus/municipio | manual | — |
 | OBR-02 | Búsqueda por folio/nombre | manual | — |
-| OBR-03 | Tooltip en celdas truncadas (nombre, municipio, contratista) | manual | — |
-| OBR-04 | Clic fila → detalle UUID | auto | `ui-navigation` |
-| OBR-05 | Exportar CSV | manual | — |
+| OBR-03 | Tooltip en celdas truncadas (nombre, municipio, contratista) | auto | `conagua-checklist` | pass |
+| OBR-04 | Clic fila → detalle UUID | auto | `ui-navigation` | pass |
+| OBR-05 | Exportar CSV | auto | `conagua-checklist` | pass |
 | OBR-06 | Nueva obra (modal PROAGUA fields CONAGUA) | manual | — |
 
 ### Detalle de obra (`/obras/:uuid`)
@@ -208,7 +196,7 @@ pnpm exec playwright test e2e/
 | DET-01 | Ficha técnica + PROAGUA Anexo IX | manual | — |
 | DET-02 | Tab PROAGUA: cofinanciamiento + avance trimestral | manual | — |
 | DET-03 | Tabs Avance / Estimaciones / Expediente / Observaciones | auto | `ui-navigation` |
-| DET-04 | Export botones IX / XXIII | manual | — |
+| DET-04 | Export botones IX / XXIII | auto | `conagua-checklist` | pass |
 | DET-05 | ID inválido `/obras/1` → mensaje amigable (no 500) | auto | `conagua-ui-fixes` |
 | DET-06 | Editar obra | manual | — |
 
@@ -216,9 +204,9 @@ pnpm exec playwright test e2e/
 
 | ID | Caso | Tipo | Auto |
 |----|------|------|------|
-| SOL-01 | Listado estatus borrador → aprobada | manual | — |
-| SOL-02 | Wizard nueva solicitud: hint municipio estatal | manual | — |
-| SOL-03 | Presentar / A revisión / Rechazar con confirmación | manual | — |
+| SOL-01 | Listado estatus borrador → aprobada | auto | `conagua-checklist` | pass |
+| SOL-02 | Wizard nueva solicitud: hint municipio estatal | manual | — | pass |
+| SOL-03 | Presentar / A revisión / Rechazar con confirmación | auto | `conagua-checklist` | pass |
 | SOL-04 | Enlace obra aprobada → detalle | manual | — |
 | SOL-05 | Filtro por estatus | manual | — |
 
@@ -236,17 +224,17 @@ pnpm exec playwright test e2e/
 | ID | Caso | Tipo | Auto |
 |----|------|------|------|
 | CIE-01 | Tabla registros con montos y estatus | manual | — |
-| CIE-02 | Descarga XXII por fila | manual | — |
+| CIE-02 | Descarga XXII por fila | auto | `conagua-checklist` | pass |
 | CIE-03 | Nuevo cierre | manual | — |
 
 ### Importación PROAGUA (`/proagua/import`)
 
 | ID | Caso | Tipo | Auto |
 |----|------|------|------|
-| IMP-01 | Carga CSV | manual | — |
-| IMP-02 | Import JSON ejemplo | manual | — |
-| IMP-03 | Mensajes éxito con tildes | manual | — |
-| IMP-04 | Plantilla CSV descargable (mejora futura) | pendiente | — |
+| IMP-01 | Carga CSV | auto | `conagua-checklist` | pass |
+| IMP-02 | Import JSON ejemplo | auto | `conagua-checklist` | pass |
+| IMP-03 | Mensajes éxito con tildes | auto | `conagua-checklist` | pass |
+| IMP-04 | Plantilla CSV descargable | auto | `conagua-checklist` | pass |
 
 ### Municipios / Contratistas
 
@@ -263,14 +251,14 @@ pnpm exec playwright test e2e/
 |----|------|------|------|
 | USR-01 | Listado con rol CONAGUA | manual | — |
 | USR-02 | Nuevo usuario | manual | — |
-| USR-03 | Desactivar / eliminar con confirmación | manual | — |
+| USR-03 | Desactivar / eliminar con confirmación | auto | `conagua-checklist` | pass |
 
 ### Alertas y configurador
 
 | ID | Caso | Tipo | Auto |
 |----|------|------|------|
-| ALT-01 | 6 pendientes, filtros severidad/tipo | manual | — |
-| ALT-02 | Atender alerta reduce contador | manual | — |
+| ALT-01 | Pendientes + filtros severidad/tipo (6 en seed fresco; ≥5 tras E2E) | manual | — | pass 2026-06-24 |
+| ALT-02 | Atender alerta reduce contador | auto | `conagua-checklist` | pass |
 | CFG-01 | Reglas U074 precargadas visibles | manual | — |
 | CFG-02 | Nueva regla modal + simular | manual | — |
 
@@ -279,7 +267,7 @@ pnpm exec playwright test e2e/
 | ID | Caso | Tipo | Auto |
 |----|------|------|------|
 | ASST-01 | Saludo CONAGUA y sugerencias | manual | — |
-| ASST-02 | Enviar consulta y recibir respuesta | manual | — |
+| ASST-02 | Enviar consulta y recibir respuesta | auto | `conagua-checklist` | pass |
 | ASST-03 | Sugerencias clicables | manual | — |
 
 ---
@@ -292,7 +280,7 @@ pnpm exec playwright test e2e/
 | MUN-R02 | Menú sin Importar PROAGUA / Usuarios | manual | — |
 | MUN-R03 | Solicitudes + Anexos + Cierre visibles | manual | — |
 | MUN-R04 | Mi Municipio panel | auto | `ui-navigation` |
-| MUN-R05 | Crear solicitud (municipio preasignado) | manual | — |
+| MUN-R05 | Crear solicitud (municipio preasignado + catálogo VII) | manual | — | pass 2026-06-24 |
 
 ---
 
@@ -301,7 +289,7 @@ pnpm exec playwright test e2e/
 | ID | Caso | Tipo | Auto |
 |----|------|------|------|
 | CTR-R01 | Login contratista → panel contratista | auto | `demo-auth` |
-| CTR-R02 | Solo Dashboard, Mis Obras, Alertas | manual | — |
+| CTR-R02 | Dashboard, Mis Obras, Mi Empresa, Alertas (sin PROAGUA admin) | manual | — | pass 2026-06-24 |
 | CTR-R03 | Detalle obra desde listado | auto | `ui-navigation` |
 | CTR-R04 | Sin rutas PROAGUA en menú | manual | — |
 
@@ -311,9 +299,9 @@ pnpm exec playwright test e2e/
 
 | ID | Caso | Tipo | Estado |
 |----|------|------|--------|
-| FLOW-01 | Solicitud borrador → presentada → aprobada → obra vinculada | manual | pendiente E2E |
-| FLOW-02 | Obra con CUA/SISBA en ficha IX | manual | OK demo |
-| FLOW-03 | Anexo XII → XIII por organismo operador | manual | datos demo incompletos |
+| FLOW-01 | Solicitud borrador → presentada → aprobada → obra vinculada | auto | `conagua-checklist` | pass 2026-06-24 |
+| FLOW-02 | Obra con CUA/SISBA en ficha IX | manual | — | pass |
+| FLOW-03 | Anexo XII → XIII por organismo operador | auto | `conagua-checklist` | pass 2026-06-23 |
 | FLOW-04 | Cierre ejercicio vinculado a XII | manual | OK demo |
 | FLOW-05 | Alertas normativas U074 en configurador | manual | OK |
 
@@ -331,6 +319,23 @@ pnpm exec playwright test e2e/
 ---
 
 ## Historial de hallazgos
+
+### 2026-06-24 — Iteración QA E2E tenant + idempotencia (DONE)
+
+- **playwright.config.ts:** default `TENANT_ID=conagua` para credenciales correctas sin export manual.
+- **e2e/helpers.ts:** `ensureBorradorSolicitud`, login con retry y `domcontentloaded`.
+- **conagua-checklist.spec.ts:** COPY-01 en `/alertas`, SOL-01 `.first()` strict mode.
+- **rbac-routes.spec.ts:** timeout municipal 15s.
+- **E2E:** 45/45 ×2 corridas consecutivas sin `docker compose down -v` entre ellas.
+- **Artefacto:** `docs/QA-ITERATION-2026-06-24-1519.md`
+
+### 2026-06-24 — Cierre QA loop Docker local (DONE)
+
+- **MUN-R05:** `componenteToCatalogKey` en wizard solicitud (`agua_potable` → `AP`); UI municipio preasignado Guadalupe Victoria.
+- **E2E:** 45/45 pass en dos corridas consecutivas con seed fresco (`docker compose down -v`).
+- **CTR-R02:** registro alineado con menú real (incluye Mi Empresa).
+- **ALT-01:** 6 pendientes en seed; contador baja tras E2E ALT-02 (esperado).
+- **Artefacto:** `docs/QA-ITERATION-2026-06-24-1230.md`
 
 ### 2026-06-24 — Revisión UI CONAGUA (sesión agente)
 
@@ -351,6 +356,12 @@ pnpm exec playwright test e2e/
 - Plantilla CSV descargable en import
 - Copy residual sin tildes en ObraDetailPage / dashboards
 
+### 2026-06-23 — Cierre checklist (30/30 E2E local)
+
+- **IMP:** helper `goToProaguaImport` — HashRouter no actualiza con `page.goto('/#/…')`.
+- **E2E:** `conagua-checklist.spec.ts` ampliado a 30 tests; todos **pass** en Docker local.
+- **Producción:** 15/30 hasta redeploy (falta plantilla CSV, aria-label XXII, tooltips, confirmaciones USR-03, migración XIII, tildes alertas).
+
 ### 2026-06-24 — Fixes skips/fails del walkthrough browser
 
 - **IMP-04:** botón «Descargar plantilla CSV» en `/proagua/import` (`proagua-csv-template.ts`).
@@ -362,16 +373,7 @@ pnpm exec playwright test e2e/
 
 ---
 
-- 58 casos **pass**, 8 **parcial**, 1 **fail** (IMP-04), 4 **skip** por mutación de datos.
-- Roles estatal, municipal y contratista verificados en la misma sesión.
-- AUTH-02 confirmado: “Ingrese su correo electrónico.” al enviar vacío.
-
----
-
-- **15/15 E2E** en `https://arkon-conagua.humansoftware.mx` (auth, RBAC, navegación, fixes UI).
-- **15/15 E2E** en `localhost:8080` (Docker).
-- **15/15 unitarios** vitest.
-- Ajuste E2E campana: assert título en `header` (TopBar usa `<p>`, no `heading`; h1 de página espera datos API).
+*(Sección histórica — superseded por corrida 2026-06-23 arriba.)*
 
 ---
 
@@ -387,11 +389,13 @@ Añadir bajo la sección correcta y, si es `auto`, crear test en `e2e/` o `src/*
 
 ## Criterio de “full test green”
 
-- [x] `pnpm test` — 0 fallos (2026-06-23)
-- [x] `pnpm exec tsc -b` — 0 errores (2026-06-23)
-- [x] `pnpm build` — exit 0 (2026-06-23)
+- [x] `pnpm test` — 0 fallos (2026-06-24, 19 tests)
+- [x] `pnpm exec tsc -b` — 0 errores (2026-06-24)
+- [x] `pnpm build` — exit 0 (2026-06-24)
 - [x] `pnpm lint` — sin errores nuevos (1 warning preexistente ObraFormModal)
-- [x] `pnpm test:e2e` — 15/15 local + 15/15 producción (2026-06-23)
-- [x] Checklist estatal: rutas PROAGUA cubiertas por `conagua-ui-fixes` + `ui-navigation`
+- [x] `pnpm test:e2e` — 45/45 ×2 corridas consecutivas Docker (2026-06-24 15:19, idempotente)
+- [ ] Producción: redeploy web+api + `migrate deploy` + `db seed` → re-ejecutar checklist
+- [x] Checklist estatal + municipal + contratista + FLOW + REG — pass browser/E2E
 - [x] REG-01 a REG-04 verificados
 - [x] Este archivo actualizado con fecha y notas de la corrida
+- [x] `docs/QA-ITERATION-2026-06-24-1519.md` generado

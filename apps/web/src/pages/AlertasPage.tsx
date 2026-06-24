@@ -206,7 +206,7 @@ export default function AlertasPage() {
                   <p className="text-xs text-gray-600 mt-2">{alerta.descripcion}</p>
                   {alerta.atendida && alerta.accionTomada && (
                     <p className="text-xs text-green-700 mt-2 bg-green-50 border border-green-100 rounded px-2 py-1.5">
-                      <span className="font-medium">Accion tomada: </span>
+                      <span className="font-medium">Acción tomada: </span>
                       {alerta.accionTomada}
                     </p>
                   )}

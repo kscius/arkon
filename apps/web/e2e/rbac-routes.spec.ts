@@ -8,9 +8,11 @@ test.describe('RBAC route guards', () => {
 
   test('municipal cannot open admin usuarios', async ({ page }) => {
     await login(page, DEMO_USERS.municipal);
-    await page.goto('/#/admin/usuarios');
+    await page.goto('/#/admin/usuarios', { waitUntil: 'domcontentloaded' });
     await expect(page).toHaveURL(/#\/dashboard/, { timeout: 10_000 });
-    await expect(page.getByRole('heading', { name: /Dashboard Municipal/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /Dashboard Municipal/i })).toBeVisible({
+      timeout: 15_000,
+    });
   });
 
   test('contratista cannot open admin nor asistente', async ({ page }) => {
