@@ -31,7 +31,7 @@ describe('api-client 401 handling', () => {
       (err: unknown) =>
         err instanceof ApiError &&
         err.status === 401 &&
-        err.message.includes('Sesion expirada'),
+        err.message.includes('Sesión expirada'),
     );
 
     expect(getToken()).toBeNull();

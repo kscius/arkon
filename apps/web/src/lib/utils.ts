@@ -74,15 +74,15 @@ export function getObraStatusColor(status: string): string {
 
 export function getObraStatusLabel(status: string): string {
   const labels: Record<string, string> = {
-    'en_ejecucion_a_tiempo': 'En ejecucion',
+    'en_ejecucion_a_tiempo': 'En ejecución',
     'en_ejecucion_retraso': 'Con retraso',
     'concluida': 'Concluida',
     'en_riesgo': 'En riesgo',
-    'en_preparacion': 'En preparacion',
-    'en_revision': 'En revision',
+    'en_preparacion': 'En preparación',
+    'en_revision': 'En revisión',
     'suspendida': 'Suspendida',
-    'en_adjudicacion': 'En adjudicacion',
-    'en_licitacion': 'En licitacion',
+    'en_adjudicacion': 'En adjudicación',
+    'en_licitacion': 'En licitación',
     'cancelada': 'Cancelada',
     'cerrada': 'Cerrada',
   };
@@ -124,7 +124,7 @@ export function getRiesgoLabel(nivel: string): string {
     'bajo': 'Bajo',
     'medio': 'Medio',
     'alto': 'Alto',
-    'critico': 'Critico',
+    'critico': 'Crítico',
   };
   return labels[nivel] || nivel;
 }
@@ -142,20 +142,20 @@ export function humanizeSnakeCase(value: string): string {
 export function getAlertaTipoLabel(tipo: string): string {
   const labels: Record<string, string> = {
     retraso: 'Retraso',
-    retraso_fisico: 'Retraso fisico',
+    retraso_fisico: 'Retraso físico',
     documental: 'Documental',
-    documentacion: 'Documentacion',
-    documentacion_incompleta: 'Documentacion incompleta',
+    documentacion: 'Documentación',
+    documentacion_incompleta: 'Documentación incompleta',
     financiera: 'Financiera',
-    desvio_financiero: 'Desvio financiero',
-    tecnica: 'Tecnica',
+    desvio_financiero: 'Desvío financiero',
+    tecnica: 'Técnica',
     programa: 'Programa',
     presupuestaria: 'Presupuestaria',
     operativa: 'Operativa',
-    logistica: 'Logistica',
+    logistica: 'Logística',
     regulatoria: 'Regulatoria',
     administrativa: 'Administrativa',
-    climatica: 'Climatica',
+    climatica: 'Climática',
     plazo: 'Plazo',
     sin_actualizaciones: 'Sin actualizaciones',
     exceso_presupuesto: 'Exceso de presupuesto',

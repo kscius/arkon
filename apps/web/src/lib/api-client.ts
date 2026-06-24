@@ -44,7 +44,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   if (res.status === 401) {
     setToken(null);
     onUnauthorized?.();
-    throw new ApiError(401, 'Sesion expirada. Inicie sesion nuevamente.');
+    throw new ApiError(401, 'Sesión expirada. Inicie sesión nuevamente.');
   }
 
   if (!res.ok) {
@@ -123,7 +123,7 @@ export async function apiFetchBlob(
   if (res.status === 401) {
     setToken(null);
     onUnauthorized?.();
-    throw new ApiError(401, 'Sesion expirada. Inicie sesion nuevamente.');
+    throw new ApiError(401, 'Sesión expirada. Inicie sesión nuevamente.');
   }
 
   if (!res.ok) {

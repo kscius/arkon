@@ -35,6 +35,6 @@ export async function login(page: Page, email: string): Promise<void> {
   await page.goto('/#/');
   await page.locator('input[type="email"]').fill(email);
   await page.locator('input[type="password"]').fill(DEMO_PASSWORD);
-  await page.getByRole('button', { name: /Iniciar Sesion/i }).click();
+  await page.getByRole('button', { name: /Iniciar sesi[oó]n/i }).click();
   await page.waitForURL(/#\/dashboard/, { timeout: 30_000 });
 }

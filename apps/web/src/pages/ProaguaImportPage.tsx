@@ -20,7 +20,7 @@ export default function ProaguaImportPage() {
     try {
       const res = await importProaguaObrasCsv(file);
       setResult(res);
-      toast.success(`Importacion: ${res.created} creadas, ${res.updated} actualizadas`);
+      toast.success(`Importación: ${res.created} creadas, ${res.updated} actualizadas`);
     } catch {
       toast.error('Error al importar CSV');
     } finally {
@@ -36,7 +36,7 @@ export default function ProaguaImportPage() {
       if (!Array.isArray(parsed)) throw new Error('invalid');
       const res = await importProaguaObrasJson(parsed);
       setResult(res);
-      toast.success(`Importacion: ${res.created} creadas, ${res.updated} actualizadas`);
+      toast.success(`Importación: ${res.created} creadas, ${res.updated} actualizadas`);
     } catch {
       toast.error('JSON invalido o error de importacion');
     } finally {
@@ -49,7 +49,7 @@ export default function ProaguaImportPage() {
       <div>
         <h1 className="text-lg font-bold text-brand-primary flex items-center gap-2">
           <Upload className="w-5 h-5" />
-          Importacion historica PROAGUA
+          Importación histórica PROAGUA
         </h1>
         <p className="text-xs text-gray-500 mt-1">
           Carga masiva de obras por CUA desde CSV o JSON (upsert)

@@ -1,47 +1,54 @@
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { getBrand } from '@/config/brand';
+import { getPageTitle } from '@/lib/page-titles';
 import { Bell, Menu } from 'lucide-react';
 
 export function TopBar() {
   const brand = getBrand();
   const { user, notifications, toggleSidebar, toggleMobileDrawer } = useApp();
   const location = useLocation();
+  const navigate = useNavigate();
 
-  const getTitle = () => {
-    const path = location.pathname;
-    if (path === '/dashboard') return 'Dashboard Ejecutivo';
-    if (path === '/obras') return 'Catalogo de Obras';
-    if (path.startsWith('/obras/')) return 'Detalle de Obra';
-    if (path.startsWith('/municipios/')) return 'Panel del Municipio';
-    if (path.startsWith('/contratistas/')) return 'Panel del Contratista';
-    if (path === '/asistente') return 'Asistente de IA';
-    if (path === '/alertas') return 'Centro de Alertas';
-    return brand.productName;
-  };
+  const title = getPageTitle(location.pathname, brand.productName);
 
   return (
     <header className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 sticky top-0 z-20">
       <div className="flex items-center gap-3">
         <button
+          type="button"
           onClick={toggleMobileDrawer}
-          className="lg:hidden p-1.5 hover:bg-gray-100 rounded-lg text-gray-600"
+          className="lg:hidden p-1.5 hover:bg-gray-100 rounded-lg text-gray-600 cursor-pointer"
+          aria-label="Abrir menú de navegación"
         >
           <Menu className="w-5 h-5" />
         </button>
         <button
+          type="button"
           onClick={toggleSidebar}
-          className="hidden lg:block p-1.5 hover:bg-gray-100 rounded-lg text-gray-600"
+          className="hidden lg:block p-1.5 hover:bg-gray-100 rounded-lg text-gray-600 cursor-pointer"
+          aria-label="Alternar barra lateral"
         >
           <Menu className="w-5 h-5" />
         </button>
         <div>
-          <h1 className="text-sm font-semibold text-gray-900">{getTitle()}</h1>
+          <p className="text-sm font-semibold text-gray-900" aria-live="polite">
+            {title}
+          </p>
           <p className="text-[10px] text-gray-500 hidden sm:block">{brand.tagline}</p>
         </div>
       </div>
       <div className="flex items-center gap-3">
-        <button className="relative p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors">
+        <button
+          type="button"
+          onClick={() => navigate('/alertas')}
+          className="relative p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors cursor-pointer"
+          aria-label={
+            notifications > 0
+              ? `Ir al centro de alertas, ${notifications} pendientes`
+              : 'Ir al centro de alertas'
+          }
+        >
           <Bell className="w-5 h-5" />
           {notifications > 0 && (
             <span className="absolute top-1 right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center">

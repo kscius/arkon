@@ -6,12 +6,23 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Dialog,
   DialogContent,
   DialogFooter,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { TruncateTooltip } from '@/components/ui/truncate-tooltip';
 import { useApp } from '@/context/AppContext';
 import { useAsyncData } from '@/hooks/use-async-data';
 import {
@@ -41,7 +52,7 @@ const FILTER_ESTATUS: SolicitudEstatus[] = [
 const ESTATUS_STYLES: Record<string, { bg: string; color: string; label: string }> = {
   borrador: { bg: '#A0AEC015', color: '#718096', label: 'Borrador' },
   presentada: { bg: '#3182CE15', color: '#3182CE', label: 'Presentada' },
-  en_revision: { bg: '#D69E2E15', color: '#D69E2E', label: 'En revision' },
+  en_revision: { bg: '#D69E2E15', color: '#D69E2E', label: 'En revisión' },
   aprobada: { bg: '#38A16915', color: '#38A169', label: 'Aprobada' },
   rechazada: { bg: '#DC262615', color: '#DC2626', label: 'Rechazada' },
   observada: { bg: '#D69E2E15', color: '#D69E2E', label: 'Observada' },
@@ -54,6 +65,7 @@ export default function SolicitudesPage() {
   const [wizardOpen, setWizardOpen] = useState(false);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [approveTarget, setApproveTarget] = useState<SolicitudPrograma | null>(null);
+  const [rejectTarget, setRejectTarget] = useState<SolicitudPrograma | null>(null);
   const [obraPickerId, setObraPickerId] = useState('');
   const [obrasOptions, setObrasOptions] = useState<Obra[]>([]);
   const [loadingObras, setLoadingObras] = useState(false);
@@ -121,6 +133,21 @@ export default function SolicitudesPage() {
     }
   };
 
+  const handleReject = async () => {
+    if (!rejectTarget) return;
+    setBusyId(rejectTarget.id);
+    try {
+      await transitionSolicitud(rejectTarget.id, 'rechazada');
+      toast.success('Solicitud rechazada');
+      setRejectTarget(null);
+      reload();
+    } catch {
+      toast.error('No se pudo rechazar la solicitud');
+    } finally {
+      setBusyId(null);
+    }
+  };
+
   const handleDelete = async (id: string) => {
     setBusyId(id);
     try {
@@ -145,7 +172,7 @@ export default function SolicitudesPage() {
             Solicitudes de Programa (Anexo I)
           </h1>
           <p className="text-xs text-gray-500 mt-1">
-            Gestion de solicitudes PROAGUA, PEAS y PRODDER
+            Gestión de solicitudes PROAGUA, PEAS y PRODDER
           </p>
         </div>
         {canCreate && (
@@ -209,7 +236,10 @@ export default function SolicitudesPage() {
                       return (
                         <tr key={sol.id} className="border-b border-gray-100 hover:bg-gray-50">
                           <td className="py-2 px-2 font-medium">
-                            {getProgramaName(sol.programa)}
+                            <TruncateTooltip
+                              text={getProgramaName(sol.programa)}
+                              maxWidthClass="max-w-[200px]"
+                            />
                           </td>
                           <td className="py-2 px-2 text-center">{sol.ejercicioFiscal}</td>
                           <td className="py-2 px-2">{sol.municipioNombre ?? '—'}</td>
@@ -277,18 +307,14 @@ export default function SolicitudesPage() {
                                       )
                                     }
                                   >
-                                    A revision
+                                    A revisión
                                   </Button>
                                   <Button
                                     size="sm"
-                                    variant="ghost"
-                                    className="h-6 text-[9px] px-2 text-red-600"
+                                    variant="outline"
+                                    className="h-6 text-[9px] px-2 text-red-600 border-red-200"
                                     disabled={busy}
-                                    onClick={() =>
-                                      void runAction(sol.id, () =>
-                                        transitionSolicitud(sol.id, 'rechazada'),
-                                      )
-                                    }
+                                    onClick={() => setRejectTarget(sol)}
                                   >
                                     Rechazar
                                   </Button>
@@ -307,14 +333,10 @@ export default function SolicitudesPage() {
                                   </Button>
                                   <Button
                                     size="sm"
-                                    variant="ghost"
-                                    className="h-6 text-[9px] px-2 text-red-600"
+                                    variant="outline"
+                                    className="h-6 text-[9px] px-2 text-red-600 border-red-200"
                                     disabled={busy}
-                                    onClick={() =>
-                                      void runAction(sol.id, () =>
-                                        transitionSolicitud(sol.id, 'rechazada'),
-                                      )
-                                    }
+                                    onClick={() => setRejectTarget(sol)}
                                   >
                                     Rechazar
                                   </Button>
@@ -339,7 +361,7 @@ export default function SolicitudesPage() {
             <DialogTitle className="text-sm">Aprobar solicitud</DialogTitle>
           </DialogHeader>
           <p className="text-xs text-gray-600">
-            Vincule la obra resultante que se generara o actualizara con esta solicitud aprobada.
+            Vincule la obra resultante que se generará o actualizará con esta solicitud aprobada.
           </p>
           <div>
             <label className="text-[10px] text-gray-500 uppercase tracking-wide">Obra resultante</label>
@@ -362,11 +384,32 @@ export default function SolicitudesPage() {
               Cancelar
             </Button>
             <Button size="sm" disabled={busyId === approveTarget?.id} onClick={() => void handleApprove()}>
-              Confirmar aprobacion
+              Confirmar aprobación
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!rejectTarget} onOpenChange={(open) => !open && setRejectTarget(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>¿Rechazar solicitud?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Esta acción marcará la solicitud como rechazada. El municipio deberá corregir y volver a
+              presentar si aplica.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700"
+              onClick={() => void handleReject()}
+            >
+              Rechazar solicitud
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

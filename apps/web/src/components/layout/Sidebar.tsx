@@ -161,7 +161,7 @@ export function Sidebar() {
           className="flex items-center gap-2 px-2 py-2 text-white/60 hover:text-white text-xs transition-colors w-full mt-1"
         >
           <LogOut className="w-4 h-4" />
-          {!sidebarCollapsed && <span>Cerrar sesion</span>}
+          {!sidebarCollapsed && <span>Cerrar sesión</span>}
         </button>
       </div>
     </aside>

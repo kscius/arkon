@@ -75,7 +75,7 @@ export function SolicitudFormWizard({ open, onOpenChange, user, onSuccess }: Sol
         if (ent.length > 0 && !entidadId) setEntidadId(ent[0].id);
         if (user.municipioId) setMunicipioId(user.municipioId);
       })
-      .catch(() => toast.error('Error al cargar catalogos'))
+      .catch(() => toast.error('Error al cargar catálogos'))
       .finally(() => setLoadingCatalogs(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, user.municipioId]);
@@ -236,6 +236,11 @@ export function SolicitudFormWizard({ open, onOpenChange, user, onSuccess }: Sol
                       </option>
                     ))}
                   </select>
+                  {!municipioId && !loadingCatalogs && (
+                    <p className="text-[10px] text-amber-600 mt-1">
+                      Seleccione el municipio ejecutor para continuar.
+                    </p>
+                  )}
                 </Field>
               )}
             </>

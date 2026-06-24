@@ -24,6 +24,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { TruncateTooltip } from '@/components/ui/truncate-tooltip';
 import { Building2, Download, Plus, Search } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -112,7 +113,7 @@ export default function ObrasPage() {
   const canExport = user.role === 'estatal';
   const showMunicipioFilter = user.role === 'estatal';
   const pageTitle =
-    user.role === 'contratista' ? 'Mis obras' : 'Catalogo de obras';
+    user.role === 'contratista' ? 'Mis obras' : 'Catálogo de obras';
 
   return (
     <PageState loading={loading} error={error} onRetry={reload}>
@@ -278,14 +279,14 @@ export default function ObrasPage() {
                       onClick={() => navigate(`/obras/${obra.id}`)}
                     >
                       <td className="py-2 px-2 text-gray-600 whitespace-nowrap">{obra.folio}</td>
-                      <td className="py-2 px-2 font-medium text-gray-900 max-w-[220px] truncate">
-                        {obra.nombre}
+                      <td className="py-2 px-2 font-medium text-gray-900">
+                        <TruncateTooltip text={obra.nombre} maxWidthClass="max-w-[220px]" />
                       </td>
-                      <td className="py-2 px-2 text-gray-600 max-w-[120px] truncate">
-                        {obra.municipio}
+                      <td className="py-2 px-2 text-gray-600">
+                        <TruncateTooltip text={obra.municipio} maxWidthClass="max-w-[120px]" />
                       </td>
-                      <td className="py-2 px-2 text-gray-600 max-w-[140px] truncate">
-                        {obra.contratista}
+                      <td className="py-2 px-2 text-gray-600">
+                        <TruncateTooltip text={obra.contratista} maxWidthClass="max-w-[140px]" />
                       </td>
                       <td className="py-2 px-2">
                         <span

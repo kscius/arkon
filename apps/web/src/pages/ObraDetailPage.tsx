@@ -26,6 +26,7 @@ import type { DocCategoria, Documento } from '@/types';
 import { formatCurrency, formatPercentage, formatDate, formatNumber as formatCount, getObraStatusColor, getObraStatusLabel, getRiesgoColor, getRiesgoLabel, getProgramaColor, getProgramaName, getSeverityColor, getSeverityLabel, getTipoObraLabel } from '@/lib/utils';
 import { getBrand } from '@/config/brand';
 import { parseEjercicioFromFolio } from '@/lib/proagua-access';
+import { isValidUuid } from '@/lib/ids';
 import { FichaProaguaSection } from '@/components/proagua/FichaProaguaSection';
 import { CofinanciamientoTable } from '@/components/proagua/CofinanciamientoTable';
 import { AvanceTrimestralPanel } from '@/components/proagua/AvanceTrimestralPanel';
@@ -72,6 +73,11 @@ export default function ObraDetailPage() {
 
   const load = useCallback(async () => {
     if (!obraId) throw new Error('Obra no especificada');
+    if (!isValidUuid(obraId)) {
+      throw new Error(
+        'Identificador de obra no válido. Abra la obra desde el catálogo o use el enlace con UUID.',
+      );
+    }
     const obra = await fetchObra(obraId);
     const [obraAvances, obraEstimaciones, obraObservaciones, documentos] = await Promise.all([
       fetchAvancesByObra(obraId),

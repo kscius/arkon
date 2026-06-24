@@ -142,7 +142,7 @@ export function MobileDrawer({ onClose }: { onClose: () => void }) {
             className="flex items-center gap-2 px-2 py-2 text-white/60 hover:text-white text-xs transition-colors w-full"
           >
             <LogOut className="w-4 h-4" />
-            <span>Cerrar sesion</span>
+            <span>Cerrar sesión</span>
           </button>
         </div>
       </div>
