@@ -130,10 +130,10 @@ export default function DashboardPage() {
 
   const kpiCards = [
     { label: 'Total de Obras', value: totalObras.toString(), sub: 'Registradas en el sistema', icon: Building2, color: brand.colors.primary, trend: null },
-    { label: 'Inversion Autorizada', value: formatCurrencyM(montoAutorizado), sub: 'Presupuesto total', icon: DollarSign, color: brand.colors.accent, trend: null },
-    { label: 'Obras en Ejecucion', value: obrasEjecucion.toString(), sub: `${Math.round((obrasEjecucion/totalObras)*100)}% del total`, icon: Activity, color: '#38A169', trend: Math.round((obrasEjecucion/totalObras)*100) },
+    { label: 'Inversión Autorizada', value: formatCurrencyM(montoAutorizado), sub: 'Presupuesto total', icon: DollarSign, color: brand.colors.accent, trend: null },
+    { label: 'Obras en Ejecución', value: obrasEjecucion.toString(), sub: `${Math.round((obrasEjecucion/totalObras)*100)}% del total`, icon: Activity, color: '#38A169', trend: Math.round((obrasEjecucion/totalObras)*100) },
     { label: 'Obras con Retraso', value: obrasRetraso.toString(), sub: `${Math.round((obrasRetraso/totalObras)*100)}% del total`, icon: AlertTriangle, color: '#DC2626', trend: null },
-    { label: 'Avance Fisico Prom.', value: formatPercentage(avanceFisicoPromedio), sub: `Meta: 65%`, icon: TrendingUp, color: '#3182CE', trend: avanceFisicoPromedio },
+    { label: 'Avance Físico Prom.', value: formatPercentage(avanceFisicoPromedio), sub: `Meta: 65%`, icon: TrendingUp, color: '#3182CE', trend: avanceFisicoPromedio },
     { label: 'Monto Ejercido', value: formatCurrencyM(montoEjercido), sub: `${Math.round((montoEjercido/montoAutorizado)*100)}% autorizado`, icon: CreditCard, color: brand.colors.secondary, trend: (montoEjercido/montoAutorizado)*100 },
   ];
 
@@ -229,7 +229,7 @@ export default function DashboardPage() {
           <Card>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-semibold text-gray-900">Top 10 Municipios con mas Programas</CardTitle>
+                <CardTitle className="text-base font-semibold text-gray-900">Top 10 Municipios con más Programas</CardTitle>
                 <Badge variant="outline" className="text-[10px]">Por programas activos</Badge>
               </div>
             </CardHeader>
@@ -310,7 +310,7 @@ export default function DashboardPage() {
         <motion.div variants={item}>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base font-semibold text-gray-900">Avance Fisico vs. Financiero</CardTitle>
+              <CardTitle className="text-base font-semibold text-gray-900">Avance Físico vs. Financiero</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={300}>
@@ -320,7 +320,7 @@ export default function DashboardPage() {
                   <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} tickFormatter={(v) => `${v}%`} />
                   <Tooltip formatter={(value: number) => `${value.toFixed(1)}%`} />
                   <Legend wrapperStyle={{ fontSize: '11px' }} />
-                  <Bar dataKey="fisico" name="Avance Fisico" fill={brand.colors.primaryLight} radius={[3, 3, 0, 0]} />
+                  <Bar dataKey="fisico" name="Avance Físico" fill={brand.colors.primaryLight} radius={[3, 3, 0, 0]} />
                   <Bar dataKey="financiero" name="Avance Financiero" fill={brand.colors.accent} radius={[3, 3, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -335,7 +335,7 @@ export default function DashboardPage() {
         <motion.div variants={item} className="lg:col-span-2">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base font-semibold text-gray-900">Inversion por Programa</CardTitle>
+              <CardTitle className="text-base font-semibold text-gray-900">Inversión por Programa</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="flex items-center gap-4">
@@ -373,7 +373,7 @@ export default function DashboardPage() {
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-semibold text-gray-900">Alertas Prioritarias</CardTitle>
                 <div className="flex items-center gap-2">
-                  {alertasCriticas > 0 && <Badge className="bg-red-500 text-[10px]">{alertasCriticas} criticas</Badge>}
+                  {alertasCriticas > 0 && <Badge className="bg-red-500 text-[10px]">{alertasCriticas} críticas</Badge>}
                   {alertasAltas > 0 && <Badge className="bg-orange-500 text-[10px]">{alertasAltas} altas</Badge>}
                   <button onClick={() => navigate('/alertas')} className="text-[11px] text-brand-primary-light hover:underline font-medium flex items-center gap-1">
                     Ver todas <ArrowRight className="w-3 h-3" />
@@ -432,8 +432,8 @@ export default function DashboardPage() {
                     <th className="text-left py-2 px-3 font-medium text-gray-500">#</th>
                     <th className="text-left py-2 px-3 font-medium text-gray-500">Municipio</th>
                     <th className="text-center py-2 px-3 font-medium text-gray-500">Total Obras</th>
-                    <th className="text-center py-2 px-3 font-medium text-gray-500">Inversion Total</th>
-                    <th className="text-center py-2 px-3 font-medium text-gray-500">Avance Fisico</th>
+                    <th className="text-center py-2 px-3 font-medium text-gray-500">Inversión Total</th>
+                    <th className="text-center py-2 px-3 font-medium text-gray-500">Avance Físico</th>
                     <th className="text-center py-2 px-3 font-medium text-gray-500">Avance Financiero</th>
                     <th className="text-center py-2 px-3 font-medium text-gray-500">Sem.</th>
                     <th className="text-center py-2 px-3 font-medium text-gray-500">Acciones</th>

@@ -2,12 +2,62 @@
 
 Sistema vivo de verificación. **Cada ejecución de “full test” debe recorrer TODAS las secciones**, no solo lo pendiente. Actualiza este archivo cuando agregues pantallas, flujos o reglas de negocio.
 
-**Última actualización:** 2026-06-23  
+**Última actualización:** 2026-06-24  
 **Alcance:** `ARKON/apps/web` (tenant CONAGUA en `https://arkon-conagua.humansoftware.mx`)
 
 ---
 
-## Resultados de última ejecución (2026-06-23)
+## Resultados recorrido browser producción (2026-06-24)
+
+Recorrido manual en pestaña `https://arkon-conagua.humansoftware.mx` — rol estatal + municipal + contratista.
+
+| Resultado | Cantidad |
+|-----------|----------|
+| **pass** | 58 |
+| **parcial** | 8 |
+| **fail / no implementado** | 3 |
+| **skip** (mutan datos) | 4 |
+
+### Fallos / no implementado
+
+| ID | Resultado | Notas |
+|----|-----------|-------|
+| IMP-04 | **fail** | No hay botón/link “Plantilla CSV” en import |
+| COPY-01 | **parcial** | Login/brand OK; KPIs y alertas sin tildes (“Inversion”, “ejecucion”, “validacion”) |
+| FLOW-01 | **skip** | Flujo solicitud→aprobación→obra no ejecutado (evita mutar seed) |
+
+### Parciales
+
+| ID | Notas |
+|----|-------|
+| ASST-02 | Saludo y “Conectado a API” OK; respuesta a consulta libre no confirmada en tiempo de espera |
+| CIE-02 | Columna XXII en tabla; botones de fila sin texto visible (probable icono) |
+| OBR-03 | Tooltips implementados; hover no verificado en browser |
+| DASH-04/05 | Botones export/“Ver” visibles; descarga no ejecutada |
+| ALT-02 | Atender alerta no probado (reduce contador en prod) |
+| USR-03 | Desactivar/eliminar no probado (mutación) |
+| IMP-01/02 | Carga CSV/JSON no probada (mutación) |
+| SHELL-05 | Viewport 375px: menú hamburguesa + drawer OK; tablas anchas sin revisión profunda |
+
+### Pass destacados (estatal)
+
+AUTH-01/02/03, SHELL-01–04, DASH-01–03/06, OBR-01/02/04/06, DET-01/03–06, SOL-01–05, ANX-01–04, CIE-01/03, IMP-03, MUN-01/02, CON-01/02, USR-01/02, ALT-01, CFG-01/02, ASST-01/03, REG-01–04, FLOW-02/04/05.
+
+### Pass roles municipal y contratista
+
+| ID | Resultado |
+|----|-----------|
+| MUN-R01 | pass — Dashboard Municipal Guadalupe Victoria |
+| MUN-R02 | pass — Sin Importar PROAGUA ni Usuarios |
+| MUN-R03 | pass — Solicitudes, Anexos, Cierre visibles |
+| MUN-R04 | pass — Mi Municipio en menú |
+| MUN-R05 | parcial — Wizard no abierto en sesión municipal |
+| CTR-R01 | pass — Panel del Contratista |
+| CTR-R02 | pass — 4 ítems: Dashboard, Mis Obras, Mi Empresa, Alertas |
+| CTR-R03 | pass — Detalle obra desde listado |
+| CTR-R04 | pass — Sin rutas PROAGUA; `/admin/usuarios` y `/asistente` redirigen a dashboard |
+
+---
 
 | Comando | Entorno | Resultado | Notas |
 |---------|---------|-----------|-------|
@@ -80,9 +130,14 @@ pnpm test:e2e
 # Solo suite de fixes CONAGUA UI
 pnpm exec playwright test e2e/conagua-ui-fixes.spec.ts
 
-# E2E completo navegación por rol
+# Solo checklist browser (post walkthrough 2026-06-24)
+pnpm exec playwright test e2e/conagua-checklist.spec.ts
+
+# E2E completo
 pnpm exec playwright test e2e/
 ```
+
+**Viewport E2E:** Playwright usa **1280×720** (escritorio). El panel Browser Tab de Cursor suele abrirse a ~375px y muestra menú hamburguesa; amplíe el panel a ≥1024px o use E2E para layout escritorio.
 
 **Variables E2E:** `TENANT_ID=conagua` para credenciales CONAGUA (`estatal@conagua.gob.mx` / `Conagua2024!`).
 
@@ -102,6 +157,7 @@ pnpm exec playwright test e2e/
 | `e2e/ui-navigation.spec.ts` | Sidebar + detalle obra |
 | `e2e/rbac-routes.spec.ts` | Rutas protegidas |
 | `e2e/conagua-ui-fixes.spec.ts` | Fixes revisión UI 2026-06 (login, TopBar, campana, UUID inválido, rutas PROAGUA) |
+| `e2e/conagua-checklist.spec.ts` | Checklist browser: plantilla CSV, tildes KPI, XXII, tooltips, asistente, confirmaciones |
 
 ---
 
@@ -295,7 +351,22 @@ pnpm exec playwright test e2e/
 - Plantilla CSV descargable en import
 - Copy residual sin tildes en ObraDetailPage / dashboards
 
-### 2026-06-23 — Full test post-deploy producción
+### 2026-06-24 — Fixes skips/fails del walkthrough browser
+
+- **IMP-04:** botón «Descargar plantilla CSV» en `/proagua/import` (`proagua-csv-template.ts`).
+- **COPY-01:** tildes en KPIs dashboard estatal, obras, alertas.
+- **CIE-02:** `aria-label` en botón descarga Anexo XXII.
+- **USR-03:** confirmación AlertDialog al desactivar usuario.
+- **E2E:** `e2e/conagua-checklist.spec.ts` (13 tests, viewport 1280×720).
+- **Browser móvil:** panel Cursor ~375px ≠ bug de app; E2E valida escritorio.
+
+---
+
+- 58 casos **pass**, 8 **parcial**, 1 **fail** (IMP-04), 4 **skip** por mutación de datos.
+- Roles estatal, municipal y contratista verificados en la misma sesión.
+- AUTH-02 confirmado: “Ingrese su correo electrónico.” al enviar vacío.
+
+---
 
 - **15/15 E2E** en `https://arkon-conagua.humansoftware.mx` (auth, RBAC, navegación, fixes UI).
 - **15/15 E2E** en `localhost:8080` (Docker).

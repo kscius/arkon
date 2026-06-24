@@ -135,6 +135,7 @@ export default function CierresEjercicioPage() {
                             size="sm"
                             className="h-7"
                             disabled={exporting === c.id}
+                            aria-label={`Descargar Anexo XXII, ${c.anexoEjecucionNumero || 'cierre'} EF ${c.ejercicioFiscal}`}
                             onClick={() => void handleExport(c.anexoEjecucionId, c.id)}
                           >
                             <Download className="w-3.5 h-3.5" />

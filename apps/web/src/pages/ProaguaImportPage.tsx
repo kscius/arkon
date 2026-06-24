@@ -1,8 +1,9 @@
 import { useState } from 'react';
-import { Upload } from 'lucide-react';
+import { Download, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { importProaguaObrasCsv, importProaguaObrasJson } from '@/lib/api';
+import { downloadProaguaCsvTemplate } from '@/lib/proagua-csv-template';
 import { toast } from 'sonner';
 import type { ProaguaImportResult } from '@/types';
 
@@ -38,7 +39,7 @@ export default function ProaguaImportPage() {
       setResult(res);
       toast.success(`Importación: ${res.created} creadas, ${res.updated} actualizadas`);
     } catch {
-      toast.error('JSON invalido o error de importacion');
+      toast.error('JSON inválido o error de importación');
     } finally {
       setBusy(false);
     }
@@ -65,6 +66,20 @@ export default function ProaguaImportPage() {
             <p className="text-[10px] text-gray-500">
               Columnas: cua, folio, nombre, programa, monto_autorizado, municipio, localidad...
             </p>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              className="gap-2"
+              disabled={busy}
+              onClick={() => {
+                downloadProaguaCsvTemplate();
+                toast.success('Plantilla CSV descargada');
+              }}
+            >
+              <Download className="w-4 h-4" />
+              Descargar plantilla CSV
+            </Button>
             <input
               type="file"
               accept=".csv,text/csv"

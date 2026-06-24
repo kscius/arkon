@@ -50,6 +50,7 @@ export default function AdminUsuariosPage() {
   const { data, loading, error, reload } = useAsyncData(load, [load]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [userToDelete, setUserToDelete] = useState<AdminUser | null>(null);
+  const [userToDeactivate, setUserToDeactivate] = useState<AdminUser | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   const [email, setEmail] = useState('');
@@ -288,7 +289,7 @@ export default function AdminUsuariosPage() {
                           <button
                             type="button"
                             disabled={busyId === u.id}
-                            onClick={() => handleToggleActive(u)}
+                            onClick={() => (u.isActive ? setUserToDeactivate(u) : void handleToggleActive(u))}
                             className="text-brand-primary-light hover:underline disabled:opacity-50"
                           >
                             {u.isActive ? 'Desactivar' : 'Activar'}
@@ -338,6 +339,36 @@ export default function AdminUsuariosPage() {
                 }}
               >
                 {busyId ? 'Eliminando...' : 'Eliminar'}
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        <AlertDialog
+          open={!!userToDeactivate}
+          onOpenChange={(open) => {
+            if (!open && !busyId) setUserToDeactivate(null);
+          }}
+        >
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>¿Desactivar usuario?</AlertDialogTitle>
+              <AlertDialogDescription>
+                {userToDeactivate
+                  ? `${userToDeactivate.fullName} no podrá iniciar sesión hasta que se reactive la cuenta.`
+                  : ''}
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel disabled={!!busyId}>Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                disabled={!!busyId}
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (userToDeactivate) void handleToggleActive(userToDeactivate).then(() => setUserToDeactivate(null));
+                }}
+              >
+                {busyId ? 'Guardando...' : 'Desactivar'}
               </AlertDialogAction>
             </AlertDialogFooter>
           </AlertDialogContent>

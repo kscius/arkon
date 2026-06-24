@@ -43,7 +43,7 @@ export default function AlertasPage() {
 
   const handleAtenderSubmit = async () => {
     if (!atenderTarget || !accionText.trim()) {
-      setAtenderError('Describa la accion tomada.');
+      setAtenderError('Describa la acción tomada.');
       return;
     }
     setAtenderBusy(true);
@@ -101,13 +101,13 @@ export default function AlertasPage() {
       <div>
         <h1 className="text-xl font-bold text-brand-primary">Centro de Alertas</h1>
         <p className="text-xs text-gray-500 mt-1">
-          Monitoreo de alertas y notificaciones del sistema. Atender una alerta registra la accion tomada; las atendidas salen del contador pero pueden consultarse en el historial.
+          Monitoreo de alertas y notificaciones del sistema. Atender una alerta registra la acción tomada; las atendidas salen del contador pero pueden consultarse en el historial.
         </p>
       </div>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-          <div className="text-[10px] text-red-600 uppercase font-medium">Criticas</div>
+          <div className="text-[10px] text-red-600 uppercase font-medium">Críticas</div>
           <div className="text-2xl font-bold text-red-600">{criticas}</div>
         </div>
         <div className="bg-orange-50 border border-orange-200 rounded-lg p-3">
@@ -146,7 +146,7 @@ export default function AlertasPage() {
                 className="text-xs border border-gray-200 rounded-lg px-2 py-1.5"
               >
                 <option value="todas">Todas las severidades</option>
-                <option value="critica">Critica</option>
+                <option value="critica">Crítica</option>
                 <option value="alta">Alta</option>
                 <option value="media">Media</option>
                 <option value="baja">Baja</option>
@@ -256,7 +256,7 @@ export default function AlertasPage() {
             <p className="text-xs text-gray-600">
               {atenderTarget.titulo}
               <span className="block mt-1 text-gray-500">
-                Al confirmar, la alerta se marca como atendida y deja de contar como pendiente. Quedara en el historial con la accion que describa.
+                Al confirmar, la alerta se marca como atendida y deja de contar como pendiente. Quedará en el historial con la acción que describa.
               </span>
             </p>
           )}
@@ -264,7 +264,7 @@ export default function AlertasPage() {
             value={accionText}
             onChange={(e) => setAccionText(e.target.value)}
             className="w-full h-24 px-3 py-2 text-xs border border-gray-200 rounded-md resize-none"
-            placeholder="Describa la accion tomada..."
+            placeholder="Describa la acción tomada..."
           />
           {atenderError && <p className="text-xs text-red-600">{atenderError}</p>}
           <DialogFooter className="gap-2">

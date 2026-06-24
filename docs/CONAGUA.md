@@ -70,3 +70,29 @@ Formularios, fichas tecnicas y lineamientos U074 del programa PROAGUA: [proagua/
 ## Volver a marca ARKON
 
 En `main`, use `TENANT_ID=arkon` y `VITE_TENANT=arkon` (o omita las variables; el default es ARKON).
+
+## Despliegue en produccion (EasyPanel)
+
+El stack debe desplegarse como **un solo proyecto Docker Compose** (`db` + `api` + `web`). El hostname `api` solo existe dentro de la red interna de Compose.
+
+### Error: `host not found in upstream "api"`
+
+Significa que el contenedor `web` no puede resolver el servicio `api`. Causas habituales en EasyPanel:
+
+1. **Servicios desplegados por separado** — Si `web`, `api` y `db` son tres apps distintas, `web` no ve el hostname `api`. Solucion: desplegar el `docker-compose.yml` completo como una sola app, **o** definir en el servicio `web` la variable `API_UPSTREAM` con el hostname interno que EasyPanel asigna al servicio API (por ejemplo `arkon-api:8000`).
+
+2. **Proxy de EasyPanel enruta `/api` por separado** — El dominio publico debe apuntar solo al puerto **80 del contenedor `web`**. No configure en el panel un upstream llamado `api` para `/api`; nginx dentro de `web` ya hace ese proxy.
+
+3. **Solo el contenedor `web` esta corriendo** — Verifique que `api` y `db` esten activos y saludables.
+
+### Variables de entorno en produccion
+
+| Variable | Valor recomendado |
+|----------|-------------------|
+| `CORS_ORIGINS` | `https://arkon-conagua.humansoftware.mx` |
+| `SECRET_KEY` | Cadena larga aleatoria (no usar el default) |
+| `ALLOW_PUBLIC_REGISTER` | `false` |
+| `API_UPSTREAM` | `api:8000` (Compose) o hostname interno del API en EasyPanel |
+| `TENANT_ID` / `VITE_TENANT` | `conagua` |
+
+Tras cambiar variables, reconstruya la imagen `web` (`docker compose up --build -d`).

@@ -93,9 +93,9 @@ export default function ObrasPage() {
     setExporting(true);
     try {
       await downloadObrasExport('csv');
-      toast.success('Exportacion descargada');
+      toast.success('Exportación descargada');
     } catch {
-      toast.error('No se pudo exportar el catalogo');
+      toast.error('No se pudo exportar el catálogo');
     } finally {
       setExporting(false);
     }
@@ -157,7 +157,7 @@ export default function ObrasPage() {
               <div className="text-xl font-bold text-gray-900">{scopedObras.length}</div>
             </div>
             <div className="bg-gray-50 rounded-lg p-3">
-              <span className="text-[10px] text-gray-500 uppercase">En ejecucion</span>
+              <span className="text-[10px] text-gray-500 uppercase">En ejecución</span>
               <div className="text-xl font-bold text-gray-900 mt-1">
                 {
                   scopedObras.filter(
@@ -179,7 +179,7 @@ export default function ObrasPage() {
               </div>
             </div>
             <div className="bg-gray-50 rounded-lg p-3">
-              <span className="text-[10px] text-gray-500 uppercase">Inversion</span>
+              <span className="text-[10px] text-gray-500 uppercase">Inversión</span>
               <div className="text-xl font-bold text-gray-900 mt-1">
                 {formatCurrencyM(scopedObras.reduce((s, o) => s + o.montoAutorizado, 0))}
               </div>

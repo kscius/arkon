@@ -20,6 +20,7 @@ export default defineConfig({
   use: {
     baseURL,
     trace: 'on-first-retry',
+    viewport: { width: 1280, height: 720 },
   },
   projects: [{ name: 'chromium', use: { ...devices['Desktop Chrome'] } }],
   // No webServer: start `docker compose up -d` or dev servers before `pnpm test:e2e`.
