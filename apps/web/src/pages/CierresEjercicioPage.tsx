@@ -29,6 +29,9 @@ export default function CierresEjercicioPage() {
   const [tipoApoyo, setTipoApoyo] = useState('infraestructura');
   const [montoTransferido, setMontoTransferido] = useState('');
   const [montoInformeFinal, setMontoInformeFinal] = useState('');
+  const [montoReintegradoEj, setMontoReintegradoEj] = useState('');
+  const [montoModificado31dic, setMontoModificado31dic] = useState('');
+  const [montoReintegrado15ene, setMontoReintegrado15ene] = useState('');
   const [montoPorReintegrar, setMontoPorReintegrar] = useState('');
 
   const load = useCallback(() => fetchCierresEjercicio(), []);
@@ -49,7 +52,10 @@ export default function CierresEjercicioPage() {
         ejercicio_fiscal: ejercicio,
         tipo_apoyo: tipoApoyo,
         monto_transferido: Number(montoTransferido) || 0,
+        monto_reintegrado_ejercicio: Number(montoReintegradoEj) || 0,
+        monto_modificado_31dic: Number(montoModificado31dic) || 0,
         monto_informe_final: Number(montoInformeFinal) || 0,
+        monto_reintegrado_15ene: Number(montoReintegrado15ene) || 0,
         monto_por_reintegrar: Number(montoPorReintegrar) || 0,
         estatus: 'pendiente',
       });
@@ -188,7 +194,7 @@ export default function CierresEjercicioPage() {
                 </select>
               </div>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <label className="text-xs text-gray-500">Monto transferido</label>
                 <input
@@ -199,12 +205,43 @@ export default function CierresEjercicioPage() {
                 />
               </div>
               <div>
+                <label className="text-xs text-gray-500">Reintegro en ejercicio</label>
+                <input
+                  type="number"
+                  className="w-full h-9 px-2 text-sm border rounded-md"
+                  value={montoReintegradoEj}
+                  onChange={(e) => setMontoReintegradoEj(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-gray-500">Modificado al 31-dic</label>
+                <input
+                  type="number"
+                  className="w-full h-9 px-2 text-sm border rounded-md"
+                  value={montoModificado31dic}
+                  onChange={(e) => setMontoModificado31dic(e.target.value)}
+                />
+              </div>
+              <div>
                 <label className="text-xs text-gray-500">Informe final</label>
                 <input
                   type="number"
                   className="w-full h-9 px-2 text-sm border rounded-md"
                   value={montoInformeFinal}
                   onChange={(e) => setMontoInformeFinal(e.target.value)}
+                />
+              </div>
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs text-gray-500">Reintegro al 15-ene</label>
+                <input
+                  type="number"
+                  className="w-full h-9 px-2 text-sm border rounded-md"
+                  value={montoReintegrado15ene}
+                  onChange={(e) => setMontoReintegrado15ene(e.target.value)}
                 />
               </div>
               <div>

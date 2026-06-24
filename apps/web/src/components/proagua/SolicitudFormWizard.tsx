@@ -21,14 +21,18 @@ import { formatCurrency } from '@/lib/utils';
 import type { User } from '@/types';
 import { Check, ChevronLeft, ChevronRight } from 'lucide-react';
 
-const TIPOS_APOYO = [
-  { value: 'agua_potable', label: 'Agua potable' },
-  { value: 'alcantarillado', label: 'Alcantarillado' },
-  { value: 'saneamiento', label: 'Saneamiento' },
-  { value: 'tratamiento', label: 'Tratamiento' },
+const COMPONENTES = [
+  { value: 'agua_potable', label: 'Agua potable (AP)' },
+  { value: 'alcantarillado', label: 'Alcantarillado (ALC)' },
+  { value: 'saneamiento', label: 'Saneamiento (SAN)' },
 ];
 
-const STEPS = ['Programa', 'Tipo de apoyo', 'Componente', 'Monto y confirmacion'];
+const STEPS = ['Programa', 'Componente', 'Accion VII', 'Monto y confirmacion'];
+
+function resolveTipoApoyo(programa: string): string {
+  if (programa === 'PEAS') return 'fortalecimiento';
+  return 'infraestructura';
+}
 
 interface SolicitudFormWizardProps {
   open: boolean;
@@ -47,8 +51,8 @@ export function SolicitudFormWizard({ open, onOpenChange, user, onSuccess }: Sol
 
   const [programa, setPrograma] = useState(programas[0] ?? 'PROAGUA');
   const [ejercicioFiscal, setEjercicioFiscal] = useState(currentYear);
-  const [tipoApoyo, setTipoApoyo] = useState(TIPOS_APOYO[0].value);
-  const [componente, setComponente] = useState('');
+  const [componente, setComponente] = useState(COMPONENTES[0].value);
+  const [accionClave, setAccionClave] = useState('');
   const [montoSolicitado, setMontoSolicitado] = useState(1_000_000);
   const [entidadId, setEntidadId] = useState('');
   const [municipioId, setMunicipioId] = useState(user.municipioId ?? '');
@@ -86,22 +90,34 @@ export function SolicitudFormWizard({ open, onOpenChange, user, onSuccess }: Sol
           componente: a.componente,
         }));
         setAcciones(opts);
-        if (opts.length > 0 && !componente) {
-          setComponente(opts[0].componente);
+        if (opts.length > 0 && !accionClave) {
+          setAccionClave(opts[0].id);
         }
       })
       .catch(() => setAcciones([]));
-  }, [open, programa, componente]);
+  }, [open, programa, accionClave]);
 
-  const selectedAccion = useMemo(
-    () => acciones.find((a) => a.componente === componente),
+  const accionesFiltradas = useMemo(
+    () => acciones.filter((a) => a.componente === componente),
     [acciones, componente],
   );
 
+  const selectedAccion = useMemo(
+    () => accionesFiltradas.find((a) => a.id === accionClave) ?? accionesFiltradas[0],
+    [accionesFiltradas, accionClave],
+  );
+
+  useEffect(() => {
+    if (!open || accionesFiltradas.length === 0) return;
+    if (!accionesFiltradas.some((a) => a.id === accionClave)) {
+      setAccionClave(accionesFiltradas[0].id);
+    }
+  }, [open, accionesFiltradas, accionClave]);
+
   const canNext = () => {
     if (step === 0) return Boolean(programa && entidadId && municipioId);
-    if (step === 1) return Boolean(tipoApoyo);
-    if (step === 2) return Boolean(componente);
+    if (step === 1) return Boolean(componente);
+    if (step === 2) return accionesFiltradas.length > 0;
     if (step === 3) return montoSolicitado > 0;
     return false;
   };
@@ -118,7 +134,7 @@ export function SolicitudFormWizard({ open, onOpenChange, user, onSuccess }: Sol
         ejercicio_fiscal: ejercicioFiscal,
         entidad_id: entidadId,
         municipio_id: municipioId,
-        tipo_apoyo: tipoApoyo,
+        tipo_apoyo: resolveTipoApoyo(programa),
         componente,
         monto_solicitado: montoSolicitado,
         estatus: 'borrador',
@@ -226,51 +242,56 @@ export function SolicitudFormWizard({ open, onOpenChange, user, onSuccess }: Sol
           )}
 
           {step === 1 && (
-            <Field label="Tipo de apoyo">
+            <Field label="Componente PROAGUA">
               <div className="space-y-2">
-                {TIPOS_APOYO.map((t) => (
+                {COMPONENTES.map((t) => (
                   <label
                     key={t.value}
                     className={`flex items-center gap-2 p-2 border rounded-md cursor-pointer text-xs ${
-                      tipoApoyo === t.value
+                      componente === t.value
                         ? 'border-brand-primary bg-brand-primary/5'
                         : 'border-gray-200 hover:bg-gray-50'
                     }`}
                   >
                     <input
                       type="radio"
-                      name="tipoApoyo"
+                      name="componente"
                       value={t.value}
-                      checked={tipoApoyo === t.value}
-                      onChange={() => setTipoApoyo(t.value)}
+                      checked={componente === t.value}
+                      onChange={() => setComponente(t.value)}
                       className="accent-brand-primary"
                     />
                     {t.label}
                   </label>
                 ))}
               </div>
+              <p className="text-[10px] text-gray-500 mt-2">
+                Tipo de apoyo: {resolveTipoApoyo(programa)} (segun programa)
+              </p>
             </Field>
           )}
 
           {step === 2 && (
-            <Field label="Componente / accion de programa">
-              {acciones.length === 0 ? (
-                <p className="text-xs text-gray-500">No hay acciones disponibles para {programa}.</p>
+            <Field label="Accion especifica (Anexo VII)">
+              {accionesFiltradas.length === 0 ? (
+                <p className="text-xs text-gray-500">
+                  No hay acciones del catalogo para {programa} / {componente}.
+                </p>
               ) : (
                 <select
-                  value={componente}
-                  onChange={(e) => setComponente(e.target.value)}
+                  value={accionClave}
+                  onChange={(e) => setAccionClave(e.target.value)}
                   className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white"
                 >
-                  {[...new Set(acciones.map((a) => a.componente))].map((comp) => (
-                    <option key={comp} value={comp}>
-                      {comp}
+                  {accionesFiltradas.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.label}
                     </option>
                   ))}
                 </select>
               )}
               {selectedAccion && (
-                <p className="text-[10px] text-gray-500 mt-1">{selectedAccion.label}</p>
+                <p className="text-[10px] text-gray-500 mt-1">Componente: {selectedAccion.componente}</p>
               )}
             </Field>
           )}
@@ -293,14 +314,20 @@ export function SolicitudFormWizard({ open, onOpenChange, user, onSuccess }: Sol
                 </p>
                 <p>
                   <span className="text-gray-500">Tipo apoyo:</span>{' '}
-                  <span className="font-medium">
-                    {TIPOS_APOYO.find((t) => t.value === tipoApoyo)?.label ?? tipoApoyo}
-                  </span>
+                  <span className="font-medium">{resolveTipoApoyo(programa)}</span>
                 </p>
                 <p>
                   <span className="text-gray-500">Componente:</span>{' '}
-                  <span className="font-medium">{componente}</span>
+                  <span className="font-medium">
+                    {COMPONENTES.find((t) => t.value === componente)?.label ?? componente}
+                  </span>
                 </p>
+                {selectedAccion && (
+                  <p>
+                    <span className="text-gray-500">Accion VII:</span>{' '}
+                    <span className="font-medium">{selectedAccion.label}</span>
+                  </p>
+                )}
                 <p>
                   <span className="text-gray-500">Monto:</span>{' '}
                   <span className="font-semibold text-brand-primary">

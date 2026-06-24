@@ -114,6 +114,8 @@ export interface CreateObraInput {
   id_sisba?: string;
   num_contrato?: string;
   compras_mx_folio?: string;
+  tipo_adjudicacion?: string;
+  fecha_fallo?: string;
   subcomponente?: string;
   tipo_localidad?: string;
   cobertura_ap_antes?: number;
@@ -129,6 +131,7 @@ export interface CreateObraInput {
   entidad_federativa_id?: string;
   organismo_operador_id?: string;
   accion_programa_id?: string;
+  anexo_tecnico_id?: string;
 }
 
 export type UpdateObraInput = Partial<CreateObraInput>;

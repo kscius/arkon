@@ -81,6 +81,7 @@ export default function ObrasPage() {
       return (
         obra.nombre.toLowerCase().includes(q) ||
         obra.folio.toLowerCase().includes(q) ||
+        (obra.cua?.toLowerCase().includes(q) ?? false) ||
         obra.municipio.toLowerCase().includes(q) ||
         obra.contratista.toLowerCase().includes(q)
       );
@@ -195,7 +196,7 @@ export default function ObrasPage() {
               <Input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar por nombre, folio, municipio o contratista..."
+                placeholder="Buscar por nombre, folio, CUA, municipio o contratista..."
                 className="pl-9 text-xs h-9"
               />
             </div>

@@ -145,6 +145,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         { path: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
         { path: '/obras', label: 'Obras', icon: 'HardHat' },
         ...(solicitudesItem ? [solicitudesItem] : []),
+        { path: '/anexos', label: 'Anexos XII/XIII', icon: 'FileStack' },
+        { path: '/cierres-ejercicio', label: 'Cierre ejercicio', icon: 'Landmark' },
         {
           path: `/municipios/${user.municipioId ?? selectedMunicipio}`,
           label: 'Mi Municipio',

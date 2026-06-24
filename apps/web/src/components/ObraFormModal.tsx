@@ -73,13 +73,24 @@ const schema = z.object({
   fecha_termino_programada: z.string().optional(),
   plazo_ejecucion: z.number().int().min(0).optional(),
   cua: z.string().optional(),
+  id_sisba: z.string().optional(),
+  num_contrato: z.string().optional(),
+  compras_mx_folio: z.string().optional(),
+  tipo_adjudicacion: z.string().optional(),
+  fecha_fallo: z.string().optional(),
   subcomponente: z.string().optional(),
   organismo_operador_id: z.string().optional(),
   tipo_localidad: z.string().optional(),
   cobertura_ap_antes: z.number().min(0).max(100).optional(),
   cobertura_ap_meta: z.number().min(0).max(100).optional(),
+  cobertura_tar_antes: z.number().min(0).max(100).optional(),
+  cobertura_tar_meta: z.number().min(0).max(100).optional(),
+  caudal_lps: z.number().min(0).optional(),
   pob_incorporar: z.number().int().min(0).optional(),
   pob_mejorar: z.number().int().min(0).optional(),
+  pob_mujeres: z.number().int().min(0).optional(),
+  pob_indigena: z.number().int().min(0).optional(),
+  pob_afromexicano: z.number().int().min(0).optional(),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -132,13 +143,24 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
       fecha_termino_programada: '',
       plazo_ejecucion: undefined,
       cua: '',
+      id_sisba: '',
+      num_contrato: '',
+      compras_mx_folio: '',
+      tipo_adjudicacion: '',
+      fecha_fallo: '',
       subcomponente: '',
       organismo_operador_id: '',
       tipo_localidad: '',
       cobertura_ap_antes: undefined,
       cobertura_ap_meta: undefined,
+      cobertura_tar_antes: undefined,
+      cobertura_tar_meta: undefined,
+      caudal_lps: undefined,
       pob_incorporar: undefined,
       pob_mejorar: undefined,
+      pob_mujeres: undefined,
+      pob_indigena: undefined,
+      pob_afromexicano: undefined,
     },
   });
 
@@ -175,13 +197,24 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
         fecha_termino_programada: toDateInputValue(obra.fechaTerminoProgramada),
         plazo_ejecucion: obra.plazoEjecucion > 0 ? obra.plazoEjecucion : undefined,
         cua: obra.cua ?? '',
+        id_sisba: obra.idSisba ?? '',
+        num_contrato: obra.numContrato ?? '',
+        compras_mx_folio: obra.comprasMxFolio ?? '',
+        tipo_adjudicacion: obra.tipoAdjudicacion ?? '',
+        fecha_fallo: toDateInputValue(obra.fechaFallo ?? undefined),
         subcomponente: obra.subcomponente ?? '',
         organismo_operador_id: obra.organismoOperadorId ?? '',
         tipo_localidad: obra.tipoLocalidad ?? '',
         cobertura_ap_antes: obra.coberturaApAntes ?? undefined,
         cobertura_ap_meta: obra.coberturaApMeta ?? undefined,
+        cobertura_tar_antes: obra.coberturaTarAntes ?? undefined,
+        cobertura_tar_meta: obra.coberturaTarMeta ?? undefined,
+        caudal_lps: obra.caudalLps ?? undefined,
         pob_incorporar: obra.pobIncorporar ?? undefined,
         pob_mejorar: obra.pobMejorar ?? undefined,
+        pob_mujeres: obra.pobMujeres ?? undefined,
+        pob_indigena: obra.pobIndigena ?? undefined,
+        pob_afromexicano: obra.pobAfromexicano ?? undefined,
       });
     } else {
       form.reset({
@@ -249,13 +282,24 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
 
     if (isConagua) {
       if (values.cua?.trim()) payload.cua = values.cua.trim();
+      if (values.id_sisba?.trim()) payload.id_sisba = values.id_sisba.trim();
+      if (values.num_contrato?.trim()) payload.num_contrato = values.num_contrato.trim();
+      if (values.compras_mx_folio?.trim()) payload.compras_mx_folio = values.compras_mx_folio.trim();
+      if (values.tipo_adjudicacion?.trim()) payload.tipo_adjudicacion = values.tipo_adjudicacion.trim();
+      if (values.fecha_fallo) payload.fecha_fallo = values.fecha_fallo;
       if (values.subcomponente?.trim()) payload.subcomponente = values.subcomponente.trim();
       if (values.organismo_operador_id) payload.organismo_operador_id = values.organismo_operador_id;
       if (values.tipo_localidad?.trim()) payload.tipo_localidad = values.tipo_localidad.trim();
       if (values.cobertura_ap_antes != null) payload.cobertura_ap_antes = values.cobertura_ap_antes;
       if (values.cobertura_ap_meta != null) payload.cobertura_ap_meta = values.cobertura_ap_meta;
+      if (values.cobertura_tar_antes != null) payload.cobertura_tar_antes = values.cobertura_tar_antes;
+      if (values.cobertura_tar_meta != null) payload.cobertura_tar_meta = values.cobertura_tar_meta;
+      if (values.caudal_lps != null) payload.caudal_lps = values.caudal_lps;
       if (values.pob_incorporar != null) payload.pob_incorporar = values.pob_incorporar;
       if (values.pob_mejorar != null) payload.pob_mejorar = values.pob_mejorar;
+      if (values.pob_mujeres != null) payload.pob_mujeres = values.pob_mujeres;
+      if (values.pob_indigena != null) payload.pob_indigena = values.pob_indigena;
+      if (values.pob_afromexicano != null) payload.pob_afromexicano = values.pob_afromexicano;
     }
 
     try {
@@ -359,9 +403,19 @@ function ProaguaFields({
       <Field label="CUA (Clave Unica de Accion)">
         <input {...form.register('cua')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" placeholder="Ej. CUA-2026-001" />
       </Field>
-      <Field label="Subcomponente">
-        <input {...form.register('subcomponente')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" />
-      </Field>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="ID SISBA">
+          <input {...form.register('id_sisba')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" />
+        </Field>
+        <Field label="Subcomponente">
+          <select {...form.register('subcomponente')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white">
+            <option value="">Seleccionar...</option>
+            <option value="nuevo">Nuevo (N)</option>
+            <option value="rehabilitado">Rehabilitado (R)</option>
+            <option value="mejoramiento">Mejoramiento (M)</option>
+          </select>
+        </Field>
+      </div>
       <Field label="Tipo de localidad">
         <select {...form.register('tipo_localidad')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white">
           <option value="">Seleccionar...</option>
@@ -425,6 +479,101 @@ function ProaguaFields({
             })}
             className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white"
           />
+        </Field>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Cobertura TAR antes (%)">
+          <input
+            type="number"
+            min={0}
+            max={100}
+            {...form.register('cobertura_tar_antes', {
+              valueAsNumber: true,
+              setValueAs: (v) => (v === '' || Number.isNaN(Number(v)) ? undefined : Number(v)),
+            })}
+            className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white"
+          />
+        </Field>
+        <Field label="Cobertura TAR meta (%)">
+          <input
+            type="number"
+            min={0}
+            max={100}
+            {...form.register('cobertura_tar_meta', {
+              valueAsNumber: true,
+              setValueAs: (v) => (v === '' || Number.isNaN(Number(v)) ? undefined : Number(v)),
+            })}
+            className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white"
+          />
+        </Field>
+      </div>
+      <Field label="Caudal (L/s)">
+        <input
+          type="number"
+          min={0}
+          step="0.01"
+          {...form.register('caudal_lps', {
+            valueAsNumber: true,
+            setValueAs: (v) => (v === '' || Number.isNaN(Number(v)) ? undefined : Number(v)),
+          })}
+          className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white"
+        />
+      </Field>
+      <div className="grid grid-cols-3 gap-3">
+        <Field label="Mujeres">
+          <input
+            type="number"
+            min={0}
+            {...form.register('pob_mujeres', {
+              valueAsNumber: true,
+              setValueAs: (v) => (v === '' || Number.isNaN(Number(v)) ? undefined : Number(v)),
+            })}
+            className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white"
+          />
+        </Field>
+        <Field label="Indigena">
+          <input
+            type="number"
+            min={0}
+            {...form.register('pob_indigena', {
+              valueAsNumber: true,
+              setValueAs: (v) => (v === '' || Number.isNaN(Number(v)) ? undefined : Number(v)),
+            })}
+            className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white"
+          />
+        </Field>
+        <Field label="Afromexicano">
+          <input
+            type="number"
+            min={0}
+            {...form.register('pob_afromexicano', {
+              valueAsNumber: true,
+              setValueAs: (v) => (v === '' || Number.isNaN(Number(v)) ? undefined : Number(v)),
+            })}
+            className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white"
+          />
+        </Field>
+      </div>
+      <p className="text-[10px] font-semibold text-gray-500 uppercase tracking-wide pt-1">Contratacion (Anexo XVIII)</p>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="No. contrato">
+          <input {...form.register('num_contrato')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" />
+        </Field>
+        <Field label="Folio ComprasMX">
+          <input {...form.register('compras_mx_folio')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" />
+        </Field>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
+        <Field label="Tipo adjudicacion">
+          <select {...form.register('tipo_adjudicacion')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white">
+            <option value="">Seleccionar...</option>
+            <option value="licitacion">Licitacion</option>
+            <option value="invitacion">Invitacion</option>
+            <option value="adjudicacion_directa">Adjudicacion directa</option>
+          </select>
+        </Field>
+        <Field label="Fecha de fallo">
+          <input type="date" {...form.register('fecha_fallo')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white" />
         </Field>
       </div>
     </>
