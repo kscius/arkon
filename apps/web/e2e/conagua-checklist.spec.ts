@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { DEMO_USERS, ensureBorradorSolicitud, goToProaguaImport, login, skipIfApiDown } from './helpers';
+import { DEMO_USERS, ensureBorradorSolicitud, ensurePendingAlerta, goToProaguaImport, login, skipIfApiDown } from './helpers';
 
 test.describe('CONAGUA checklist (browser registry)', () => {
   test.beforeEach(async ({ request }) => {
@@ -78,7 +78,8 @@ test.describe('CONAGUA checklist (browser registry)', () => {
     await page.getByRole('button', { name: /Cancelar/i }).click();
   });
 
-  test('ALT-02 atender dialog opens and can cancel without mutation', async ({ page }) => {
+  test('ALT-02 atender dialog opens and can cancel without mutation', async ({ page, request }) => {
+    await ensurePendingAlerta(request);
     await login(page, DEMO_USERS.estatal);
     await page.getByRole('link', { name: /Alertas/i }).first().click();
     const atender = page.getByRole('button', { name: 'Atender' }).first();
@@ -219,7 +220,8 @@ test.describe('CONAGUA checklist (browser registry)', () => {
     });
   });
 
-  test('ALT-02: atender first alert with Prueba E2E verifies success', async ({ page }) => {
+  test('ALT-02: atender first alert with Prueba E2E verifies success', async ({ page, request }) => {
+    await ensurePendingAlerta(request);
     await login(page, DEMO_USERS.estatal);
     await page.getByRole('link', { name: /Alertas/i }).first().click();
     await page.getByRole('combobox').first().selectOption('pendientes');
@@ -250,6 +252,8 @@ test.describe('CONAGUA checklist (browser registry)', () => {
   test('COPY-01 alerts: alert copy uses Spanish accents in alertas', async ({ page }) => {
     await login(page, DEMO_USERS.estatal);
     await page.getByRole('link', { name: /Alertas/i }).first().click();
+    // Incluye atendidas: ALT-02 puede haber consumido pendientes en la misma suite.
+    await page.getByRole('combobox').first().selectOption('todas');
     await expect(
       page.locator('main').getByText(/Validación|liberación|dispersión|ejecución|devolución/i).first(),
     ).toBeVisible({ timeout: 15_000 });

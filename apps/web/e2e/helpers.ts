@@ -66,6 +66,49 @@ export async function ensureBorradorSolicitud(request: APIRequestContext): Promi
   });
 }
 
+/** Ensures at least one pending alert exists (ALT-02 consumes pendientes across E2E runs). */
+export async function ensurePendingAlerta(request: APIRequestContext): Promise<void> {
+  const token = await apiToken(request);
+  const headers = { Authorization: `Bearer ${token}` };
+  const pendingRes = await request.get(`${apiBase()}/api/alertas?atendida=false`, { headers });
+  if (!pendingRes.ok()) return;
+  const pending = (await pendingRes.json()) as unknown[];
+  if (Array.isArray(pending) && pending.length > 0) return;
+
+  let obraId: string | undefined;
+  let municipio = 'León';
+  let municipioId: string | undefined;
+  const obrasRes = await request.get(`${apiBase()}/api/obras`, { headers });
+  if (obrasRes.ok()) {
+    const obras = (await obrasRes.json()) as Array<{
+      id?: string;
+      municipio?: string;
+      municipio_id?: string;
+    }>;
+    const obra = obras[0];
+    if (obra?.id) {
+      obraId = obra.id;
+      municipio = obra.municipio ?? municipio;
+      municipioId = obra.municipio_id;
+    }
+  }
+
+  await request.post(`${apiBase()}/api/alertas`, {
+    headers,
+    data: {
+      obra_id: obraId,
+      municipio,
+      municipio_id: municipioId,
+      titulo: 'E2E — Validación de alerta pendiente',
+      descripcion:
+        'Alerta sintética para pruebas E2E ALT-02; dispersión y ejecución normativa.',
+      tipo: 'regulatoria',
+      severidad: 'media',
+      fecha_generacion: '24-06-2026',
+    },
+  });
+}
+
 /** Skip tests when API is not available (stack not started or not seeded). */
 export async function skipIfApiDown(request: APIRequestContext): Promise<void> {
   const base = (process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:8080').replace(/\/$/, '');

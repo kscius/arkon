@@ -2,12 +2,12 @@
 
 Sistema vivo de verificación. **Cada ejecución de “full test” debe recorrer TODAS las secciones**, no solo lo pendiente. Actualiza este archivo cuando agregues pantallas, flujos o reglas de negocio.
 
-**Última actualización:** 2026-06-24 (iteración QA 15:19)  
+**Última actualización:** 2026-06-24 (iteración QA 15:32)  
 **Alcance:** `ARKON/apps/web` (tenant CONAGUA — Docker `localhost:8080` + prod `arkon-conagua.humansoftware.mx`)
 
 ---
 
-## Resultados última corrida (2026-06-24 15:19)
+## Resultados última corrida (2026-06-24 15:32)
 
 | Resultado | Cantidad |
 |-----------|----------|
@@ -20,13 +20,18 @@ Sistema vivo de verificación. **Cada ejecución de “full test” debe recorre
 
 | Entorno | Resultado | Notas |
 |---------|-----------|-------|
-| `localhost:8080` (Docker) | **45/45 pass** ×2 | Corridas consecutivas sin reset entre ellas (idempotente tras fixes) |
-| `localhost:3000` (dev nativo) | **45/45 pass** | `.\scripts\dev-local.ps1` + Vite proxy `/api` |
+| `localhost:8080` (Docker) | **45/45 pass** ×2 | Corridas consecutivas sin `docker compose down -v` |
+| `localhost:3000` (dev nativo) | pendiente esta sesión | Objetivo 45/45 con `dev-local.ps1` |
 | `arkon-conagua.humansoftware.mx` | pendiente redeploy | Objetivo 45/45 post-deploy |
 
-### Walkthrough browser Cursor MCP (2026-06-24 15:19)
+### Walkthrough browser Cursor MCP (2026-06-24 15:32)
 
-Confirmación post-fixes E2E: login estatal, REG-01 UUID inválido, sidebar 12 ítems, campana alertas.
+Dos corridas consecutivas: estatal → municipal → contratista → REG-01/03/04; SHELL-05 @375px; ASST-02 respuesta mock.
+
+**Fixes clave 2026-06-24 (iteración 15:32):**
+- **COPY-01 alertas E2E:** filtro `todas` para incluir alertas atendidas por ALT-02 en la misma suite.
+- **ALT-02 idempotente:** `ensurePendingAlerta()` crea alerta vía `POST /api/alertas` si no hay pendientes.
+- **E2E:** 45/45 ×2 corridas consecutivas tras fixes.
 
 **Fixes clave 2026-06-24 (iteración 15:19):**
 - **E2E tenant:** `playwright.config.ts` default `TENANT_ID=conagua` (antes usaba credenciales ARKON).
@@ -45,7 +50,7 @@ Confirmación post-fixes E2E: login estatal, REG-01 UUID inválido, sidebar 12 �
 |---------|---------|-----------|-------|
 | `pnpm test` | local | **19/19 pass** | vitest (+ `solicitud-wizard-utils.test.ts`) |
 | `pnpm exec tsc -b` | local | **pass** | |
-| `pnpm test:e2e` | `localhost:8080` | **45/45 pass** ×2 | confirmación 2026-06-24 15:19 (sin reset entre corridas) |
+| `pnpm test:e2e` | `localhost:8080` | **45/45 pass** ×2 | confirmación 2026-06-24 15:32 (idempotente ALT-02/COPY-01) |
 | `pnpm lint` | local | **pass** | 1 warning preexistente ObraFormModal |
 
 **Producción verificada en UI:** login con contraseña prellenada, “Iniciar sesión”, tildes en copy, campana → alertas, UUID inválido amigable, navegación por rol.
@@ -320,6 +325,14 @@ pnpm exec playwright test e2e/
 
 ## Historial de hallazgos
 
+### 2026-06-24 — Iteración QA idempotencia ALT-02 + COPY-01 (DONE)
+
+- **ensurePendingAlerta:** helper E2E crea alerta pendiente vía API si el seed fue consumido por corridas previas.
+- **COPY-01 alertas:** test usa filtro `todas` para ver copy con tildes en historial atendido.
+- **E2E:** 45/45 ×2 corridas consecutivas sin `docker compose down -v`.
+- **Browser:** 2 corridas MCP consecutivas (estatal/municipal/contratista + REG).
+- **Artefacto:** `docs/QA-ITERATION-2026-06-24-1532.md`
+
 ### 2026-06-24 — Iteración QA E2E tenant + idempotencia (DONE)
 
 - **playwright.config.ts:** default `TENANT_ID=conagua` para credenciales correctas sin export manual.
@@ -393,9 +406,9 @@ Añadir bajo la sección correcta y, si es `auto`, crear test en `e2e/` o `src/*
 - [x] `pnpm exec tsc -b` — 0 errores (2026-06-24)
 - [x] `pnpm build` — exit 0 (2026-06-24)
 - [x] `pnpm lint` — sin errores nuevos (1 warning preexistente ObraFormModal)
-- [x] `pnpm test:e2e` — 45/45 ×2 corridas consecutivas Docker (2026-06-24 15:19, idempotente)
+- [x] `pnpm test:e2e` — 45/45 ×2 corridas consecutivas Docker (2026-06-24 15:32, idempotente ALT-02/COPY-01)
 - [ ] Producción: redeploy web+api + `migrate deploy` + `db seed` → re-ejecutar checklist
 - [x] Checklist estatal + municipal + contratista + FLOW + REG — pass browser/E2E
 - [x] REG-01 a REG-04 verificados
 - [x] Este archivo actualizado con fecha y notas de la corrida
-- [x] `docs/QA-ITERATION-2026-06-24-1519.md` generado
+- [x] `docs/QA-ITERATION-2026-06-24-1532.md` generado
