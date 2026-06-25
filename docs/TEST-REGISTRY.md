@@ -2,12 +2,12 @@
 
 Sistema vivo de verificación. **Cada ejecución de “full test” debe recorrer TODAS las secciones**, no solo lo pendiente. Actualiza este archivo cuando agregues pantallas, flujos o reglas de negocio.
 
-**Última actualización:** 2026-06-24 (iteración QA 15:32)  
+**Última actualización:** 2026-06-25 (iteración QA 11:55)  
 **Alcance:** `ARKON/apps/web` (tenant CONAGUA — Docker `localhost:8080` + prod `arkon-conagua.humansoftware.mx`)
 
 ---
 
-## Resultados última corrida (2026-06-24 15:32)
+## Resultados última corrida (2026-06-25 11:55)
 
 | Resultado | Cantidad |
 |-----------|----------|
@@ -20,13 +20,17 @@ Sistema vivo de verificación. **Cada ejecución de “full test” debe recorre
 
 | Entorno | Resultado | Notas |
 |---------|-----------|-------|
-| `localhost:8080` (Docker) | **45/45 pass** ×2 | Corridas consecutivas sin `docker compose down -v` |
+| `localhost:8080` (Docker) | **45/45 pass** ×3 | Corridas consecutivas 2026-06-25 sin `docker compose down -v` |
 | `localhost:3000` (dev nativo) | pendiente esta sesión | Objetivo 45/45 con `dev-local.ps1` |
 | `arkon-conagua.humansoftware.mx` | pendiente redeploy | Objetivo 45/45 post-deploy |
 
-### Walkthrough browser Cursor MCP (2026-06-24 15:32)
+### Walkthrough browser Cursor MCP (2026-06-25 11:55)
 
-Dos corridas consecutivas: estatal → municipal → contratista → REG-01/03/04; SHELL-05 @375px; ASST-02 respuesta mock.
+Dos corridas consecutivas: estatal completo → municipal → contratista → REG-01/03/04; SHELL-05 @375px; ASST-02 respuesta mock (22 obras); ALT-02 contador 25→24.
+
+**Fixes clave 2026-06-25 (iteración 11:55):**
+- Ningún fix de código requerido — sistema estable desde iteración 2026-06-24.
+- Revalidación completa: Docker healthy, 19 unit + 45 E2E ×3, browser MCP ×2.
 
 **Fixes clave 2026-06-24 (iteración 15:32):**
 - **COPY-01 alertas E2E:** filtro `todas` para incluir alertas atendidas por ALT-02 en la misma suite.
@@ -50,7 +54,7 @@ Dos corridas consecutivas: estatal → municipal → contratista → REG-01/03/0
 |---------|---------|-----------|-------|
 | `pnpm test` | local | **19/19 pass** | vitest (+ `solicitud-wizard-utils.test.ts`) |
 | `pnpm exec tsc -b` | local | **pass** | |
-| `pnpm test:e2e` | `localhost:8080` | **45/45 pass** ×2 | confirmación 2026-06-24 15:32 (idempotente ALT-02/COPY-01) |
+| `pnpm test:e2e` | `localhost:8080` | **45/45 pass** ×3 | confirmación 2026-06-25 11:55 |
 | `pnpm lint` | local | **pass** | 1 warning preexistente ObraFormModal |
 
 **Producción verificada en UI:** login con contraseña prellenada, “Iniciar sesión”, tildes en copy, campana → alertas, UUID inválido amigable, navegación por rol.
@@ -59,16 +63,16 @@ Dos corridas consecutivas: estatal → municipal → contratista → REG-01/03/0
 
 | ID | Última corrida | Resultado | Notas |
 |----|----------------|-----------|-------|
-| REG-01 | 2026-06-24 | pass | E2E + browser Docker |
-| REG-02 | 2026-06-24 | pass | E2E + browser Docker |
-| REG-03 | 2026-06-24 | pass | E2E campana → alertas |
-| REG-04 | 2026-06-24 | pass | E2E login one-click |
-| AUTH-01 | 2026-06-24 | pass | E2E ui-fixes |
-| SHELL-01 | 2026-06-24 | pass | browser + E2E |
-| SHELL-02 | 2026-06-24 | pass | E2E ui-fixes |
-| DET-05 | 2026-06-24 | pass | E2E ui-fixes |
-| MUN-R05 | 2026-06-24 | pass | fix wizard + browser MCP |
-| CTR-R02 | 2026-06-24 | pass | Mi Empresa en menú |
+| REG-01 | 2026-06-25 | pass | E2E + browser Docker ×2 |
+| REG-02 | 2026-06-25 | pass | E2E + browser Docker |
+| REG-03 | 2026-06-25 | pass | E2E campana → alertas |
+| REG-04 | 2026-06-25 | pass | E2E login one-click |
+| AUTH-01 | 2026-06-25 | pass | E2E ui-fixes + browser |
+| SHELL-01 | 2026-06-25 | pass | browser + E2E |
+| SHELL-02 | 2026-06-25 | pass | E2E ui-fixes |
+| DET-05 | 2026-06-25 | pass | E2E ui-fixes + browser |
+| MUN-R05 | 2026-06-25 | pass | wizard + browser MCP |
+| CTR-R02 | 2026-06-25 | pass | Mi Empresa en menú |
 
 ---
 
@@ -325,6 +329,13 @@ pnpm exec playwright test e2e/
 
 ## Historial de hallazgos
 
+### 2026-06-25 — Iteración QA revalidación completa (DONE)
+
+- **Sin fixes de código:** stack Docker estable desde sesión 2026-06-24.
+- **Automatizado:** 19/19 unit, tsc/build/lint OK, 45/45 E2E ×3 corridas consecutivas.
+- **Browser MCP:** 2 corridas (estatal/municipal/contratista + REG + SHELL-05 + ASST-02 + ALT-02).
+- **Artefacto:** `docs/QA-ITERATION-2026-06-25-1155.md`
+
 ### 2026-06-24 — Iteración QA idempotencia ALT-02 + COPY-01 (DONE)
 
 - **ensurePendingAlerta:** helper E2E crea alerta pendiente vía API si el seed fue consumido por corridas previas.
@@ -406,9 +417,9 @@ Añadir bajo la sección correcta y, si es `auto`, crear test en `e2e/` o `src/*
 - [x] `pnpm exec tsc -b` — 0 errores (2026-06-24)
 - [x] `pnpm build` — exit 0 (2026-06-24)
 - [x] `pnpm lint` — sin errores nuevos (1 warning preexistente ObraFormModal)
-- [x] `pnpm test:e2e` — 45/45 ×2 corridas consecutivas Docker (2026-06-24 15:32, idempotente ALT-02/COPY-01)
+- [x] `pnpm test:e2e` — 45/45 ×3 corridas consecutivas Docker (2026-06-25 11:55)
 - [ ] Producción: redeploy web+api + `migrate deploy` + `db seed` → re-ejecutar checklist
 - [x] Checklist estatal + municipal + contratista + FLOW + REG — pass browser/E2E
 - [x] REG-01 a REG-04 verificados
 - [x] Este archivo actualizado con fecha y notas de la corrida
-- [x] `docs/QA-ITERATION-2026-06-24-1532.md` generado
+- [x] `docs/QA-ITERATION-2026-06-25-1155.md` generado
