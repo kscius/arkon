@@ -35,8 +35,9 @@ import {
 import { canManageSolicitudEstatal } from '@/lib/proagua-access';
 import { formatCurrency, getProgramaName } from '@/lib/utils';
 import { toast } from 'sonner';
-import type { Obra, SolicitudEstatus, SolicitudPrograma } from '@/types';
+import type { Accion, SolicitudEstatus, SolicitudPrograma } from '@/types';
 import { FileText, Plus } from 'lucide-react';
+import { getBrand } from '@/config/brand';
 
 const ALL = '__all__';
 
@@ -59,6 +60,7 @@ const ESTATUS_STYLES: Record<string, { bg: string; color: string; label: string 
 };
 
 export default function SolicitudesPage() {
+  const { entity } = getBrand();
   const navigate = useNavigate();
   const { user } = useApp();
   const [estatusFilter, setEstatusFilter] = useState(ALL);
@@ -67,7 +69,7 @@ export default function SolicitudesPage() {
   const [approveTarget, setApproveTarget] = useState<SolicitudPrograma | null>(null);
   const [rejectTarget, setRejectTarget] = useState<SolicitudPrograma | null>(null);
   const [obraPickerId, setObraPickerId] = useState('');
-  const [obrasOptions, setObrasOptions] = useState<Obra[]>([]);
+  const [obrasOptions, setObrasOptions] = useState<Accion[]>([]);
   const [loadingObras, setLoadingObras] = useState(false);
 
   const load = useCallback(async () => {
@@ -106,7 +108,7 @@ export default function SolicitudesPage() {
       );
       setObrasOptions(filtered.length > 0 ? filtered : obras.filter((o) => o.programa === sol.programa));
     } catch {
-      toast.error('No se pudieron cargar las obras');
+      toast.error(`No se pudieron cargar las ${entity.plural}`);
       setObrasOptions([]);
     } finally {
       setLoadingObras(false);
@@ -117,7 +119,7 @@ export default function SolicitudesPage() {
     if (!approveTarget) return;
     const obraId = obraPickerId || approveTarget.obraResultanteId;
     if (!obraId) {
-      toast.error('Seleccione la obra resultante');
+      toast.error(`Seleccione la ${entity.singular} resultante`);
       return;
     }
     setBusyId(approveTarget.id);
@@ -224,7 +226,7 @@ export default function SolicitudesPage() {
                       <th className="text-left py-2 px-2 font-medium text-gray-500">Componente</th>
                       <th className="text-right py-2 px-2 font-medium text-gray-500">Monto</th>
                       <th className="text-center py-2 px-2 font-medium text-gray-500">Estatus</th>
-                      <th className="text-center py-2 px-2 font-medium text-gray-500">Obra</th>
+                      <th className="text-center py-2 px-2 font-medium text-gray-500">{entity.singularCap}</th>
                       <th className="text-right py-2 px-2 font-medium text-gray-500">Acciones</th>
                     </tr>
                   </thead>
@@ -259,10 +261,10 @@ export default function SolicitudesPage() {
                             {sol.obraResultanteId ? (
                               <button
                                 type="button"
-                                onClick={() => navigate(`/obras/${sol.obraResultanteId}`)}
+                                onClick={() => navigate(`/acciones/${sol.obraResultanteId}`)}
                                 className="text-[10px] text-brand-primary-light hover:underline"
                               >
-                                {sol.obraResultanteFolio ?? 'Ver obra'}
+                                {sol.obraResultanteFolio ?? `Ver ${entity.singular}`}
                               </button>
                             ) : (
                               <span className="text-gray-300">—</span>
@@ -361,17 +363,17 @@ export default function SolicitudesPage() {
             <DialogTitle className="text-sm">Aprobar solicitud</DialogTitle>
           </DialogHeader>
           <p className="text-xs text-gray-600">
-            Vincule la obra resultante que se generará o actualizará con esta solicitud aprobada.
+            Vincule la {entity.singular} resultante que se generará o actualizará con esta solicitud aprobada.
           </p>
           <div>
-            <label className="text-[10px] text-gray-500 uppercase tracking-wide">Obra resultante</label>
+            <label className="text-[10px] text-gray-500 uppercase tracking-wide">{entity.singularCap} resultante</label>
             <select
               value={obraPickerId}
               onChange={(e) => setObraPickerId(e.target.value)}
               disabled={loadingObras}
               className="mt-1 w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white"
             >
-              <option value="">Seleccione una obra...</option>
+              <option value="">Seleccione una {entity.singular}...</option>
               {obrasOptions.map((o) => (
                 <option key={o.id} value={o.id}>
                   {o.folio} — {o.nombre.slice(0, 60)}

@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { EstatusObra, Prisma, Rol, Usuario } from '@prisma/client';
+import { EstatusAccion, Prisma, Rol, Usuario } from '@prisma/client';
 import { rowsToCsv } from '../common/csv.util';
 import { buildFolio, nextFolioSequence } from '../common/folio.util';
 import { ScopeService } from '../common/scope.service';
@@ -15,7 +15,7 @@ const OBRA_INCLUDE = {
   cofinanciamientos: true,
 } as const;
 
-type ObraPayload = Prisma.ObraGetPayload<{ include: typeof OBRA_INCLUDE }>;
+type ObraPayload = Prisma.AccionGetPayload<{ include: typeof OBRA_INCLUDE }>;
 
 @Injectable()
 export class ObrasService {
@@ -39,7 +39,7 @@ export class ObrasService {
       programa: obra.programa,
       tipo_programa: obra.tipoPrograma,
       dependencia: obra.dependencia,
-      tipo_obra: obra.tipoObra,
+      tipo_obra: obra.tipoAccion,
       descripcion: obra.descripcion ?? '',
       poblacion_beneficiada: obra.poblacionBeneficiada,
       monto_autorizado: Number(obra.montoAutorizado),
@@ -137,8 +137,8 @@ export class ObrasService {
       search?: string;
     },
   ) {
-    const where: Prisma.ObraWhereInput = { ...this.scope.obraWhere(user) };
-    if (filters.estatus) where.estatus = filters.estatus as EstatusObra;
+    const where: Prisma.AccionWhereInput = { ...this.scope.obraWhere(user) };
+    if (filters.estatus) where.estatus = filters.estatus as EstatusAccion;
     if (filters.programa) where.programa = filters.programa;
     if (filters.municipio_id && user.rol === Rol.estatal) where.municipioId = filters.municipio_id;
     if (filters.contratista_id && user.rol !== Rol.contratista) {
@@ -151,7 +151,7 @@ export class ObrasService {
         { cua: { contains: filters.search, mode: 'insensitive' } },
       ];
     }
-    const obras = await this.prisma.obra.findMany({
+    const obras = await this.prisma.accion.findMany({
       where,
       include: OBRA_INCLUDE,
       orderBy: { folio: 'asc' },
@@ -160,7 +160,7 @@ export class ObrasService {
   }
 
   async findOne(id: string, user: Usuario) {
-    const obra = await this.prisma.obra.findUnique({
+    const obra = await this.prisma.accion.findUnique({
       where: { id },
       include: OBRA_INCLUDE,
     });
@@ -176,7 +176,7 @@ export class ObrasService {
     const year = new Date().getFullYear();
     const prog = dto.programa.trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
     const prefix = `${prog}-${year}-`;
-    const existing = await this.prisma.obra.findMany({
+    const existing = await this.prisma.accion.findMany({
       where: { folio: { startsWith: prefix, mode: 'insensitive' } },
       select: { folio: true },
     });
@@ -195,7 +195,7 @@ export class ObrasService {
     const municipioId =
       user.rol === Rol.municipal && user.municipioId ? user.municipioId : dto.municipio_id;
     const folio = await this.resolveFolioForCreate(dto);
-    const obra = await this.prisma.obra.create({
+    const obra = await this.prisma.accion.create({
       data: {
         folio,
         nombre: dto.nombre,
@@ -203,7 +203,7 @@ export class ObrasService {
         programa: dto.programa,
         tipoPrograma: dto.tipo_programa ?? 'federal',
         dependencia: dto.dependencia,
-        tipoObra: dto.tipo_obra,
+        tipoAccion: dto.tipo_obra,
         descripcion: dto.descripcion,
         poblacionBeneficiada: dto.poblacion_beneficiada ?? 0,
         montoAutorizado: dto.monto_autorizado,
@@ -216,7 +216,7 @@ export class ObrasService {
         avanceFisicoProgramado: dto.avance_fisico_programado ?? 0,
         avanceFisicoReal: dto.avance_fisico_real ?? 0,
         avanceFinanciero: dto.avance_financiero ?? 0,
-        estatus: dto.estatus ?? EstatusObra.en_preparacion,
+        estatus: dto.estatus ?? EstatusAccion.en_preparacion,
         riesgo: dto.riesgo ?? 'bajo',
         latitud: dto.latitud,
         longitud: dto.longitud,
@@ -231,14 +231,14 @@ export class ObrasService {
 
   async update(id: string, dto: UpdateObraDto, user: Usuario) {
     await this.scope.getObraOrThrow(id, user);
-    const obra = await this.prisma.obra.update({
+    const obra = await this.prisma.accion.update({
       where: { id },
       data: {
         nombre: dto.nombre,
         localidad: dto.localidad,
         programa: dto.programa,
         dependencia: dto.dependencia,
-        tipoObra: dto.tipo_obra,
+        tipoAccion: dto.tipo_obra,
         descripcion: dto.descripcion,
         montoAutorizado: dto.monto_autorizado,
         montoContratado: dto.monto_contratado,
@@ -259,7 +259,7 @@ export class ObrasService {
 
   async remove(id: string, user: Usuario) {
     if (user.rol !== Rol.estatal) throw new ForbiddenException('Only estatal can delete obras');
-    await this.prisma.obra.delete({ where: { id } });
+    await this.prisma.accion.delete({ where: { id } });
     return { deleted: true };
   }
 

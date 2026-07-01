@@ -1,6 +1,6 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { EstatusObra, EstadoDocumento } from '@prisma/client';
+import { EstatusAccion, EstadoDocumento } from '@prisma/client';
 import { AlertaConfigsService } from '../alerta-configs/alerta-configs.service';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -33,7 +33,7 @@ export class AlertasSchedulerService {
   }
 
   private async checkProaguaNormativa(): Promise<void> {
-    const obras = await this.prisma.obra.findMany({
+    const obras = await this.prisma.accion.findMany({
       where: { programa: { contains: 'PROAGUA', mode: 'insensitive' } },
       include: {
         municipio: true,
@@ -68,10 +68,10 @@ export class AlertasSchedulerService {
         !hasTrimestral &&
         (
           [
-            EstatusObra.en_ejecucion_a_tiempo,
-            EstatusObra.en_ejecucion_retraso,
-            EstatusObra.en_riesgo,
-          ] as EstatusObra[]
+            EstatusAccion.en_ejecucion_a_tiempo,
+            EstatusAccion.en_ejecucion_retraso,
+            EstatusAccion.en_riesgo,
+          ] as EstatusAccion[]
         ).includes(obra.estatus)
       ) {
         await this.createSystemAlert({
@@ -93,7 +93,7 @@ export class AlertasSchedulerService {
 
   private async hasOpenAlert(obraId: string, tipo: string): Promise<boolean> {
     const existing = await this.prisma.alerta.findFirst({
-      where: { obraId, tipo, atendida: false },
+      where: { accionId: obraId, tipo, atendida: false },
     });
     return !!existing;
   }
@@ -111,7 +111,7 @@ export class AlertasSchedulerService {
 
     await this.prisma.alerta.create({
       data: {
-        obraId: data.obraId,
+        accionId: data.obraId,
         municipio: data.municipio,
         municipioId: data.municipioId,
         titulo: data.titulo,
@@ -125,13 +125,13 @@ export class AlertasSchedulerService {
   }
 
   private async checkRetrasoFisico(): Promise<void> {
-    const obras = await this.prisma.obra.findMany({
+    const obras = await this.prisma.accion.findMany({
       where: {
         estatus: {
           in: [
-            EstatusObra.en_ejecucion_a_tiempo,
-            EstatusObra.en_ejecucion_retraso,
-            EstatusObra.en_riesgo,
+            EstatusAccion.en_ejecucion_a_tiempo,
+            EstatusAccion.en_ejecucion_retraso,
+            EstatusAccion.en_riesgo,
           ],
         },
       },
@@ -158,13 +158,13 @@ export class AlertasSchedulerService {
   }
 
   private async checkDesvioFinanciero(): Promise<void> {
-    const obras = await this.prisma.obra.findMany({
+    const obras = await this.prisma.accion.findMany({
       where: {
         estatus: {
           in: [
-            EstatusObra.en_ejecucion_a_tiempo,
-            EstatusObra.en_ejecucion_retraso,
-            EstatusObra.en_riesgo,
+            EstatusAccion.en_ejecucion_a_tiempo,
+            EstatusAccion.en_ejecucion_retraso,
+            EstatusAccion.en_riesgo,
           ],
         },
       },
@@ -213,10 +213,10 @@ export class AlertasSchedulerService {
   }
 
   private async checkDocumentacionIncompleta(): Promise<void> {
-    const obras = await this.prisma.obra.findMany({
+    const obras = await this.prisma.accion.findMany({
       where: {
         estatus: {
-          notIn: [EstatusObra.concluida, EstatusObra.cancelada, EstatusObra.cerrada],
+          notIn: [EstatusAccion.concluida, EstatusAccion.cancelada, EstatusAccion.cerrada],
         },
       },
       include: { municipio: true, documentos: true },

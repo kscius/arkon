@@ -18,7 +18,7 @@ import { getBrand } from '@/config/brand';
 import { getProgramaName, getTipoObraLabel } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { OrganismoOperadorSelect } from '@/components/proagua/OrganismoOperadorSelect';
-import type { Obra, User } from '@/types';
+import type { Accion, User } from '@/types';
 
 const DEFAULT_PROGRAMAS = ['FAPAA', 'CAM', 'FAIS', 'FORTAMUN', 'FOMAGUA', 'FOISE', 'PEF', 'SISPLADE'];
 
@@ -104,7 +104,7 @@ interface ObraFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   user: User;
-  obra?: Obra | null;
+  obra?: Accion | null;
   onSuccess: () => void;
 }
 
@@ -115,6 +115,7 @@ function resolveDependenciaOptions(catalog: string[], current?: string): string[
 
 export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: ObraFormModalProps) {
   const brand = getBrand();
+  const { entity } = brand;
   const isConagua = brand.tenantId === 'conagua';
   const programas = brand.programas ?? DEFAULT_PROGRAMAS;
   const dependenciasCatalog = brand.dependencias ?? DEFAULT_DEPENDENCIAS;
@@ -305,15 +306,15 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
     try {
       if (isEdit && obra) {
         await updateObra(obra.id, payload);
-        toast.success('Obra actualizada');
+        toast.success(`${entity.singularCap} actualizada`);
       } else {
         await createObra(payload);
-        toast.success('Obra registrada');
+        toast.success(`${entity.singularCap} registrada`);
       }
       onOpenChange(false);
       onSuccess();
     } catch (err) {
-      const msg = err instanceof ApiError ? err.message : 'Error al guardar la obra';
+      const msg = err instanceof ApiError ? err.message : `Error al guardar la ${entity.singular}`;
       toast.error(msg);
     }
   });
@@ -322,7 +323,7 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{isEdit ? 'Editar obra' : 'Nueva obra'}</DialogTitle>
+          <DialogTitle>{isEdit ? `Editar ${entity.singular}` : `Nueva ${entity.singular}`}</DialogTitle>
         </DialogHeader>
         <form onSubmit={onSubmit} className="space-y-3">
           {isConagua ? (
@@ -380,7 +381,7 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
               Cancelar
             </Button>
             <Button type="submit" disabled={form.formState.isSubmitting}>
-              {form.formState.isSubmitting ? 'Guardando...' : isEdit ? 'Guardar cambios' : 'Crear obra'}
+              {form.formState.isSubmitting ? 'Guardando...' : isEdit ? 'Guardar cambios' : `Crear ${entity.singular}`}
             </Button>
           </DialogFooter>
         </form>
@@ -595,7 +596,7 @@ function ObraGeneralFields({
 }: {
   form: ReturnType<typeof useForm<FormValues>>;
   isEdit: boolean;
-  obra?: Obra | null;
+  obra?: Accion | null;
   programas: string[];
   dependenciaOptions: string[];
   isEstatal: boolean;
@@ -605,6 +606,8 @@ function ObraGeneralFields({
   showFieldError: (name: keyof FormValues) => string | undefined;
   inputClass: (name: keyof FormValues) => string;
 }) {
+  const { entity } = getBrand();
+
   return (
     <>
       {isEdit && obra ? (
@@ -645,7 +648,7 @@ function ObraGeneralFields({
         </Field>
       </div>
       <div className="grid grid-cols-2 gap-3">
-        <Field label="Tipo de obra *">
+        <Field label={`Tipo de ${entity.singular} *`}>
           <select {...form.register('tipo_obra')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white">
             {TIPOS_OBRA.map((t) => (
               <option key={t} value={t}>

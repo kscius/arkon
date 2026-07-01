@@ -21,7 +21,7 @@ import { ObrasService } from './obras.service';
 
 @ApiTags('Obras')
 @ApiBearerAuth()
-@Controller('obras')
+@Controller('acciones')
 export class ObrasController {
   constructor(private readonly obras: ObrasService) {}
 

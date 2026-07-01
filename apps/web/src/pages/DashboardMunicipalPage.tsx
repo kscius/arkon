@@ -30,7 +30,7 @@ import {
 import { Plus, UserPlus } from 'lucide-react';
 import { ApiError } from '@/lib/api-client';
 import { toast } from 'sonner';
-import type { AvanceMensual, Obra } from '@/types';
+import type { AvanceMensual, Accion } from '@/types';
 import { normalizeName } from '@/lib/api-mappers';
 import { formatCurrencyM, formatPercentage, getObraStatusColor, getObraStatusLabel, getSeverityColor, getSeverityLabel, getProgramaColor, getProgramaName } from '@/lib/utils';
 import { getBrand } from '@/config/brand';
@@ -43,6 +43,7 @@ const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transiti
 
 export default function DashboardMunicipalPage() {
   const brand = getBrand();
+  const { entity } = brand;
   const { user } = useApp();
   const navigate = useNavigate();
   const municipioId = user?.municipioId ?? '';
@@ -65,7 +66,7 @@ export default function DashboardMunicipalPage() {
       .map((id) => contratistas.find((c) => c.id === id))
       .filter(Boolean);
 
-    const pendingAvances: { avance: AvanceMensual; obra: Obra }[] = [];
+    const pendingAvances: { avance: AvanceMensual; obra: Accion }[] = [];
     for (const obra of munObras) {
       const avances = await fetchAvancesByObra(obra.id);
       for (const avance of avances) {
@@ -116,7 +117,7 @@ export default function DashboardMunicipalPage() {
   const handleCreateEstimacion = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!estObraId || !estMonto) {
-      setActionError('Seleccione obra y monto.');
+      setActionError(`Seleccione ${entity.singular} y monto.`);
       return;
     }
     const obra = data?.munObras.find((o) => o.id === estObraId);
@@ -206,10 +207,10 @@ export default function DashboardMunicipalPage() {
   const alertasPendientes = munAlertas.filter(a => !a.atendida);
 
   const kpis = [
-    { label: 'Obras Municipales', value: totalObras.toString(), sub: `${obrasEjecucion} en ejecución`, icon: Building2, color: brand.colors.primary },
+    { label: `${entity.pluralCap} Municipales`, value: totalObras.toString(), sub: `${obrasEjecucion} en ejecución`, icon: Building2, color: brand.colors.primary },
     { label: 'Inversion Autorizada', value: formatCurrencyM(montoAutorizado), sub: 'Para su municipio', icon: DollarSign, color: brand.colors.accent },
     { label: 'Avance Promedio', value: formatPercentage(avancePromedio), sub: 'Avance fisico', icon: TrendingUp, color: '#3182CE', trend: avancePromedio },
-    { label: 'Obras con Retraso', value: obrasRetraso.toString(), sub: `${Math.round((obrasRetraso / totalObras) * 100)}% del total`, icon: AlertTriangle, color: '#DC2626' },
+    { label: `${entity.pluralCap} con Retraso`, value: obrasRetraso.toString(), sub: `${Math.round((obrasRetraso / totalObras) * 100)}% del total`, icon: AlertTriangle, color: '#DC2626' },
     { label: 'Contratistas', value: munContratistas.length.toString(), sub: 'Empresas asignadas', icon: Users, color: brand.colors.secondary },
     { label: 'Alertas', value: alertasPendientes.length.toString(), sub: 'Pendientes de atencion', icon: AlertTriangle, color: '#D69E2E' },
   ];
@@ -220,14 +221,14 @@ export default function DashboardMunicipalPage() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="text-lg font-bold text-brand-primary">Dashboard Municipal — {municipioNombre}</h1>
-          <p className="text-xs text-gray-500 mt-1">Gestión de obras, contratistas y avances de su municipio</p>
+          <p className="text-xs text-gray-500 mt-1">Gestión de {entity.plural}, contratistas y avances de su municipio</p>
         </div>
         <div className="flex flex-wrap gap-2 items-center">
           <DashboardExportActions />
           {user && (
             <Button type="button" size="sm" className="gap-2" onClick={() => setObraModalOpen(true)}>
               <Plus className="w-4 h-4" />
-              Nueva obra
+              Nueva {entity.singular}
             </Button>
           )}
         </div>
@@ -260,7 +261,7 @@ export default function DashboardMunicipalPage() {
 
       <Tabs defaultValue="obras">
         <TabsList className="bg-white border border-gray-200 p-1 h-auto">
-          <TabsTrigger value="obras" className="text-xs gap-1.5"><Building2 className="w-3.5 h-3.5" /> Mis Obras</TabsTrigger>
+          <TabsTrigger value="obras" className="text-xs gap-1.5"><Building2 className="w-3.5 h-3.5" /> Mis {entity.pluralCap}</TabsTrigger>
           <TabsTrigger value="contratistas" className="text-xs gap-1.5"><Users className="w-3.5 h-3.5" /> Contratistas</TabsTrigger>
           <TabsTrigger value="validar" className="text-xs gap-1.5"><CheckCircle className="w-3.5 h-3.5" /> Validar Avances</TabsTrigger>
           <TabsTrigger value="estimaciones" className="text-xs gap-1.5"><FileText className="w-3.5 h-3.5" /> Estimaciones</TabsTrigger>
@@ -270,7 +271,7 @@ export default function DashboardMunicipalPage() {
         <TabsContent value="obras" className="mt-4">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">Obras en su Municipio ({totalObras})</CardTitle>
+              <CardTitle className="text-sm font-semibold">{entity.pluralCap} en su Municipio ({totalObras})</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
@@ -286,7 +287,7 @@ export default function DashboardMunicipalPage() {
                   </tr></thead>
                   <tbody>
                     {munObras.map((obra) => (
-                      <tr key={obra.id} className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/obras/${obra.id}`)}>
+                      <tr key={obra.id} className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/acciones/${obra.id}`)}>
                         <td className="py-2 px-2 font-medium text-gray-900 max-w-[150px] truncate">{obra.nombre}</td>
                         <td className="py-2 px-2"><span className="px-2 py-0.5 rounded-full text-[10px] font-medium text-white" style={{ backgroundColor: getProgramaColor(obra.programa) }}>{getProgramaName(obra.programa)}</span></td>
                         <td className="py-2 px-2 text-gray-600 max-w-[120px] truncate">{obra.contratista}</td>
@@ -316,7 +317,7 @@ export default function DashboardMunicipalPage() {
             <CardHeader className="pb-2 flex flex-row items-start justify-between gap-2">
               <div>
                 <CardTitle className="text-sm font-semibold">Contratistas Asignados ({munContratistas.length})</CardTitle>
-                <p className="text-[11px] text-gray-500 font-normal mt-1">Seleccione un contratista para ver su panel y obras.</p>
+                <p className="text-[11px] text-gray-500 font-normal mt-1">Seleccione un contratista para ver su panel y {entity.plural}.</p>
               </div>
               <Button type="button" size="sm" variant="outline" className="gap-1 shrink-0" onClick={() => setContratistaDialogOpen(true)}>
                 <UserPlus className="w-3.5 h-3.5" />
@@ -336,7 +337,7 @@ export default function DashboardMunicipalPage() {
                       <div className="flex-1 min-w-0">
                         <p className="text-xs font-semibold text-gray-900 truncate">{c.nombre}</p>
                         <p className="text-[10px] text-gray-500">RFC: {c.rfc}</p>
-                        <p className="text-[10px] text-gray-500">{cObras.length} obras | Avance {formatPercentage(c.avancePromedio)}</p>
+                        <p className="text-[10px] text-gray-500">{cObras.length} {entity.plural} | Avance {formatPercentage(c.avancePromedio)}</p>
                         {c.observacionesPendientes > 0 && <span className="text-[10px] text-red-500 font-medium">{c.observacionesPendientes} observaciones pendientes</span>}
                       </div>
                     </div>
@@ -396,14 +397,14 @@ export default function DashboardMunicipalPage() {
               <form onSubmit={handleCreateEstimacion}>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] text-gray-500 uppercase mb-1 block">Obra</label>
+                    <label className="text-[10px] text-gray-500 uppercase mb-1 block">{entity.singularCap}</label>
                     <select
                       value={estObraId}
                       onChange={(e) => setEstObraId(e.target.value)}
                       required
                       className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white"
                     >
-                      <option value="">Seleccionar obra...</option>
+                      <option value="">Seleccionar {entity.singular}...</option>
                       {munObras.map(o => <option key={o.id} value={o.id}>{o.nombre}</option>)}
                     </select>
                   </div>

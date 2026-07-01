@@ -9,7 +9,7 @@ test.describe('CONAGUA checklist (browser registry)', () => {
   test('COPY-01 dashboard KPIs use Spanish accents', async ({ page }) => {
     await login(page, DEMO_USERS.estatal);
     await expect(page.getByText('Inversión Autorizada')).toBeVisible();
-    await expect(page.getByText('Obras en Ejecución')).toBeVisible();
+    await expect(page.getByText('Acciones en Ejecución')).toBeVisible();
     await expect(page.getByText('Avance Físico Prom.')).toBeVisible();
   });
 
@@ -21,7 +21,7 @@ test.describe('CONAGUA checklist (browser registry)', () => {
 
   test('DASH-04 export actions are available', async ({ page }) => {
     await login(page, DEMO_USERS.estatal);
-    await expect(page.getByRole('button', { name: /Obras \(CSV\)/i })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Acciones \(CSV\)/i })).toBeVisible();
     await expect(page.getByRole('button', { name: /Resumen KPIs/i })).toBeVisible();
   });
 
@@ -52,7 +52,7 @@ test.describe('CONAGUA checklist (browser registry)', () => {
 
   test('OBR-03 truncated cells expose tooltip title', async ({ page }) => {
     await login(page, DEMO_USERS.estatal);
-    await page.getByRole('link', { name: 'Obras' }).click();
+    await page.getByRole('link', { name: 'Acciones' }).click();
     const cellWithTitle = page.locator('main tbody [title]').first();
     await expect(cellWithTitle).toBeVisible();
     const title = await cellWithTitle.getAttribute('title');
@@ -113,17 +113,17 @@ test.describe('CONAGUA checklist (browser registry)', () => {
     await page.getByRole('link', { name: /Asistente/i }).click();
     await expect(page.getByText(/Asistente CONAGUA/i).first()).toBeVisible();
     const input = page.getByPlaceholder(/Escribe tu consulta/i);
-    await input.fill('¿Cuántas obras hay en el sistema?');
+    await input.fill('¿Cuántas acciones hay en el sistema?');
     await input.press('Enter');
-    await expect(page.locator('main').getByText(/obra|obras|22/i).last()).toBeVisible({
+    await expect(page.locator('main').getByText(/acci[oó]n|obra|22/i).last()).toBeVisible({
       timeout: 30_000,
     });
   });
 
-  test('DASH-04: click Obras CSV and wait for download', async ({ page }) => {
+  test('DASH-04: click Acciones CSV and wait for download', async ({ page }) => {
     await login(page, DEMO_USERS.estatal);
     const downloadPromise = page.waitForEvent('download');
-    await page.getByRole('button', { name: /Obras \(CSV\)/i }).click();
+    await page.getByRole('button', { name: /Acciones \(CSV\)/i }).click();
     const download = await downloadPromise;
     expect(download.suggestedFilename()).toMatch(/\.csv$/i);
   });
@@ -139,12 +139,12 @@ test.describe('CONAGUA checklist (browser registry)', () => {
   test('DASH-05: first Ver alert navigates to alertas or obra', async ({ page }) => {
     await login(page, DEMO_USERS.estatal);
     await page.getByRole('button', { name: /Ver todas/i }).click();
-    await expect(page).toHaveURL(/#\/(alertas|obras)/, { timeout: 15_000 });
+    await expect(page).toHaveURL(/#\/(alertas|acciones)/, { timeout: 15_000 });
   });
 
   test('OBR-05: export CSV from obras page', async ({ page }) => {
     await login(page, DEMO_USERS.estatal);
-    await page.getByRole('link', { name: 'Obras' }).click();
+    await page.getByRole('link', { name: 'Acciones' }).click();
     const downloadPromise = page.waitForEvent('download');
     await page.getByRole('button', { name: /Exportar CSV/i }).click();
     const download = await downloadPromise;
@@ -270,7 +270,7 @@ test.describe('CONAGUA checklist (browser registry)', () => {
 
   test('DET-04: obra detail export IX button visible', async ({ page }) => {
     await login(page, DEMO_USERS.estatal);
-    await page.getByRole('link', { name: 'Obras' }).click();
+    await page.getByRole('link', { name: 'Acciones' }).click();
     await page.locator('main tbody tr').first().click();
     await expect(page.getByRole('button', { name: 'IX' })).toBeVisible();
     await expect(page.getByRole('button', { name: 'XXIII' })).toBeVisible();
@@ -284,7 +284,7 @@ test.describe('CONAGUA checklist (browser registry)', () => {
   test('CTR-R01: contratista panel', async ({ page }) => {
     await login(page, DEMO_USERS.contratista);
     await expect(page.getByRole('heading', { name: /Panel del Contratista/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Mis Obras' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Mis Acciones' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Mi Empresa' })).toBeVisible();
   });
 

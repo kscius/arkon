@@ -8,7 +8,7 @@ import { AvancesTrimestralesService } from './avances-trimestrales.service';
 
 @ApiTags('Avances Trimestrales')
 @ApiBearerAuth()
-@Controller('obras/:obraId/avances-trimestrales')
+@Controller('acciones/:obraId/avances-trimestrales')
 export class AvancesTrimestralesController {
   constructor(private readonly service: AvancesTrimestralesService) {}
 

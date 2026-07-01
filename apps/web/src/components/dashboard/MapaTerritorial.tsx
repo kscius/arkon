@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
 import type { LatLngBoundsExpression, LatLngExpression } from 'leaflet';
 import { obraHasGeo } from '@/lib/api-mappers';
-import type { MunicipioData, Obra } from '@/types';
+import type { MunicipioData, Accion } from '@/types';
 import {
   formatCurrencyM,
   formatPercentage,
@@ -11,10 +11,11 @@ import {
   getObraStatusLabel,
 } from '@/lib/utils';
 import { MapPin } from 'lucide-react';
+import { getBrand } from '@/config/brand';
 
 interface MapaTerritorialProps {
   municipios: MunicipioData[];
-  obras: Obra[];
+  obras: Accion[];
 }
 
 const DEFAULT_CENTER: LatLngExpression = [23.6345, -102.5528];
@@ -31,6 +32,7 @@ function FitBounds({ bounds }: { bounds: LatLngBoundsExpression | null }) {
 }
 
 export function MapaTerritorial({ municipios, obras }: MapaTerritorialProps) {
+  const { entity } = getBrand();
   const navigate = useNavigate();
   const [mounted, setMounted] = useState(false);
 
@@ -84,7 +86,7 @@ export function MapaTerritorial({ municipios, obras }: MapaTerritorialProps) {
       <div className="flex flex-wrap items-center gap-3 text-[11px] text-gray-600">
         <span className="inline-flex items-center gap-1">
           <MapPin className="w-3.5 h-3.5 text-brand-primary" />
-          {georeferenced.length} obra{georeferenced.length === 1 ? '' : 's'} georreferenciada
+          {georeferenced.length} {entity.singular}{georeferenced.length === 1 ? '' : 's'} georreferenciada
           {georeferenced.length !== obras.length ? ` de ${obras.length}` : ''}
         </span>
         {withoutCoords > 0 && (
@@ -138,7 +140,7 @@ export function MapaTerritorial({ municipios, obras }: MapaTerritorialProps) {
                 fillOpacity: 0.9,
               }}
               eventHandlers={{
-                click: () => navigate(`/obras/${obra.id}`),
+                click: () => navigate(`/acciones/${obra.id}`),
               }}
             >
               <Popup>
@@ -164,7 +166,7 @@ export function MapaTerritorial({ municipios, obras }: MapaTerritorialProps) {
 
       {georeferenced.length === 0 && (
         <p className="text-xs text-gray-500 text-center py-2">
-          No hay obras con latitud y longitud registradas. Agregue coordenadas en la ficha de cada obra
+          No hay {entity.plural} con latitud y longitud registradas. Agregue coordenadas en la ficha de cada {entity.singular}
           para visualizarlas en el mapa.
         </p>
       )}

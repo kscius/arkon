@@ -8,7 +8,7 @@ export class ContratistasService {
 
   private async withStats(id: string) {
     const c = await this.prisma.contratista.findUniqueOrThrow({ where: { id } });
-    const obras = await this.prisma.obra.findMany({ where: { contratistaId: id } });
+    const obras = await this.prisma.accion.findMany({ where: { contratistaId: id } });
     const obrasAsignadas = obras.length;
     const montoTotal = obras.reduce((s, o) => s + Number(o.montoContratado), 0);
     const avancePromedio =
@@ -35,7 +35,7 @@ export class ContratistasService {
       list = list.filter((c) => c.id === user.contratistaId);
     }
     if (user.rol === Rol.municipal && user.municipioId) {
-      const ids = await this.prisma.obra.findMany({
+      const ids = await this.prisma.accion.findMany({
         where: { municipioId: user.municipioId },
         select: { contratistaId: true },
         distinct: ['contratistaId'],

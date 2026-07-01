@@ -15,7 +15,7 @@ export function canAccessRoute(
   if (route === '/asistente') {
     return role === 'estatal' || role === 'municipal';
   }
-  if (route === '/obras' || route.startsWith('/obras/')) return true;
+  if (route === '/acciones' || route.startsWith('/acciones/')) return true;
   if (route === '/solicitudes') {
     return role === 'estatal' || role === 'municipal';
   }
@@ -31,8 +31,8 @@ export function canAccessRoute(
   if (role === 'municipal') {
     return (
       route === '/dashboard' ||
-      route === '/obras' ||
-      route.startsWith('/obras/') ||
+      route === '/acciones' ||
+      route.startsWith('/acciones/') ||
       route === '/solicitudes' ||
       route === '/municipios' ||
       route.startsWith('/municipios/') ||
@@ -44,8 +44,8 @@ export function canAccessRoute(
   if (role === 'contratista') {
     return (
       route === '/dashboard' ||
-      route === '/obras' ||
-      route.startsWith('/obras/') ||
+      route === '/acciones' ||
+      route.startsWith('/acciones/') ||
       route === '/contratistas' ||
       route.startsWith('/contratistas/')
     );

@@ -1,4 +1,4 @@
-import type { Obra } from '@/types';
+import type { Accion } from '@/types';
 import { getProgramaColor, getProgramaName } from '@/lib/utils';
 import type { ChartPoint } from '@/lib/api';
 
@@ -11,7 +11,7 @@ export interface ProgramaChartSlice {
 }
 
 /** Build programa donut data from API chart rows + obra amounts for investment totals. */
-export function mapProgramaChartFromApi(chartRows: ChartPoint[], obras: Obra[]): ProgramaChartSlice[] {
+export function mapProgramaChartFromApi(chartRows: ChartPoint[], obras: Accion[]): ProgramaChartSlice[] {
   if (!chartRows.length) {
     const byPrograma = new Map<string, { montoTotal: number; obrasCount: number }>();
     for (const obra of obras) {

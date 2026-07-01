@@ -4,21 +4,23 @@ import { downloadDashboardSummaryExport, downloadObrasExport } from '@/lib/api';
 import { ApiError } from '@/lib/api-client';
 import { Download, FileSpreadsheet } from 'lucide-react';
 import { toast } from 'sonner';
+import { getBrand } from '@/config/brand';
 
 interface DashboardExportActionsProps {
   className?: string;
 }
 
 export function DashboardExportActions({ className }: DashboardExportActionsProps) {
+  const { entity } = getBrand();
   const [busy, setBusy] = useState<'csv' | 'summary' | null>(null);
 
   const handleObrasCsv = async () => {
     setBusy('csv');
     try {
       await downloadObrasExport('csv');
-      toast.success('Listado de obras descargado');
+      toast.success(`Listado de ${entity.plural} descargado`);
     } catch (err) {
-      const msg = err instanceof ApiError ? err.message : 'No se pudo exportar obras';
+      const msg = err instanceof ApiError ? err.message : `No se pudo exportar ${entity.plural}`;
       toast.error(msg);
     } finally {
       setBusy(null);
@@ -49,7 +51,7 @@ export function DashboardExportActions({ className }: DashboardExportActionsProp
         onClick={() => void handleObrasCsv()}
       >
         <FileSpreadsheet className="w-4 h-4" />
-        {busy === 'csv' ? 'Exportando…' : 'Obras (CSV)'}
+        {busy === 'csv' ? 'Exportando…' : `${entity.pluralCap} (CSV)`}
       </Button>
       <Button
         type="button"

@@ -13,7 +13,7 @@ export class AvancesTrimestralesService {
 
   private map(a: {
     id: string;
-    obraId: string;
+    accionId: string;
     ejercicioFiscal: number;
     trimestre: number;
     avanceFisicoAnterior: unknown;
@@ -28,7 +28,7 @@ export class AvancesTrimestralesService {
   }) {
     return {
       id: a.id,
-      obra_id: a.obraId,
+      obra_id: a.accionId,
       ejercicio_fiscal: a.ejercicioFiscal,
       trimestre: a.trimestre,
       avance_fisico_anterior: Number(a.avanceFisicoAnterior),
@@ -46,7 +46,7 @@ export class AvancesTrimestralesService {
   async listByObra(obraId: string, user: Usuario) {
     await this.scope.getObraOrThrow(obraId, user);
     const items = await this.prisma.avanceTrimestral.findMany({
-      where: { obraId },
+      where: { accionId: obraId },
       orderBy: [{ ejercicioFiscal: 'asc' }, { trimestre: 'asc' }],
     });
     return items.map((a) => this.map(a));
@@ -72,7 +72,7 @@ export class AvancesTrimestralesService {
     await this.scope.getObraOrThrow(obraId, user);
     const a = await this.prisma.avanceTrimestral.create({
       data: {
-        obraId,
+        accionId: obraId,
         ejercicioFiscal: data.ejercicio_fiscal,
         trimestre: data.trimestre,
         avanceFisicoAnterior: data.avance_fisico_anterior ?? 0,
@@ -96,7 +96,7 @@ export class AvancesTrimestralesService {
     user: Usuario,
   ) {
     await this.scope.getObraOrThrow(obraId, user);
-    const existing = await this.prisma.avanceTrimestral.findFirst({ where: { id, obraId } });
+    const existing = await this.prisma.avanceTrimestral.findFirst({ where: { id, accionId: obraId } });
     if (!existing) throw new NotFoundException('Avance trimestral not found');
     if (user.rol === Rol.contratista && data.estatus) {
       throw new ForbiddenException('Contratistas cannot change estatus');
@@ -132,7 +132,7 @@ export class AvancesTrimestralesService {
   async remove(obraId: string, id: string, user: Usuario) {
     if (user.rol === Rol.contratista) throw new ForbiddenException();
     await this.scope.getObraOrThrow(obraId, user);
-    const existing = await this.prisma.avanceTrimestral.findFirst({ where: { id, obraId } });
+    const existing = await this.prisma.avanceTrimestral.findFirst({ where: { id, accionId: obraId } });
     if (!existing) throw new NotFoundException('Avance trimestral not found');
     await this.prisma.avanceTrimestral.delete({ where: { id } });
     return { deleted: true };

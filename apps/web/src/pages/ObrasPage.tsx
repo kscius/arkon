@@ -13,7 +13,7 @@ import {
   getProgramaColor,
   getProgramaName,
 } from '@/lib/utils';
-import type { Obra } from '@/types';
+import type { Accion } from '@/types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -27,10 +27,11 @@ import {
 import { TruncateTooltip } from '@/components/ui/truncate-tooltip';
 import { Building2, Download, Plus, Search } from 'lucide-react';
 import { toast } from 'sonner';
+import { getBrand } from '@/config/brand';
 
 const ALL = '__all__';
 
-function filterObrasForRole(obras: Obra[], role: string, municipioId?: string, contratistaId?: string) {
+function filterObrasForRole(obras: Accion[], role: string, municipioId?: string, contratistaId?: string) {
   if (role === 'municipal' && municipioId) {
     return obras.filter((o) => o.municipioId === municipioId);
   }
@@ -41,6 +42,7 @@ function filterObrasForRole(obras: Obra[], role: string, municipioId?: string, c
 }
 
 export default function ObrasPage() {
+  const { entity } = getBrand();
   const navigate = useNavigate();
   const { user } = useApp();
   const [search, setSearch] = useState('');
@@ -113,7 +115,7 @@ export default function ObrasPage() {
   const canExport = user.role === 'estatal';
   const showMunicipioFilter = user.role === 'estatal';
   const pageTitle =
-    user.role === 'contratista' ? 'Mis obras' : 'Catálogo de obras';
+    user.role === 'contratista' ? `Mis ${entity.pluralCap}` : `Catálogo de ${entity.plural}`;
 
   return (
     <PageState loading={loading} error={error} onRetry={reload}>
@@ -123,7 +125,7 @@ export default function ObrasPage() {
             <div>
               <h1 className="text-lg font-bold text-brand-primary">{pageTitle}</h1>
               <p className="text-xs text-gray-500 mt-1">
-                {filteredObras.length} de {scopedObras.length} obras en tu alcance
+                {filteredObras.length} de {scopedObras.length} {entity.plural} en tu alcance
               </p>
             </div>
             <div className="flex flex-wrap items-center gap-2">
@@ -142,7 +144,7 @@ export default function ObrasPage() {
               {canCreate && (
                 <Button size="sm" onClick={() => setObraModalOpen(true)} className="text-xs">
                   <Plus className="w-3.5 h-3.5 mr-1.5" />
-                  Nueva obra
+                  {`Nueva ${entity.singular}`}
                 </Button>
               )}
             </div>
@@ -255,7 +257,7 @@ export default function ObrasPage() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">Listado de obras</CardTitle>
+            <CardTitle className="text-sm font-semibold">{`Listado de ${entity.plural}`}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="overflow-x-auto">
@@ -263,7 +265,7 @@ export default function ObrasPage() {
                 <thead>
                   <tr className="border-b border-gray-200">
                     <th className="text-left py-2 px-2 font-medium text-gray-500">Folio</th>
-                    <th className="text-left py-2 px-2 font-medium text-gray-500">Obra</th>
+                    <th className="text-left py-2 px-2 font-medium text-gray-500">{entity.singularCap}</th>
                     <th className="text-left py-2 px-2 font-medium text-gray-500">Municipio</th>
                     <th className="text-left py-2 px-2 font-medium text-gray-500">Contratista</th>
                     <th className="text-left py-2 px-2 font-medium text-gray-500">Programa</th>
@@ -276,7 +278,7 @@ export default function ObrasPage() {
                     <tr
                       key={obra.id}
                       className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
-                      onClick={() => navigate(`/obras/${obra.id}`)}
+                      onClick={() => navigate(`/acciones/${obra.id}`)}
                     >
                       <td className="py-2 px-2 text-gray-600 whitespace-nowrap">{obra.folio}</td>
                       <td className="py-2 px-2 font-medium text-gray-900">
@@ -313,7 +315,7 @@ export default function ObrasPage() {
               </table>
               {filteredObras.length === 0 && (
                 <p className="text-sm text-gray-500 text-center py-10">
-                  No hay obras que coincidan con los filtros seleccionados.
+                  {`No hay ${entity.plural} que coincidan con los filtros seleccionados.`}
                 </p>
               )}
             </div>

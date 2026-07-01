@@ -19,7 +19,7 @@ function renderWithRouter(content: string) {
           path="/asistente"
           element={<AssistantMessageContent content={content} variant="assistant" />}
         />
-        <Route path="/obras/:id" element={<div>Obra detail</div>} />
+        <Route path="/acciones/:id" element={<div>Obra detail</div>} />
       </Routes>
     </MemoryRouter>,
   );
@@ -41,7 +41,7 @@ describe('AssistantMessageContent', () => {
   });
 
   it('navigates in-app for internal hash links', () => {
-    renderWithRouter('Ver [Pavimentación](/#/obras/abc-123) para detalle.');
+    renderWithRouter('Ver [Pavimentación](/#/acciones/abc-123) para detalle.');
 
     const link = screen.getByRole('button', { name: 'Pavimentación' });
     expect(link).toBeInTheDocument();

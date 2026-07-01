@@ -2,12 +2,12 @@ import {
   CategoriaDocumento,
   EstatusAvance,
   EstatusEstimacion,
-  EstatusObra,
+  EstatusAccion,
   EstadoDocumento,
   EstatusObservacion,
   PrismaClient,
   Rol,
-  TipoObra,
+  TipoAccion,
 } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { existsSync, readFileSync } from 'fs';
@@ -387,7 +387,7 @@ async function main() {
     prisma.avanceTrimestral.deleteMany(),
     prisma.cofinanciamiento.deleteMany(),
     prisma.solicitudPrograma.deleteMany(),
-    prisma.obra.deleteMany(),
+    prisma.accion.deleteMany(),
     prisma.cierreEjercicio.deleteMany(),
     prisma.anexoTecnico.deleteMany(),
     prisma.anexoEjecucion.deleteMany(),
@@ -659,7 +659,7 @@ async function main() {
       const organismo = organismos.find((org) => org.id === organismoOperadorId);
       const entidadFederativaId = organismo?.entidadId ?? null;
 
-      return prisma.obra.create({
+      return prisma.accion.create({
         data: {
           folio: o.folio,
           nombre: o.nombre,
@@ -667,7 +667,7 @@ async function main() {
           programa: o.programa,
           tipoPrograma: o.tipo_programa,
           dependencia: o.dependencia,
-          tipoObra: o.tipo_obra as TipoObra,
+          tipoAccion: o.tipo_obra as TipoAccion,
           descripcion: o.descripcion,
           poblacionBeneficiada: o.poblacion_beneficiada,
           montoAutorizado: o.monto_autorizado,
@@ -680,7 +680,7 @@ async function main() {
           avanceFisicoProgramado: o.avance_fisico_programado,
           avanceFisicoReal: o.avance_fisico_real,
           avanceFinanciero: o.avance_financiero,
-          estatus: o.estatus as EstatusObra,
+          estatus: o.estatus as EstatusAccion,
           riesgo: o.riesgo,
           latitud: o.latitud,
           longitud: o.longitud,
@@ -711,14 +711,14 @@ async function main() {
       await prisma.cofinanciamiento.createMany({
         data: [
           {
-            obraId: obra.id,
+            accionId: obra.id,
             fuente: 'federal',
             monto: mitad,
             porcentaje: 50,
             descripcion: 'Aportacion federal PROAGUA/CONAGUA',
           },
           {
-            obraId: obra.id,
+            accionId: obra.id,
             fuente: 'estatal',
             monto: mitad,
             porcentaje: 50,
@@ -757,7 +757,7 @@ async function main() {
         const finAcum = t.finAnt + t.finTri;
         await prisma.avanceTrimestral.create({
           data: {
-            obraId: obra.id,
+            accionId: obra.id,
             ejercicioFiscal: ejercicio,
             trimestre: t.trimestre,
             avanceFisicoAnterior: t.fisAnt,
@@ -823,7 +823,7 @@ async function main() {
       for (const obra of obrasGto2026) {
         const anexoId =
           obra.folio === 'PEAS-2026-001' ? anexoJapami.id : anexoSimapag.id;
-        await prisma.obra.update({
+        await prisma.accion.update({
           where: { id: obra.id },
           data: { anexoTecnicoId: anexoId },
         });
@@ -901,7 +901,7 @@ async function main() {
       });
 
       for (const obra of obrasDgoProagua) {
-        await prisma.obra.update({
+        await prisma.accion.update({
           where: { id: obra.id },
           data: { anexoTecnicoId: anexoCad.id },
         });
@@ -933,7 +933,7 @@ async function main() {
       const obra = obras[i];
       if (!obra.cua) continue;
       const coberturaBase = 38 + (i % 22);
-      await prisma.obra.update({
+      await prisma.accion.update({
         where: { id: obra.id },
         data: {
           idSisba: `SISBA-${obra.folio.replace(/-/g, '')}`,
@@ -948,7 +948,7 @@ async function main() {
           coberturaApMeta: Math.min(coberturaBase + 28, 100),
           coberturaTarAntes: Math.max(coberturaBase - 12, 0),
           coberturaTarMeta: Math.min(coberturaBase + 18, 100),
-          caudalLps: obra.tipoObra === 'agua_potable' ? 1.8 + (i % 6) * 0.5 : null,
+          caudalLps: obra.tipoAccion === 'agua_potable' ? 1.8 + (i % 6) * 0.5 : null,
           pobIncorporar: Math.max(1, Math.floor(obra.poblacionBeneficiada * 0.35)),
           pobMejorar: Math.max(1, Math.floor(obra.poblacionBeneficiada * 0.65)),
           pobMujeres: Math.max(1, Math.floor(obra.poblacionBeneficiada * 0.51)),
@@ -975,7 +975,7 @@ async function main() {
       componente: string;
       montoSolicitado: number;
       estatus: string;
-      obraResultanteId?: string;
+      accionResultanteId?: string;
     }> = [];
 
     if (entGto && muniLeon) {
@@ -1012,7 +1012,7 @@ async function main() {
         componente: 'AP',
         montoSolicitado: Number(obraProagua2025.montoAutorizado),
         estatus: 'aprobada',
-        obraResultanteId: obraProagua2025.id,
+        accionResultanteId: obraProagua2025.id,
       });
     }
 
@@ -1060,7 +1060,7 @@ async function main() {
       const variacion = avanceReal - programado;
       await prisma.avanceMensual.create({
         data: {
-          obraId: obra.id,
+          accionId: obra.id,
           periodo: `${MESES[i]} 2024`,
           programado,
           reportado: avanceReal,
@@ -1089,7 +1089,7 @@ async function main() {
         pct < avanceFin ? EstatusEstimacion.autorizada : EstatusEstimacion.presentada;
       await prisma.estimacion.create({
         data: {
-          obraId: obra.id,
+          accionId: obra.id,
           numero: i + 1,
           periodo: `${(i + 1) * 2}-${(i + 1) * 2 + 1} 2024`,
           montoEstimado: monto * 0.25,
@@ -1116,7 +1116,7 @@ async function main() {
       const estatus = DOC_ESTATUS[j % DOC_ESTATUS.length];
       await prisma.documento.create({
         data: {
-          obraId: obra.id,
+          accionId: obra.id,
           categoria: DOC_CATEGORIAS[j],
           nombre: `${DOC_CATEGORIAS[j].replace(/_/g, ' ')} - ${obra.folio}`,
           tipo: 'pdf',
@@ -1144,7 +1144,7 @@ async function main() {
     for (let j = 0; j < 2; j++) {
       await prisma.observacion.create({
         data: {
-          obraId: obra.id,
+          accionId: obra.id,
           usuarioEmisor: `Ing. Supervisor ${j + 1}`,
           fecha: `15-0${(j % 9) + 1}-2024`,
           tipo: tiposObs[j % tiposObs.length],
@@ -1166,7 +1166,7 @@ async function main() {
     const mun = municipioByName.get(a.municipio);
     await prisma.alerta.create({
       data: {
-        obraId: a.obra_id,
+        accionId: a.obra_id,
         municipio: a.municipio,
         municipioId: mun?.id,
         titulo: a.titulo,

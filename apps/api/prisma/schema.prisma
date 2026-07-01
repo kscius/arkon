@@ -13,7 +13,7 @@ enum Rol {
   contratista
 }
 
-enum EstatusObra {
+enum EstatusAccion {
   en_ejecucion_a_tiempo
   en_ejecucion_retraso
   concluida
@@ -27,7 +27,7 @@ enum EstatusObra {
   cerrada
 }
 
-enum TipoObra {
+enum TipoAccion {
   pavimentacion_urbana
   infraestructura_educativa
   drenaje_saneamiento
@@ -94,7 +94,7 @@ model EntidadFederativa {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   municipios           Municipio[]
-  obras                Obra[]
+  acciones             Accion[]
   organismosOperadores OrganismoOperador[]
   solicitudesPrograma  SolicitudPrograma[]
 
@@ -117,7 +117,7 @@ model Municipio {
 
   entidad              EntidadFederativa?  @relation(fields: [entidadId], references: [id])
   users                Usuario[]
-  obras                Obra[]
+  acciones             Accion[]
   alertas              Alerta[]
   alertaConfigs        AlertaConfig[]
   organismosOperadores OrganismoOperador[]
@@ -143,7 +143,7 @@ model OrganismoOperador {
 
   entidad        EntidadFederativa? @relation(fields: [entidadId], references: [id])
   municipio      Municipio?         @relation(fields: [municipioId], references: [id])
-  obras          Obra[]             @relation("ObraOrganismoOperador")
+  acciones       Accion[]           @relation("ObraOrganismoOperador")
   anexosTecnicos AnexoTecnico[]
 
   @@index([entidadId])
@@ -164,7 +164,7 @@ model AccionPrograma {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt @map("updated_at")
 
-  obras Obra[]
+  acciones Accion[]
 
   @@index([programa, componente])
   @@map("acciones_programa")
@@ -181,8 +181,8 @@ model Contratista {
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 
-  users Usuario[]
-  obras Obra[]
+  users    Usuario[]
+  acciones Accion[]
 
   @@map("contratistas")
 }
@@ -224,15 +224,15 @@ model Programa {
   @@map("programas")
 }
 
-model Obra {
-  id                       String       @id @default(uuid()) @db.Uuid
-  folio                    String       @unique
+model Accion {
+  id                       String        @id @default(uuid()) @db.Uuid
+  folio                    String        @unique
   nombre                   String
   localidad                String
   programa                 String
-  tipoPrograma             String       @default("federal") @map("tipo_programa")
+  tipoPrograma             String        @default("federal") @map("tipo_programa")
   dependencia              String
-  tipoObra                 TipoObra     @map("tipo_obra")
+  tipoAccion               TipoAccion    @map("tipo_obra")
   descripcion              String?
   poblacionBeneficiada     Int          @default(0) @map("poblacion_beneficiada")
   montoAutorizado          Decimal      @map("monto_autorizado") @db.Decimal(14, 2)
@@ -246,7 +246,7 @@ model Obra {
   avanceFisicoProgramado   Decimal      @default(0) @map("avance_fisico_programado") @db.Decimal(5, 2)
   avanceFisicoReal         Decimal      @default(0) @map("avance_fisico_real") @db.Decimal(5, 2)
   avanceFinanciero         Decimal      @default(0) @map("avance_financiero") @db.Decimal(5, 2)
-  estatus                  EstatusObra  @default(en_preparacion)
+  estatus                  EstatusAccion @default(en_preparacion)
   riesgo                   String       @default("bajo")
   latitud                  Decimal?     @db.Decimal(10, 6)
   longitud                 Decimal?     @db.Decimal(10, 6)
@@ -302,7 +302,7 @@ model Obra {
   @@index([accionProgramaId])
   @@index([anexoTecnicoId])
   @@index([cua])
-  @@map("obras")
+  @@map("acciones")
 }
 
 model AlertaConfig {
@@ -314,7 +314,7 @@ model AlertaConfig {
   severidad         String   @default("media")
   programaFiltro    String?  @map("programa_filtro")
   municipioId       String?  @map("municipio_id") @db.Uuid
-  obraId            String?  @map("obra_id") @db.Uuid
+  accionId            String?  @map("obra_id") @db.Uuid
   umbralDias        Int?     @map("umbral_dias")
   umbralPorcentaje  Decimal? @map("umbral_porcentaje") @db.Decimal(5, 2)
   umbralMonto       Decimal? @map("umbral_monto") @db.Decimal(14, 2)
@@ -324,12 +324,12 @@ model AlertaConfig {
   updatedAt         DateTime @updatedAt @map("updated_at")
 
   municipio Municipio? @relation(fields: [municipioId], references: [id], onDelete: SetNull)
-  obra      Obra?      @relation(fields: [obraId], references: [id], onDelete: SetNull)
+  accion      Accion?      @relation(fields: [accionId], references: [id], onDelete: SetNull)
   creador   Usuario    @relation(fields: [creadoPor], references: [id])
 
   @@index([activa])
   @@index([municipioId])
-  @@index([obraId])
+  @@index([accionId])
   @@index([creadoPor])
   @@map("alerta_configs")
 }
@@ -344,13 +344,13 @@ model AvanceMensual {
   estatus     EstatusAvance @default(pendiente)
   actividades String        @default("")
   comentarios String        @default("")
-  obraId      String        @map("obra_id") @db.Uuid
+  accionId      String        @map("obra_id") @db.Uuid
   createdAt   DateTime      @default(now()) @map("created_at")
   updatedAt   DateTime      @updatedAt @map("updated_at")
 
-  obra Obra @relation(fields: [obraId], references: [id], onDelete: Cascade)
+  accion Accion @relation(fields: [accionId], references: [id], onDelete: Cascade)
 
-  @@index([obraId])
+  @@index([accionId])
   @@map("avances_mensuales")
 }
 
@@ -368,13 +368,13 @@ model Estimacion {
   validacionMunicipal Boolean           @default(false) @map("validacion_municipal")
   validacionEstatal   Boolean           @default(false) @map("validacion_estatal")
   observaciones       String            @default("")
-  obraId              String            @map("obra_id") @db.Uuid
+  accionId              String            @map("obra_id") @db.Uuid
   createdAt           DateTime          @default(now()) @map("created_at")
   updatedAt           DateTime          @updatedAt @map("updated_at")
 
-  obra Obra @relation(fields: [obraId], references: [id], onDelete: Cascade)
+  accion Accion @relation(fields: [accionId], references: [id], onDelete: Cascade)
 
-  @@index([obraId])
+  @@index([accionId])
   @@map("estimaciones")
 }
 
@@ -388,13 +388,13 @@ model Documento {
   responsable String?
   archivo     String?
   tamanoBytes Int?               @map("tamano_bytes")
-  obraId      String             @map("obra_id") @db.Uuid
+  accionId      String             @map("obra_id") @db.Uuid
   createdAt   DateTime           @default(now()) @map("created_at")
   updatedAt   DateTime           @updatedAt @map("updated_at")
 
-  obra Obra @relation(fields: [obraId], references: [id], onDelete: Cascade)
+  accion Accion @relation(fields: [accionId], references: [id], onDelete: Cascade)
 
-  @@index([obraId])
+  @@index([accionId])
   @@map("documentos")
 }
 
@@ -409,13 +409,13 @@ model Observacion {
   fechaCompromiso String?            @map("fecha_compromiso")
   estatus         EstatusObservacion @default(abierta)
   respuestasJson  Json               @default("[]") @map("respuestas_json")
-  obraId          String             @map("obra_id") @db.Uuid
+  accionId          String             @map("obra_id") @db.Uuid
   createdAt       DateTime           @default(now()) @map("created_at")
   updatedAt       DateTime           @updatedAt @map("updated_at")
 
-  obra Obra @relation(fields: [obraId], references: [id], onDelete: Cascade)
+  accion Accion @relation(fields: [accionId], references: [id], onDelete: Cascade)
 
-  @@index([obraId])
+  @@index([accionId])
   @@map("observaciones")
 }
 
@@ -430,11 +430,11 @@ model Alerta {
   fechaGeneracion  String   @map("fecha_generacion")
   atendida         Boolean  @default(false)
   accionTomada     String?  @map("accion_tomada")
-  obraId           String?  @map("obra_id") @db.Uuid
+  accionId           String?  @map("obra_id") @db.Uuid
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 
-  obra      Obra?      @relation(fields: [obraId], references: [id], onDelete: SetNull)
+  accion      Accion?      @relation(fields: [accionId], references: [id], onDelete: SetNull)
   municipioRef Municipio? @relation(fields: [municipioId], references: [id])
 
   @@index([atendida, severidad])
@@ -444,7 +444,7 @@ model Alerta {
 
 model Cofinanciamiento {
   id          String   @id @default(uuid()) @db.Uuid
-  obraId      String   @map("obra_id") @db.Uuid
+  accionId      String   @map("obra_id") @db.Uuid
   fuente      String
   monto       Decimal  @db.Decimal(14, 2)
   porcentaje  Decimal  @default(0) @db.Decimal(5, 2)
@@ -452,9 +452,9 @@ model Cofinanciamiento {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 
-  obra Obra @relation(fields: [obraId], references: [id], onDelete: Cascade)
+  accion Accion @relation(fields: [accionId], references: [id], onDelete: Cascade)
 
-  @@index([obraId])
+  @@index([accionId])
   @@map("cofinanciamientos")
 }
 
@@ -492,7 +492,7 @@ model AnexoTecnico {
 
   anexoEjecucion    AnexoEjecucion     @relation(fields: [anexoEjecucionId], references: [id])
   organismoOperador OrganismoOperador? @relation(fields: [organismoOperadorId], references: [id])
-  obras             Obra[]
+  acciones          Accion[]
 
   @@index([anexoEjecucionId])
   @@index([organismoOperadorId])
@@ -501,7 +501,7 @@ model AnexoTecnico {
 
 model AvanceTrimestral {
   id                    String        @id @default(uuid()) @db.Uuid
-  obraId                String        @map("obra_id") @db.Uuid
+  accionId                String        @map("obra_id") @db.Uuid
   ejercicioFiscal       Int           @map("ejercicio_fiscal")
   trimestre             Int
   avanceFisicoAnterior  Decimal       @default(0) @map("avance_fisico_anterior") @db.Decimal(5, 2)
@@ -516,10 +516,10 @@ model AvanceTrimestral {
   createdAt             DateTime      @default(now()) @map("created_at")
   updatedAt             DateTime      @updatedAt @map("updated_at")
 
-  obra Obra @relation(fields: [obraId], references: [id], onDelete: Cascade)
+  accion Accion @relation(fields: [accionId], references: [id], onDelete: Cascade)
 
-  @@unique([obraId, ejercicioFiscal, trimestre])
-  @@index([obraId])
+  @@unique([accionId, ejercicioFiscal, trimestre])
+  @@index([accionId])
   @@map("avances_trimestrales")
 }
 
@@ -557,17 +557,17 @@ model SolicitudPrograma {
   componente       String
   montoSolicitado  Decimal  @map("monto_solicitado") @db.Decimal(14, 2)
   estatus          String   @default("borrador")
-  obraResultanteId String?  @map("obra_resultante_id") @db.Uuid
+  accionResultanteId String?  @map("obra_resultante_id") @db.Uuid
   createdAt        DateTime @default(now()) @map("created_at")
   updatedAt        DateTime @updatedAt @map("updated_at")
 
   entidad          EntidadFederativa @relation(fields: [entidadId], references: [id])
   municipio        Municipio         @relation(fields: [municipioId], references: [id])
-  obraResultante   Obra?             @relation("SolicitudObraResultante", fields: [obraResultanteId], references: [id])
+  accionResultante   Accion?             @relation("SolicitudObraResultante", fields: [accionResultanteId], references: [id])
 
   @@index([entidadId])
   @@index([municipioId])
-  @@index([obraResultanteId])
+  @@index([accionResultanteId])
   @@index([estatus])
   @@map("solicitudes_programa")
 }

@@ -30,12 +30,12 @@ type ScopeData = {
 
 type AlertaConfigWithRelations = AlertaConfig & {
   municipio: { nombre: string } | null;
-  obra: { folio: string; nombre: string } | null;
+  accion: { folio: string; nombre: string } | null;
 };
 
 const CONFIG_INCLUDE = {
   municipio: { select: { nombre: true } },
-  obra: { select: { folio: true, nombre: true } },
+  accion: { select: { folio: true, nombre: true } },
 } as const;
 
 @Injectable()
@@ -52,8 +52,8 @@ export class AlertaConfigsService {
       return {
         OR: [
           { municipioId: user.municipioId },
-          { obra: { municipioId: user.municipioId } },
-          { municipioId: null, obraId: null, creador: { municipioId: user.municipioId } },
+          { accion: { municipioId: user.municipioId } },
+          { municipioId: null, accionId: null, creador: { municipioId: user.municipioId } },
         ],
       };
     }
@@ -119,9 +119,9 @@ export class AlertaConfigsService {
       programa_filtro: config.programaFiltro,
       municipio_id: config.municipioId,
       municipio_nombre: config.municipio?.nombre ?? null,
-      obra_id: config.obraId,
-      obra_folio: config.obra?.folio ?? null,
-      obra_nombre: config.obra?.nombre ?? null,
+      obra_id: config.accionId,
+      obra_folio: config.accion?.folio ?? null,
+      obra_nombre: config.accion?.nombre ?? null,
       umbral_dias: config.umbralDias,
       umbral_porcentaje:
         config.umbralPorcentaje != null ? Number(config.umbralPorcentaje) : null,
@@ -155,7 +155,7 @@ export class AlertaConfigsService {
     if (config.municipioId && config.municipioId !== user.municipioId) {
       throw new ForbiddenException('Access denied');
     }
-    if (config.obraId) {
+    if (config.accionId) {
       // validated at create/update via getObraOrThrow
       return;
     }
@@ -232,7 +232,7 @@ export class AlertaConfigsService {
         severidad: dto.severidad ?? 'media',
         programaFiltro: scope.programaFiltro,
         municipioId: scope.municipioId,
-        obraId: scope.obraId,
+        accionId: scope.obraId,
         umbralDias: dto.umbral_dias ?? null,
         umbralPorcentaje: dto.umbral_porcentaje ?? null,
         umbralMonto: dto.umbral_monto ?? null,
@@ -264,7 +264,7 @@ export class AlertaConfigsService {
           }
         : {
             municipio_id: existing.municipioId ?? undefined,
-            obra_id: existing.obraId ?? undefined,
+            obra_id: existing.accionId ?? undefined,
             programa_filtro: existing.programaFiltro ?? undefined,
           },
       user,
@@ -283,7 +283,7 @@ export class AlertaConfigsService {
         ...(scopeUpdate && {
           programaFiltro: scopeUpdate.programaFiltro,
           municipioId: scopeUpdate.municipioId,
-          obraId: scopeUpdate.obraId,
+          accionId: scopeUpdate.obraId,
         }),
         ...(dto.umbral_dias !== undefined && { umbralDias: dto.umbral_dias }),
         ...(dto.umbral_porcentaje !== undefined && {
@@ -374,13 +374,13 @@ export class AlertaConfigsService {
 
       for (const match of matches) {
         const existing = await this.prisma.alerta.findFirst({
-          where: { obraId: match.obraId, tipo: config.tipo, atendida: false },
+          where: { accionId: match.obraId, tipo: config.tipo, atendida: false },
         });
         if (existing) continue;
 
         await this.prisma.alerta.create({
           data: {
-            obraId: match.obraId,
+            accionId: match.obraId,
             municipio: match.municipio,
             municipioId: match.municipioId,
             titulo: match.titulo,

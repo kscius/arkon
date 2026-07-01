@@ -9,8 +9,10 @@ import { formatCurrencyM, formatPercentage, getObraStatusColor, getObraStatusLab
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ComboBox } from '@/components/ui/combobox';
 import { Building2, DollarSign, TrendingUp, AlertTriangle } from 'lucide-react';
+import { getBrand } from '@/config/brand';
 
 export default function ContratistaPanelPage() {
+  const { entity } = getBrand();
   const { contratistaId } = useParams<{ contratistaId: string }>();
   const navigate = useNavigate();
   const { user } = useApp();
@@ -159,7 +161,7 @@ export default function ContratistaPanelPage() {
           <div className="bg-gray-50 rounded-lg p-3">
             <Building2 className="w-4 h-4 text-brand-primary mb-1" />
             <div className="text-xl font-bold">{displayStats.obrasAsignadas}</div>
-            <div className="text-[10px] text-gray-500">Obras asignadas</div>
+            <div className="text-[10px] text-gray-500">{entity.pluralCap} asignadas</div>
           </div>
           <div className="bg-gray-50 rounded-lg p-3">
             <DollarSign className="w-4 h-4 text-brand-accent mb-1" />
@@ -193,7 +195,7 @@ export default function ContratistaPanelPage() {
       <Card>
         <CardHeader className="pb-2">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-            <CardTitle className="text-sm font-semibold">Obras asignadas</CardTitle>
+            <CardTitle className="text-sm font-semibold">{entity.pluralCap} asignadas</CardTitle>
             {programaFilter !== '__all__' && (
               <span className="text-[10px] text-gray-500">
                 Filtradas por {programaLabel}
@@ -207,7 +209,7 @@ export default function ContratistaPanelPage() {
               <div
                 key={obra.id}
                 className="flex items-center gap-4 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer"
-                onClick={() => navigate(`/obras/${obra.id}`)}
+                onClick={() => navigate(`/acciones/${obra.id}`)}
               >
                 <div className="flex-1 min-w-0">
                   <p className="text-xs font-semibold truncate">{obra.nombre}</p>
@@ -221,8 +223,8 @@ export default function ContratistaPanelPage() {
             {contratistaObras.length === 0 && (
               <p className="text-sm text-gray-500 text-center py-6">
                 {programaFilter === '__all__'
-                  ? 'Sin obras asignadas.'
-                  : `Sin obras en ${programaLabel}.`}
+                  ? `Sin ${entity.plural} asignadas.`
+                  : `Sin ${entity.plural} en ${programaLabel}.`}
               </p>
             )}
           </div>

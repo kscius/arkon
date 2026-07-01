@@ -11,8 +11,10 @@ import { Badge } from '@/components/ui/badge';
 import { ComboBox } from '@/components/ui/combobox';
 import { Progress } from '@/components/ui/progress';
 import { Building2, TrendingUp, AlertTriangle, DollarSign, MapPin } from 'lucide-react';
+import { getBrand } from '@/config/brand';
 
 export default function MunicipioPanelPage() {
+  const { entity } = getBrand();
   const { municipioId } = useParams<{ municipioId: string }>();
   const navigate = useNavigate();
   const { user } = useApp();
@@ -74,7 +76,7 @@ export default function MunicipioPanelPage() {
                 <Badge variant="outline">{municipio.nombre}</Badge>
               )}
             </div>
-            <p className="text-xs text-gray-500">Gestión de obras publicas municipales</p>
+            <p className="text-xs text-gray-500">Gestión de {entity.plural} publicas municipales</p>
           </div>
         </div>
 
@@ -82,7 +84,7 @@ export default function MunicipioPanelPage() {
           <div className="bg-gray-50 rounded-lg p-3">
             <div className="flex items-center gap-2 mb-1">
               <Building2 className="w-4 h-4 text-brand-primary" />
-              <span className="text-[10px] text-gray-500 uppercase">Obras</span>
+              <span className="text-[10px] text-gray-500 uppercase">{entity.pluralCap}</span>
             </div>
             <div className="text-xl font-bold text-gray-900">{municipio.obras}</div>
           </div>
@@ -112,7 +114,7 @@ export default function MunicipioPanelPage() {
 
       <Card>
         <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-semibold">Obras del Municipio</CardTitle>
+          <CardTitle className="text-sm font-semibold">{entity.pluralCap} del Municipio</CardTitle>
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
@@ -120,7 +122,7 @@ export default function MunicipioPanelPage() {
               <motion.div
                 key={obra.id}
                 className="flex items-center gap-4 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
-                onClick={() => navigate(`/obras/${obra.id}`)}
+                onClick={() => navigate(`/acciones/${obra.id}`)}
               >
                 <div className="w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0" style={{ backgroundColor: getProgramaColor(obra.programa) + '20' }}>
                   <MapPin className="w-4 h-4" style={{ color: getProgramaColor(obra.programa) }} />
@@ -139,7 +141,7 @@ export default function MunicipioPanelPage() {
               </motion.div>
             ))}
             {municipioObras.length === 0 && (
-              <p className="text-sm text-gray-500 text-center py-8">No hay obras registradas para este municipio.</p>
+              <p className="text-sm text-gray-500 text-center py-8">No hay {entity.plural} registradas para este municipio.</p>
             )}
           </div>
         </CardContent>

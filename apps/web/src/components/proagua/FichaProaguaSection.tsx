@@ -7,13 +7,14 @@ import {
 } from '@/components/ui/collapsible';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { getBrand } from '@/config/brand';
 import { downloadProaguaExport } from '@/lib/api';
 import { formatNumber, formatPercentage } from '@/lib/utils';
 import { toast } from 'sonner';
-import type { Obra } from '@/types';
+import type { Accion } from '@/types';
 
 interface FichaProaguaSectionProps {
-  obra: Obra;
+  obra: Accion;
   defaultOpen?: boolean;
 }
 
@@ -33,6 +34,7 @@ const TIPO_ADJUDICACION_LABELS: Record<string, string> = {
 };
 
 export function FichaProaguaSection({ obra, defaultOpen = false }: FichaProaguaSectionProps) {
+  const { entity } = getBrand();
   const [exporting, setExporting] = useState<string | null>(null);
 
   const handleExport = async (kind: 'anexo-ix' | 'anexo-xiii' | 'anexo-xxiii', id: string) => {
@@ -186,7 +188,7 @@ export function FichaProaguaSection({ obra, defaultOpen = false }: FichaProaguaS
 
             {!hasProaguaData && (
               <p className="text-xs text-gray-500 text-center py-2">
-                Sin datos PROAGUA registrados para esta obra.
+                Sin datos PROAGUA registrados para esta {entity.singular}.
               </p>
             )}
           </CardContent>

@@ -14,7 +14,7 @@ export class ProaguaExportService {
   async exportAnexoXviii(obraId: string, user: Usuario): Promise<Buffer> {
     const obra = await this.scope.getObraOrThrow(obraId, user);
     const avances = await this.prisma.avanceTrimestral.findMany({
-      where: { obraId },
+      where: { accionId: obraId },
       orderBy: [{ ejercicioFiscal: 'asc' }, { trimestre: 'asc' }],
     });
 
@@ -65,7 +65,7 @@ export class ProaguaExportService {
   }
 
   async exportAnexoIx(obraId: string, user: Usuario): Promise<Buffer> {
-    const obra = await this.prisma.obra.findFirst({
+    const obra = await this.prisma.accion.findFirst({
       where: { id: obraId, ...this.scope.obraWhere(user) },
       include: {
         entidadFederativa: true,
@@ -163,7 +163,7 @@ export class ProaguaExportService {
       include: {
         anexoEjecucion: true,
         organismoOperador: true,
-        obras: {
+        acciones: {
           where: this.scope.obraWhere(user),
           include: {
             municipio: true,
@@ -200,7 +200,7 @@ export class ProaguaExportService {
     ws.addRow(header);
     ws.getRow(8).font = { bold: true };
 
-    for (const obra of anexo.obras) {
+    for (const obra of anexo.acciones) {
       ws.addRow([
         obra.cua ?? '',
         obra.folio,

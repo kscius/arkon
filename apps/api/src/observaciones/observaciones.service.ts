@@ -38,7 +38,7 @@ export class ObservacionesService {
 
   async listByObra(obraId: string, user: Usuario) {
     await this.scope.getObraOrThrow(obraId, user);
-    const rows = await this.prisma.observacion.findMany({ where: { obraId } });
+    const rows = await this.prisma.observacion.findMany({ where: { accionId: obraId } });
     return rows.map((o) => this.map(o));
   }
 
@@ -57,7 +57,7 @@ export class ObservacionesService {
     await this.scope.getObraOrThrow(obraId, user);
     const obs = await this.prisma.observacion.create({
       data: {
-        obraId,
+        accionId: obraId,
         usuarioEmisor: user.fullName,
         fecha: data.fecha,
         tipo: data.tipo,
@@ -75,7 +75,7 @@ export class ObservacionesService {
   async updateStatus(id: string, estatus: EstatusObservacion, user: Usuario) {
     const obs = await this.prisma.observacion.findUnique({ where: { id } });
     if (!obs) throw new NotFoundException('Observacion not found');
-    await this.scope.getObraOrThrow(obs.obraId, user);
+    await this.scope.getObraOrThrow(obs.accionId, user);
     const updated = await this.prisma.observacion.update({
       where: { id },
       data: { estatus },

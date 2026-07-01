@@ -8,7 +8,7 @@ export class MunicipiosService {
 
   private async withStats(municipioId: string) {
     const m = await this.prisma.municipio.findUniqueOrThrow({ where: { id: municipioId } });
-    const obras = await this.prisma.obra.findMany({ where: { municipioId } });
+    const obras = await this.prisma.accion.findMany({ where: { municipioId } });
     const obrasCount = obras.length;
     const inversionTotal = obras.reduce((s, o) => s + Number(o.montoAutorizado), 0);
     const avanceFisicoPromedio =
@@ -38,7 +38,7 @@ export class MunicipiosService {
       municipios = municipios.filter((m) => m.id === user.municipioId);
     }
     if (user.rol === Rol.contratista) {
-      const ids = await this.prisma.obra.findMany({
+      const ids = await this.prisma.accion.findMany({
         where: { contratistaId: user.contratistaId ?? undefined },
         select: { municipioId: true },
         distinct: ['municipioId'],

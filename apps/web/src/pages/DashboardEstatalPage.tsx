@@ -41,6 +41,7 @@ const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transiti
 
 export default function DashboardPage() {
   const brand = getBrand();
+  const { entity } = brand;
   const navigate = useNavigate();
   const { user, setNotifications, setSelectedMunicipio } = useApp();
   const [obraModalOpen, setObraModalOpen] = useState(false);
@@ -129,10 +130,10 @@ export default function DashboardPage() {
   }));
 
   const kpiCards = [
-    { label: 'Total de Obras', value: totalObras.toString(), sub: 'Registradas en el sistema', icon: Building2, color: brand.colors.primary, trend: null },
+    { label: `Total de ${entity.pluralCap}`, value: totalObras.toString(), sub: 'Registradas en el sistema', icon: Building2, color: brand.colors.primary, trend: null },
     { label: 'Inversión Autorizada', value: formatCurrencyM(montoAutorizado), sub: 'Presupuesto total', icon: DollarSign, color: brand.colors.accent, trend: null },
-    { label: 'Obras en Ejecución', value: obrasEjecucion.toString(), sub: `${Math.round((obrasEjecucion/totalObras)*100)}% del total`, icon: Activity, color: '#38A169', trend: Math.round((obrasEjecucion/totalObras)*100) },
-    { label: 'Obras con Retraso', value: obrasRetraso.toString(), sub: `${Math.round((obrasRetraso/totalObras)*100)}% del total`, icon: AlertTriangle, color: '#DC2626', trend: null },
+    { label: `${entity.pluralCap} en Ejecución`, value: obrasEjecucion.toString(), sub: `${Math.round((obrasEjecucion/totalObras)*100)}% del total`, icon: Activity, color: '#38A169', trend: Math.round((obrasEjecucion/totalObras)*100) },
+    { label: `${entity.pluralCap} con Retraso`, value: obrasRetraso.toString(), sub: `${Math.round((obrasRetraso/totalObras)*100)}% del total`, icon: AlertTriangle, color: '#DC2626', trend: null },
     { label: 'Avance Físico Prom.', value: formatPercentage(avanceFisicoPromedio), sub: `Meta: 65%`, icon: TrendingUp, color: '#3182CE', trend: avanceFisicoPromedio },
     { label: 'Monto Ejercido', value: formatCurrencyM(montoEjercido), sub: `${Math.round((montoEjercido/montoAutorizado)*100)}% autorizado`, icon: CreditCard, color: brand.colors.secondary, trend: (montoEjercido/montoAutorizado)*100 },
   ];
@@ -145,7 +146,7 @@ export default function DashboardPage() {
         {user && (
           <Button type="button" size="sm" className="gap-2" onClick={() => setObraModalOpen(true)}>
             <Plus className="w-4 h-4" />
-            Nueva obra
+            Nueva {entity.singular}
           </Button>
         )}
       </div>
@@ -201,7 +202,7 @@ export default function DashboardPage() {
         <motion.div variants={item}>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base font-semibold text-gray-900">Obras por estatus</CardTitle>
+              <CardTitle className="text-base font-semibold text-gray-900">{entity.pluralCap} por estatus</CardTitle>
             </CardHeader>
             <CardContent>
               <ResponsiveContainer width="100%" height={280}>
@@ -209,8 +210,8 @@ export default function DashboardPage() {
                   <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" horizontal={false} />
                   <XAxis type="number" tick={{ fontSize: 10 }} allowDecimals={false} />
                   <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 10 }} />
-                  <Tooltip formatter={(value: number) => [`${value} obras`, 'Cantidad']} />
-                  <Bar dataKey="count" name="Obras" radius={[0, 3, 3, 0]}>
+                  <Tooltip formatter={(value: number) => [`${value} ${entity.plural}`, 'Cantidad']} />
+                  <Bar dataKey="count" name={entity.pluralCap} radius={[0, 3, 3, 0]}>
                     {estatusChartData.map((entry, i) => (
                       <Cell key={i} fill={entry.fill} />
                     ))}
@@ -282,7 +283,7 @@ export default function DashboardPage() {
                             {programasCount} {programasCount === 1 ? 'programa' : 'programas'}
                           </span>
                           <span className="px-2 py-0.5 rounded-full text-[10px] font-medium bg-gray-100 text-gray-600">
-                            {obrasCount} {obrasCount === 1 ? 'obra' : 'obras'}
+                            {obrasCount} {obrasCount === 1 ? entity.singular : entity.plural}
                           </span>
                         </div>
                         {m && (
@@ -431,7 +432,7 @@ export default function DashboardPage() {
                   <tr className="border-b border-gray-200">
                     <th className="text-left py-2 px-3 font-medium text-gray-500">#</th>
                     <th className="text-left py-2 px-3 font-medium text-gray-500">Municipio</th>
-                    <th className="text-center py-2 px-3 font-medium text-gray-500">Total Obras</th>
+                    <th className="text-center py-2 px-3 font-medium text-gray-500">Total {entity.pluralCap}</th>
                     <th className="text-center py-2 px-3 font-medium text-gray-500">Inversión Total</th>
                     <th className="text-center py-2 px-3 font-medium text-gray-500">Avance Físico</th>
                     <th className="text-center py-2 px-3 font-medium text-gray-500">Avance Financiero</th>
@@ -478,14 +479,14 @@ export default function DashboardPage() {
         <motion.div variants={item}>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-base font-semibold text-gray-900">Obras del portafolio</CardTitle>
+              <CardTitle className="text-base font-semibold text-gray-900">{entity.pluralCap} del portafolio</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="overflow-x-auto">
                 <table className="w-full text-xs">
                   <thead>
                     <tr className="border-b border-gray-200">
-                      <th className="text-left py-2 px-2 font-medium text-gray-500">Obra</th>
+                      <th className="text-left py-2 px-2 font-medium text-gray-500">{entity.singularCap}</th>
                       <th className="text-left py-2 px-2 font-medium text-gray-500">Municipio</th>
                       <th className="text-left py-2 px-2 font-medium text-gray-500">Programa</th>
                       <th className="text-center py-2 px-2 font-medium text-gray-500">Avance</th>
@@ -497,7 +498,7 @@ export default function DashboardPage() {
                       <tr
                         key={obra.id}
                         className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
-                        onClick={() => navigate(`/obras/${obra.id}`)}
+                        onClick={() => navigate(`/acciones/${obra.id}`)}
                       >
                         <td className="py-2 px-2 font-medium text-gray-900 max-w-[200px] truncate">{obra.nombre}</td>
                         <td className="py-2 px-2 text-gray-600 max-w-[120px] truncate">{obra.municipio}</td>
@@ -531,7 +532,7 @@ export default function DashboardPage() {
       <motion.div variants={item}>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold text-gray-900">Mapa georreferenciado de obras</CardTitle>
+            <CardTitle className="text-base font-semibold text-gray-900">Mapa georreferenciado de {entity.plural}</CardTitle>
           </CardHeader>
           <CardContent>
             <MapaTerritorial municipios={municipios} obras={obras} />

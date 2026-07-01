@@ -1,4 +1,4 @@
-import { EstatusObra, Rol, Usuario } from '@prisma/client';
+import { EstatusAccion, Rol, Usuario } from '@prisma/client';
 import { ScopeService } from '../common/scope.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { DashboardService } from './dashboard.service';
@@ -6,7 +6,7 @@ import { DashboardService } from './dashboard.service';
 describe('DashboardService', () => {
   let prisma: {
     avanceMensual: { findMany: jest.Mock };
-    obra: { findMany: jest.Mock };
+    accion: { findMany: jest.Mock };
     alerta: { findMany: jest.Mock };
     municipio: { findMany: jest.Mock };
   };
@@ -23,7 +23,7 @@ describe('DashboardService', () => {
   beforeEach(() => {
     prisma = {
       avanceMensual: { findMany: jest.fn() },
-      obra: { findMany: jest.fn() },
+      accion: { findMany: jest.fn() },
       alerta: { findMany: jest.fn().mockResolvedValue([]) },
       municipio: { findMany: jest.fn() },
     };
@@ -39,12 +39,12 @@ describe('DashboardService', () => {
 
   describe('getKpis', () => {
     it('counts execution, delay, and risk as mutually exclusive estatus buckets', async () => {
-      prisma.obra.findMany.mockResolvedValue([
-        { estatus: EstatusObra.en_ejecucion_a_tiempo, montoAutorizado: 1, montoEjercido: 0, avanceFisicoReal: 50, avanceFinanciero: 40 },
-        { estatus: EstatusObra.en_ejecucion_a_tiempo, montoAutorizado: 1, montoEjercido: 0, avanceFisicoReal: 60, avanceFinanciero: 50 },
-        { estatus: EstatusObra.en_ejecucion_retraso, montoAutorizado: 1, montoEjercido: 0, avanceFisicoReal: 30, avanceFinanciero: 20 },
-        { estatus: EstatusObra.en_riesgo, montoAutorizado: 1, montoEjercido: 0, avanceFisicoReal: 10, avanceFinanciero: 5 },
-        { estatus: EstatusObra.concluida, montoAutorizado: 1, montoEjercido: 1, avanceFisicoReal: 100, avanceFinanciero: 100 },
+      prisma.accion.findMany.mockResolvedValue([
+        { estatus: EstatusAccion.en_ejecucion_a_tiempo, montoAutorizado: 1, montoEjercido: 0, avanceFisicoReal: 50, avanceFinanciero: 40 },
+        { estatus: EstatusAccion.en_ejecucion_a_tiempo, montoAutorizado: 1, montoEjercido: 0, avanceFisicoReal: 60, avanceFinanciero: 50 },
+        { estatus: EstatusAccion.en_ejecucion_retraso, montoAutorizado: 1, montoEjercido: 0, avanceFisicoReal: 30, avanceFinanciero: 20 },
+        { estatus: EstatusAccion.en_riesgo, montoAutorizado: 1, montoEjercido: 0, avanceFisicoReal: 10, avanceFinanciero: 5 },
+        { estatus: EstatusAccion.concluida, montoAutorizado: 1, montoEjercido: 1, avanceFisicoReal: 100, avanceFinanciero: 100 },
       ]);
 
       const kpis = await service.getKpis(estatalUser);
@@ -70,7 +70,7 @@ describe('DashboardService', () => {
 
       expect(scope.obraWhere).toHaveBeenCalledWith(estatalUser);
       expect(prisma.avanceMensual.findMany).toHaveBeenCalledWith({
-        where: { obra: {} },
+        where: { accion: {} },
         select: { periodo: true, programado: true, reportado: true },
       });
       expect(timeline).toEqual([
@@ -113,7 +113,7 @@ describe('DashboardService', () => {
 
   describe('topMunicipios', () => {
     it('ranks by distinct programs, then obras, then investment, then name', async () => {
-      prisma.obra.findMany.mockResolvedValue([
+      prisma.accion.findMany.mockResolvedValue([
         { municipioId: 'm1', programa: 'PEAS', montoAutorizado: 10 },
         { municipioId: 'm1', programa: 'PROAGUA', montoAutorizado: 20 },
         { municipioId: 'm2', programa: 'PEAS', montoAutorizado: 100 },
@@ -139,7 +139,7 @@ describe('DashboardService', () => {
     });
 
     it('returns empty array when no obras', async () => {
-      prisma.obra.findMany.mockResolvedValue([]);
+      prisma.accion.findMany.mockResolvedValue([]);
       prisma.municipio.findMany.mockResolvedValue([]);
       await expect(service.topMunicipios(estatalUser)).resolves.toEqual([]);
     });

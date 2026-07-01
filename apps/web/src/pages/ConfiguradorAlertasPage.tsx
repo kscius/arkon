@@ -56,6 +56,7 @@ import {
   TrendingDown,
   Users,
 } from 'lucide-react';
+import { getBrand } from '@/config/brand';
 
 const TIPOS: { value: AlertaConfigTipo; label: string; icon: typeof Bell }[] = [
   { value: 'sin_actualizaciones', label: 'Sin actualizaciones', icon: Clock },
@@ -90,19 +91,21 @@ function resolveAlcance(config: AlertaConfig): AlcanceTipo {
 }
 
 function scopeLabel(config: AlertaConfig): string {
+  const { entity } = getBrand();
   switch (resolveAlcance(config)) {
     case 'obra':
-      return `Obra: ${config.obraFolio ?? config.obraNombre ?? config.obraId}`;
+      return `${entity.singularCap}: ${config.obraFolio ?? config.obraNombre ?? config.obraId}`;
     case 'municipio':
       return `Municipio: ${config.municipioNombre ?? config.municipioId}`;
     case 'programa':
       return `Programa: ${config.programaFiltro}`;
     default:
-      return 'Todas las obras';
+      return `Todas las ${entity.plural}`;
   }
 }
 
 export default function ConfiguradorAlertasPage() {
+  const { entity } = getBrand();
   const { user } = useApp();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editing, setEditing] = useState<AlertaConfig | null>(null);
@@ -242,7 +245,7 @@ export default function ConfiguradorAlertasPage() {
       return;
     }
     if (form.alcance === 'obra' && !form.obraId) {
-      toast.error('Seleccione una obra.');
+      toast.error(`Seleccione una ${entity.singular}.`);
       return;
     }
     if (form.alcance === 'municipio' && !form.municipioId) {
@@ -564,13 +567,13 @@ export default function ConfiguradorAlertasPage() {
                   className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md mt-1 bg-white"
                   disabled={user?.role === 'municipal' && form.alcance === 'municipio'}
                 >
-                  {user?.role === 'estatal' && <option value="todos">Todas las obras</option>}
+                  {user?.role === 'estatal' && <option value="todos">Todas las {entity.plural}</option>}
                   <option value="programa">Por programa</option>
                   {user?.role === 'estatal' && <option value="municipio">Por municipio</option>}
                   {user?.role === 'municipal' && (
                     <option value="municipio">Mi municipio</option>
                   )}
-                  <option value="obra">Obra especifica</option>
+                  <option value="obra">{entity.singularCap} especifica</option>
                 </select>
               </div>
 
@@ -614,7 +617,7 @@ export default function ConfiguradorAlertasPage() {
 
               {form.alcance === 'obra' && (
                 <div>
-                  <label className="text-[10px] text-gray-500 uppercase">Obra</label>
+                  <label className="text-[10px] text-gray-500 uppercase">{entity.singularCap}</label>
                   <select
                     value={form.obraId}
                     onChange={(e) => setForm((p) => ({ ...p, obraId: e.target.value }))}

@@ -38,6 +38,7 @@ export function RankingContratistasChart({
   contextLabel,
 }: RankingContratistasChartProps) {
   const brand = getBrand();
+  const { entity } = brand;
   const navigate = useNavigate();
 
   const programaOptions = useMemo(
@@ -130,7 +131,7 @@ export function RankingContratistasChart({
                 />
                 <Tooltip
                   formatter={(value: number, name: string) => {
-                    if (name === 'obrasCount') return [`${value} obras`, 'Obras'];
+                    if (name === 'obrasCount') return [`${value} ${entity.plural}`, entity.pluralCap];
                     if (name === 'avancePromedio') return [formatPercentage(value), 'Avance prom.'];
                     return [value, name];
                   }}
@@ -165,7 +166,7 @@ export function RankingContratistasChart({
                   <tr className="border-b border-gray-200">
                     <th className="text-left py-2 px-2 font-medium text-gray-500">#</th>
                     <th className="text-left py-2 px-2 font-medium text-gray-500">Contratista</th>
-                    <th className="text-center py-2 px-2 font-medium text-gray-500">Obras</th>
+                    <th className="text-center py-2 px-2 font-medium text-gray-500">{entity.pluralCap}</th>
                     <th className="text-center py-2 px-2 font-medium text-gray-500">Avance prom.</th>
                     <th className="text-center py-2 px-2 font-medium text-gray-500">Monto</th>
                   </tr>

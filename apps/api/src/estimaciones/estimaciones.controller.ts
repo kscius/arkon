@@ -10,12 +10,12 @@ import { EstimacionesService } from './estimaciones.service';
 export class EstimacionesController {
   constructor(private readonly service: EstimacionesService) {}
 
-  @Get('obra/:obraId')
+  @Get('accion/:obraId')
   list(@Param('obraId') obraId: string, @CurrentUser() user: Usuario) {
     return this.service.listByObra(obraId, user);
   }
 
-  @Post('obra/:obraId')
+  @Post('accion/:obraId')
   create(
     @Param('obraId') obraId: string,
     @Body() body: Record<string, unknown>,

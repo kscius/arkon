@@ -88,7 +88,7 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/obras"
+        path="/acciones"
         element={
           <ProtectedRoute>
             <AppLayout>
@@ -98,7 +98,7 @@ function AppRoutes() {
         }
       />
       <Route
-        path="/obras/:obraId"
+        path="/acciones/:obraId"
         element={
           <ProtectedRoute>
             <AppLayout>

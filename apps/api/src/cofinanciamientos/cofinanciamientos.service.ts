@@ -12,7 +12,7 @@ export class CofinanciamientosService {
 
   private map(c: {
     id: string;
-    obraId: string;
+    accionId: string;
     fuente: string;
     monto: unknown;
     porcentaje: unknown;
@@ -20,7 +20,7 @@ export class CofinanciamientosService {
   }) {
     return {
       id: c.id,
-      obra_id: c.obraId,
+      obra_id: c.accionId,
       fuente: c.fuente,
       monto: Number(c.monto),
       porcentaje: Number(c.porcentaje),
@@ -31,7 +31,7 @@ export class CofinanciamientosService {
   async listByObra(obraId: string, user: Usuario) {
     await this.scope.getObraOrThrow(obraId, user);
     const items = await this.prisma.cofinanciamiento.findMany({
-      where: { obraId },
+      where: { accionId: obraId },
       orderBy: { fuente: 'asc' },
     });
     return items.map((c) => this.map(c));
@@ -46,7 +46,7 @@ export class CofinanciamientosService {
     await this.scope.getObraOrThrow(obraId, user);
     const c = await this.prisma.cofinanciamiento.create({
       data: {
-        obraId,
+        accionId: obraId,
         fuente: data.fuente,
         monto: data.monto,
         porcentaje: data.porcentaje ?? 0,
@@ -64,7 +64,7 @@ export class CofinanciamientosService {
     if (user.rol === Rol.contratista) throw new ForbiddenException();
     const existing = await this.prisma.cofinanciamiento.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException('Cofinanciamiento not found');
-    await this.scope.getObraOrThrow(existing.obraId, user);
+    await this.scope.getObraOrThrow(existing.accionId, user);
     const c = await this.prisma.cofinanciamiento.update({
       where: { id },
       data: {
@@ -81,7 +81,7 @@ export class CofinanciamientosService {
     if (user.rol === Rol.contratista) throw new ForbiddenException();
     const existing = await this.prisma.cofinanciamiento.findUnique({ where: { id } });
     if (!existing) throw new NotFoundException('Cofinanciamiento not found');
-    await this.scope.getObraOrThrow(existing.obraId, user);
+    await this.scope.getObraOrThrow(existing.accionId, user);
     await this.prisma.cofinanciamiento.delete({ where: { id } });
     return { deleted: true };
   }

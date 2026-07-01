@@ -107,7 +107,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const getMenuItems = (): MenuItem[] => {
     if (!user) return [];
     const { role } = user;
-    const isConagua = getBrand().tenantId === 'conagua';
+    const brand = getBrand();
+    const isConagua = brand.tenantId === 'conagua';
+    const { entity } = brand;
     const proaguaItems: MenuItem[] = isConagua
       ? [
           { path: '/anexos', label: 'Anexos XII/XIII', icon: 'FileStack' },
@@ -128,7 +130,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         : '/contratistas';
       return [
         { path: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
-        { path: '/obras', label: 'Obras', icon: 'HardHat' },
+        { path: '/acciones', label: entity.pluralCap, icon: 'HardHat' },
         ...(solicitudesItem ? [solicitudesItem] : []),
         ...proaguaItems,
         { path: munPath, label: 'Municipios', icon: 'MapPin' },
@@ -143,7 +145,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (role === 'municipal') {
       return [
         { path: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
-        { path: '/obras', label: 'Obras', icon: 'HardHat' },
+        { path: '/acciones', label: entity.pluralCap, icon: 'HardHat' },
         ...(solicitudesItem ? [solicitudesItem] : []),
         { path: '/anexos', label: 'Anexos XII/XIII', icon: 'FileStack' },
         { path: '/cierres-ejercicio', label: 'Cierre ejercicio', icon: 'Landmark' },
@@ -161,7 +163,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     return [
       { path: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
-      { path: '/obras', label: 'Mis Obras', icon: 'HardHat' },
+      { path: '/acciones', label: `Mis ${entity.pluralCap}`, icon: 'HardHat' },
       {
         path: `/contratistas/${user.contratistaId ?? selectedContratista}`,
         label: 'Mi Empresa',

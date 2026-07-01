@@ -1,7 +1,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ApiError } from '@/lib/api-client';
-import { getBrand } from '@/config/brand';
+import { getBrand, type EntityTerms } from '@/config/brand';
 import { askChat } from '@/lib/api';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,18 +16,19 @@ interface ChatMessage {
   isError?: boolean;
 }
 
-const DEFAULT_ASSISTANT_SUGGESTIONS = [
+const defaultAssistantSuggestions = (entity: EntityTerms): string[] => [
   'Compara fisico vs financiero por programa',
-  'Detalle de obra: avances, docs y observaciones',
+  `Detalle de ${entity.singular}: avances, docs y observaciones`,
   'Alertas criticas sin atender y acciones sugeridas',
   'Inversion total por municipio y dependencia',
   'Estimaciones en revision sin validar',
-  'Obras en riesgo con enlaces directos',
+  `${entity.pluralCap} en riesgo con enlaces directos`,
 ];
 
 export default function AsistentePage() {
   const brand = getBrand();
-  const suggestedQuestions = brand.assistantSuggestions ?? DEFAULT_ASSISTANT_SUGGESTIONS;
+  const { entity } = brand;
+  const suggestedQuestions = brand.assistantSuggestions ?? defaultAssistantSuggestions(entity);
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: 'welcome',

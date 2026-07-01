@@ -16,12 +16,17 @@ export class DashboardController {
     return this.service.getKpis(user);
   }
 
-  @Get('chart/obras-por-estatus')
+  @Get('pendientes')
+  pendientes(@CurrentUser() user: Usuario) {
+    return this.service.getPendientes(user);
+  }
+
+  @Get('chart/acciones-por-estatus')
   obrasPorEstatus(@CurrentUser() user: Usuario) {
     return this.service.obrasPorEstatus(user);
   }
 
-  @Get('chart/obras-por-programa')
+  @Get('chart/acciones-por-programa')
   obrasPorPrograma(@CurrentUser() user: Usuario) {
     return this.service.obrasPorPrograma(user);
   }

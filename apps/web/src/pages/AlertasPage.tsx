@@ -19,8 +19,10 @@ import {
 } from '@/components/ui/dialog';
 import { AlertCircle, CheckCircle, Filter, Search } from 'lucide-react';
 import type { Alerta } from '@/types';
+import { getBrand } from '@/config/brand';
 
 export default function AlertasPage() {
+  const { entity } = getBrand();
   const navigate = useNavigate();
   const { user, refreshNotifications } = useApp();
   const canAtender = user?.role === 'estatal' || user?.role === 'municipal';
@@ -93,7 +95,7 @@ export default function AlertasPage() {
   const bajas = allAlertas.filter((a) => a.severidad === 'baja' && !a.atendida).length;
   const pendientesTotal = allAlertas.filter((a) => !a.atendida).length;
 
-  const obraName = (obraId: string) => obras.find((o) => o.id === obraId)?.nombre ?? 'Obra';
+  const obraName = (obraId: string) => obras.find((o) => o.id === obraId)?.nombre ?? entity.singularCap;
 
   return (
     <PageState loading={loading} error={error} onRetry={reload}>
@@ -186,7 +188,7 @@ export default function AlertasPage() {
                 className={`flex gap-3 p-4 rounded-lg border transition-colors cursor-pointer ${
                   alerta.atendida ? 'border-gray-100 bg-gray-50 opacity-70' : 'border-gray-200 hover:bg-gray-50'
                 }`}
-                onClick={() => alerta.obraId && navigate(`/obras/${alerta.obraId}`)}
+                onClick={() => alerta.obraId && navigate(`/acciones/${alerta.obraId}`)}
               >
                 <div className="w-1 rounded-full flex-shrink-0" style={{ backgroundColor: getSeverityColor(alerta.severidad) }} />
                 <div className="flex-1 min-w-0">

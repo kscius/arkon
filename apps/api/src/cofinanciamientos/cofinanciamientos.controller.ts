@@ -8,7 +8,7 @@ import { CofinanciamientosService } from './cofinanciamientos.service';
 
 @ApiTags('Cofinanciamientos')
 @ApiBearerAuth()
-@Controller('obras/:obraId/cofinanciamientos')
+@Controller('acciones/:obraId/cofinanciamientos')
 export class CofinanciamientosObraController {
   constructor(private readonly service: CofinanciamientosService) {}
 

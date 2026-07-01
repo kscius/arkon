@@ -1,12 +1,31 @@
 # Version CONAGUA — Comision Nacional del Agua
 
-Rama **`conagua`**: despliegue white-label de ARKON para la [Comision Nacional del Agua](https://www.gob.mx/conagua).
+Rama **`conagua`**: producto **independiente** derivado de ARKON para la [Comision Nacional del Agua](https://www.gob.mx/conagua). Esta rama divergio por completo: la entidad central se llama **Accion** en todas las capas (datos, API, web), el tenant `arkon` fue eliminado del codigo y la rama **no se vuelve a mergear desde `main`**.
 
 ## Identidad visual
 
 - Logo: `apps/web/public/brands/conagua/logo.jpg` (fuente: material institucional CONAGUA)
 - Paleta principal: azul marino `#1B3664`, azul medio `#3B83BD`, acento dorado `#C5A059`
 - Titulo y asistente: **CONAGUA** / **Asistente CONAGUA**
+
+## Entidad central: "Accion" (divergencia total)
+
+En PROAGUA la unidad de gestion es la **accion** (1 registro = 1 CUA, *Clave Unica de Accion*).
+En esta rama el rename es **completo**, no solo de textos visibles:
+
+- **Datos (Prisma):** modelo `Accion`, enums `EstatusAccion` / `TipoAccion`, relaciones `accion` / `acciones`, FK de codigo `accionId`. Tabla fisica renombrada `obras` → **`acciones`** y tipos enum `EstatusObra`/`TipoObra` → `EstatusAccion`/`TipoAccion` (migracion `20260630120000_rename_obra_to_accion`).
+- **API:** rutas `/acciones` (y anidadas `/acciones/:id/...`), graficos `chart/acciones-por-*`, import `/proagua/import/acciones`. `prisma.accion`.
+- **Web:** tipo TS `Accion`, rutas de UI `/#/acciones`, links del asistente `/#/acciones/{id}`.
+- **Tenant unico:** el tenant `arkon` fue **eliminado** de `apps/web/src/config/brand.ts` y `apps/api/src/common/brand.ts`. `TenantId` ahora es solo `'conagua'` y `getBrand()`/`getApiBrand()` siempre resuelven CONAGUA.
+
+**Decisiones de alcance (deliberadas, para acotar riesgo):** se conservaron como estaban las
+**columnas fisicas** (`obra_id`, `tipo_obra`, `obra_resultante_id`), las **claves JSON del wire**
+(`obra_id`, `total_obras`, etc.) y algunos **nombres internos** de variables/metodos/funciones
+(`obraId`, `getObraOrThrow`, `fetchObras`). No son visibles para el usuario y renombrarlos no aporta
+valor de producto. Los nombres de indices/constraints siguen como `obras_*` (cosmetico; sin efecto
+en runtime).
+
+- No confundir con `AccionPrograma` (catalogo del Anexo VII), que es una entidad distinta y se mantiene igual.
 
 ## Variables de entorno
 
@@ -47,9 +66,9 @@ El portal CONAGUA trabaja con tres programas federales del sector hídrico:
 | **PRODDER** | Programa de Devolución de Derechos: inversión en eficiencia, macromedición, rehabilitación de redes y saneamiento financiado con recursos devueltos. |
 | **PEAS** | Programa para el Fortalecimiento de Entidades de Agua y Saneamiento (publicado en DOF, marzo 2026): sustituye normativamente a PRODDER; en el demo conviven los tres para ilustrar la transición 2026. |
 
-### Carga tenant-aware del seed
+### Carga del seed
 
-Con `TENANT_ID=conagua`, `prisma db seed` carga `apps/api/prisma/seed-data/conagua/` (~22 obras documentadas, organismos operadores y municipios reales). Sin esa variable, el seed usa el dataset genérico ARKON.
+`prisma db seed` carga `apps/api/prisma/seed-data/conagua/` (~22 acciones documentadas, organismos operadores y municipios reales) en la tabla `acciones`.
 
 ```powershell
 $env:TENANT_ID = "conagua"
@@ -67,9 +86,11 @@ Formularios, fichas tecnicas y lineamientos U074 del programa PROAGUA: [proagua/
 - El conjunto es un **demo verificable**, no el padrón oficial ni el registro único de obras de CONAGUA.
 - Los nombres y ubicaciones provienen de fuentes públicas; algunos montos sin cifra oficial en fuente están marcados como ilustrativos en la trazabilidad.
 
-## Volver a marca ARKON
+## Relacion con ARKON (`main`)
 
-En `main`, use `TENANT_ID=arkon` y `VITE_TENANT=arkon` (o omita las variables; el default es ARKON).
+Esta rama es un **fork de producto**: ya no comparte el modelo multi-tenant con `main`. La marca y la
+entidad ARKON ("Obra") viven solo en otras ramas (`main`, `ceaspue`). No se reintroduce el tenant
+`arkon` aqui ni se mergea desde `main`.
 
 ## Despliegue en produccion (EasyPanel)
 

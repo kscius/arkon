@@ -73,7 +73,7 @@ export interface ObraProaguaFields {
   anexoTecnicoId?: string | null;
 }
 
-export interface Obra extends ObraProaguaFields {
+export interface Accion extends ObraProaguaFields {
   id: string;
   folio: string;
   nombre: string;

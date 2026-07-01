@@ -19,6 +19,7 @@ const item = { hidden: { opacity: 0, y: 20 }, show: { opacity: 1, y: 0, transiti
 
 export default function DashboardContratistaPage() {
   const brand = getBrand();
+  const { entity } = brand;
   const { user } = useApp();
   const navigate = useNavigate();
   const contratistaId = user?.contratistaId ?? '';
@@ -62,7 +63,7 @@ export default function DashboardContratistaPage() {
   const handleReportar = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!obraId || !reportado || !actividades.trim()) {
-      setFormError('Complete obra, avance y actividades.');
+      setFormError(`Complete ${entity.singular}, avance y actividades.`);
       return;
     }
     const obra = data?.misObras.find((o) => o.id === obraId);
@@ -196,10 +197,10 @@ export default function DashboardContratistaPage() {
   const avancePromedio = totalObras > 0 ? misObras.reduce((s, o) => s + o.avanceFisicoReal, 0) / totalObras : 0;
 
   const kpis = [
-    { label: 'Mis Obras', value: totalObras.toString(), sub: `${obrasEjecucion} en ejecución`, icon: Building2, color: brand.colors.primary },
+    { label: `Mis ${entity.pluralCap}`, value: totalObras.toString(), sub: `${obrasEjecucion} en ejecución`, icon: Building2, color: brand.colors.primary },
     { label: 'Inversion Total', value: formatCurrencyM(montoTotal), sub: 'Monto contratado', icon: DollarSign, color: brand.colors.accent },
     { label: 'Avance Promedio', value: formatPercentage(avancePromedio), sub: 'Avance fisico', icon: TrendingUp, color: '#3182CE', trend: avancePromedio },
-    { label: 'Obras con Retraso', value: obrasRetraso.toString(), sub: 'Requieren atencion', icon: AlertTriangle, color: '#DC2626' },
+    { label: `${entity.pluralCap} con Retraso`, value: obrasRetraso.toString(), sub: 'Requieren atencion', icon: AlertTriangle, color: '#DC2626' },
   ];
 
   return (
@@ -207,7 +208,7 @@ export default function DashboardContratistaPage() {
     <motion.div variants={container} initial="hidden" animate="show" className="space-y-6">
       <div>
         <h1 className="text-lg font-bold text-brand-primary">Panel del Contratista</h1>
-        <p className="text-xs text-gray-500 mt-1">Bienvenido, {user?.name}. Aquí puede gestionar sus obras asignadas y reportar avances.</p>
+        <p className="text-xs text-gray-500 mt-1">Bienvenido, {user?.name}. Aquí puede gestionar sus {entity.plural} asignadas y reportar avances.</p>
       </div>
 
       {/* KPIs */}
@@ -237,7 +238,7 @@ export default function DashboardContratistaPage() {
 
       <Tabs defaultValue="obras">
         <TabsList className="bg-white border border-gray-200 p-1 h-auto">
-          <TabsTrigger value="obras" className="text-xs gap-1.5"><Building2 className="w-3.5 h-3.5" /> Mis Obras</TabsTrigger>
+          <TabsTrigger value="obras" className="text-xs gap-1.5"><Building2 className="w-3.5 h-3.5" /> Mis {entity.pluralCap}</TabsTrigger>
           <TabsTrigger value="reportar" className="text-xs gap-1.5"><Upload className="w-3.5 h-3.5" /> Reportar Avance</TabsTrigger>
           <TabsTrigger value="actividad" className="text-xs gap-1.5"><Clock className="w-3.5 h-3.5" /> Actividad</TabsTrigger>
         </TabsList>
@@ -247,7 +248,7 @@ export default function DashboardContratistaPage() {
           <div className="space-y-3">
             {misObras.map((obra) => (
               <motion.div key={obra.id} variants={item}>
-                <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/obras/${obra.id}`)}>
+                <Card className="hover:shadow-md transition-shadow cursor-pointer" onClick={() => navigate(`/acciones/${obra.id}`)}>
                   <CardContent className="p-4">
                     <div className="flex flex-col lg:flex-row lg:items-center gap-3">
                       <div className="flex-1 min-w-0">
@@ -301,14 +302,14 @@ export default function DashboardContratistaPage() {
                 {formSuccess && <p className="text-xs text-green-700 bg-green-50 border border-green-100 rounded-md p-2">{formSuccess}</p>}
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                   <div>
-                    <label className="text-[10px] text-gray-500 uppercase mb-1 block font-medium">Obra *</label>
+                    <label className="text-[10px] text-gray-500 uppercase mb-1 block font-medium">{entity.singularCap} *</label>
                     <select
                       value={obraId}
                       onChange={(e) => setObraId(e.target.value)}
                       required
                       className="w-full h-10 px-3 text-xs border border-gray-200 rounded-md bg-white focus:border-brand-primary focus:ring-1 focus:ring-brand-primary outline-none"
                     >
-                      <option value="">Seleccionar obra...</option>
+                      <option value="">Seleccionar {entity.singular}...</option>
                       {misObras.filter(o => o.estatus.includes('ejecucion') || o.estatus === 'en_preparacion').map(o => (
                         <option key={o.id} value={o.id}>{o.nombre} ({o.avanceFisicoReal}%)</option>
                       ))}
@@ -391,7 +392,7 @@ export default function DashboardContratistaPage() {
                 <div className="relative pl-6 space-y-4">
                   <div className="absolute left-2 top-0 bottom-0 w-0.5 bg-gray-200" />
                   {actividadReciente.length === 0 && (
-                    <p className="text-xs text-gray-500 pl-2">Sin actividad registrada en sus obras.</p>
+                    <p className="text-xs text-gray-500 pl-2">Sin actividad registrada en sus {entity.plural}.</p>
                   )}
                   {actividadReciente.map((act) => (
                     <div key={act.key} className="relative">
@@ -443,7 +444,7 @@ export default function DashboardContratistaPage() {
         <motion.div variants={item}>
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-yellow-600" /> Alertas sobre sus Obras</CardTitle>
+              <CardTitle className="text-sm font-semibold flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-yellow-600" /> Alertas sobre sus {entity.pluralCap}</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-2">

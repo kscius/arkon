@@ -42,7 +42,7 @@ export class DocumentosService {
   async listByObra(obraId: string, user: Usuario) {
     await this.scope.getObraOrThrow(obraId, user);
     const rows = await this.prisma.documento.findMany({
-      where: { obraId },
+      where: { accionId: obraId },
       orderBy: { nombre: 'asc' },
     });
     return rows.map((d) => this.map(d));
@@ -68,7 +68,7 @@ export class DocumentosService {
     }
     const doc = await this.prisma.documento.create({
       data: {
-        obraId,
+        accionId: obraId,
         categoria: data.categoria,
         nombre: data.nombre,
         tipo: data.tipo ?? 'pdf',
@@ -85,14 +85,14 @@ export class DocumentosService {
   async updateStatus(id: string, estatus: EstadoDocumento, user: Usuario) {
     const doc = await this.prisma.documento.findUnique({ where: { id } });
     if (!doc) throw new NotFoundException();
-    await this.scope.getObraOrThrow(doc.obraId, user);
+    await this.scope.getObraOrThrow(doc.accionId, user);
     return this.prisma.documento.update({ where: { id }, data: { estatus } });
   }
 
   async openFile(id: string, user: Usuario) {
     const doc = await this.prisma.documento.findUnique({ where: { id } });
     if (!doc?.archivo) throw new NotFoundException('File not found');
-    await this.scope.getObraOrThrow(doc.obraId, user);
+    await this.scope.getObraOrThrow(doc.accionId, user);
     const filePath = doc.archivo;
     if (!existsSync(filePath)) throw new NotFoundException('File missing on disk');
     return {

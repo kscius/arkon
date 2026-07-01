@@ -35,7 +35,7 @@ describe('ScopeService', () => {
       ).toEqual({
         OR: [
           { municipioId },
-          { obra: { municipioId } },
+          { accion: { municipioId } },
         ],
       });
     });
@@ -47,7 +47,7 @@ describe('ScopeService', () => {
           baseUser({ rol: Rol.contratista, contratistaId, municipioId: null }),
         ),
       ).toEqual({
-        obra: { contratistaId },
+        accion: { contratistaId },
       });
     });
 

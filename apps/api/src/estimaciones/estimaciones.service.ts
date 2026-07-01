@@ -53,7 +53,7 @@ export class EstimacionesService {
   ): Promise<number> {
     const approved = await this.prisma.estimacion.findMany({
       where: {
-        obraId,
+        accionId: obraId,
         validacionEstatal: true,
         estatus: { in: APPROVED_STATUSES },
         ...(includeEstimacionId ? { id: { not: includeEstimacionId } } : {}),
@@ -72,26 +72,26 @@ export class EstimacionesService {
 
   private async syncMontoEjercidoFromEstimaciones(obraId: string): Promise<void> {
     const total = await this.sumApprovedMontoEjercido(obraId);
-    const obra = await this.prisma.obra.findUnique({ where: { id: obraId } });
+    const obra = await this.prisma.accion.findUnique({ where: { id: obraId } });
     if (!obra) return;
 
     const montoContratado = Number(obra.montoContratado);
     const avanceFinanciero =
       montoContratado > 0 ? Math.round((total / montoContratado) * 10000) / 100 : 0;
 
-    await this.prisma.obra.update({
+    await this.prisma.accion.update({
       where: { id: obraId },
       data: { montoEjercido: total, avanceFinanciero },
     });
 
     if (montoContratado > 0 && total > montoContratado) {
       const existing = await this.prisma.alerta.findFirst({
-        where: { obraId, tipo: 'desvio_financiero', atendida: false },
+        where: { accionId: obraId, tipo: 'desvio_financiero', atendida: false },
       });
       if (!existing) {
         await this.prisma.alerta.create({
           data: {
-            obraId,
+            accionId: obraId,
             municipio: (await this.prisma.municipio.findUnique({ where: { id: obra.municipioId } }))
               ?.nombre ?? obra.municipioId,
             municipioId: obra.municipioId,
@@ -112,7 +112,7 @@ export class EstimacionesService {
   async listByObra(obraId: string, user: Usuario) {
     await this.scope.getObraOrThrow(obraId, user);
     const rows = await this.prisma.estimacion.findMany({
-      where: { obraId },
+      where: { accionId: obraId },
       orderBy: { numero: 'asc' },
     });
     return rows.map((e) => this.map(e));
@@ -125,7 +125,7 @@ export class EstimacionesService {
     }
     const e = await this.prisma.estimacion.create({
       data: {
-        obraId,
+        accionId: obraId,
         numero: Number(data.numero),
         periodo: String(data.periodo),
         montoEstimado: Number(data.monto_estimado),
@@ -146,7 +146,7 @@ export class EstimacionesService {
   ) {
     const est = await this.prisma.estimacion.findUnique({ where: { id } });
     if (!est) throw new NotFoundException();
-    const obra = await this.scope.getObraOrThrow(est.obraId, user);
+    const obra = await this.scope.getObraOrThrow(est.accionId, user);
     if (user.rol === Rol.contratista) throw new ForbiddenException();
 
     if (nivel === 'municipal') {
@@ -167,7 +167,7 @@ export class EstimacionesService {
     }
 
     if (aprobar) {
-      const projected = await this.sumApprovedMontoEjercido(est.obraId, id);
+      const projected = await this.sumApprovedMontoEjercido(est.accionId, id);
       const montoContratado = Number(obra.montoContratado);
       if (montoContratado > 0 && projected > montoContratado) {
         throw new BadRequestException(
@@ -187,7 +187,7 @@ export class EstimacionesService {
     });
 
     if (aprobar) {
-      await this.syncMontoEjercidoFromEstimaciones(est.obraId);
+      await this.syncMontoEjercidoFromEstimaciones(est.accionId);
     }
 
     return this.map(updated);

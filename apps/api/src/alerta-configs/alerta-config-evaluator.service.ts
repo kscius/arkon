@@ -1,12 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
-import { AlertaConfig, EstatusObra, EstadoDocumento, Prisma } from '@prisma/client';
+import { AlertaConfig, EstatusAccion, EstadoDocumento, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 const REQUIRED_DOC_CATEGORIES = ['administrativa', 'tecnica', 'ejecucion'] as const;
-const ACTIVE_OBRA_STATUSES: EstatusObra[] = [
-  EstatusObra.en_ejecucion_a_tiempo,
-  EstatusObra.en_ejecucion_retraso,
-  EstatusObra.en_riesgo,
+const ACTIVE_OBRA_STATUSES: EstatusAccion[] = [
+  EstatusAccion.en_ejecucion_a_tiempo,
+  EstatusAccion.en_ejecucion_retraso,
+  EstatusAccion.en_riesgo,
 ];
 
 export interface AlertaMatch {
@@ -19,7 +19,7 @@ export interface AlertaMatch {
   descripcion: string;
 }
 
-type ObraWithRelations = Prisma.ObraGetPayload<{
+type ObraWithRelations = Prisma.AccionGetPayload<{
   include: {
     municipio: true;
     avances: true;
@@ -37,10 +37,10 @@ export class AlertaConfigEvaluatorService {
 
   constructor(private readonly prisma: PrismaService) {}
 
-  buildObraWhere(config: AlertaConfig): Prisma.ObraWhereInput {
-    const where: Prisma.ObraWhereInput = {};
-    if (config.obraId) {
-      where.id = config.obraId;
+  buildObraWhere(config: AlertaConfig): Prisma.AccionWhereInput {
+    const where: Prisma.AccionWhereInput = {};
+    if (config.accionId) {
+      where.id = config.accionId;
     } else {
       if (config.municipioId) where.municipioId = config.municipioId;
       if (config.programaFiltro) where.programa = config.programaFiltro;
@@ -49,7 +49,7 @@ export class AlertaConfigEvaluatorService {
   }
 
   async findMatchingObras(config: AlertaConfig): Promise<ObraWithRelations[]> {
-    return this.prisma.obra.findMany({
+    return this.prisma.accion.findMany({
       where: this.buildObraWhere(config),
       include: {
         municipio: true,
@@ -246,10 +246,10 @@ export class AlertaConfigEvaluatorService {
     config: AlertaConfig,
     obra: ObraWithRelations,
   ): AlertaMatch | null {
-    const excluded: EstatusObra[] = [
-      EstatusObra.concluida,
-      EstatusObra.cancelada,
-      EstatusObra.cerrada,
+    const excluded: EstatusAccion[] = [
+      EstatusAccion.concluida,
+      EstatusAccion.cancelada,
+      EstatusAccion.cerrada,
     ];
     if (excluded.includes(obra.estatus)) return null;
     const missing = REQUIRED_DOC_CATEGORIES.filter((cat) => {
@@ -293,7 +293,7 @@ export class AlertaConfigEvaluatorService {
     obra: ObraWithRelations,
   ): AlertaMatch | null {
     if (!this.isProaguaObra(obra)) return null;
-    const excluded: EstatusObra[] = [EstatusObra.concluida, EstatusObra.cancelada, EstatusObra.cerrada];
+    const excluded: EstatusAccion[] = [EstatusAccion.concluida, EstatusAccion.cancelada, EstatusAccion.cerrada];
     if (excluded.includes(obra.estatus)) return null;
     if (obra.numContrato) return null;
     const year = new Date().getFullYear();
@@ -315,7 +315,7 @@ export class AlertaConfigEvaluatorService {
     obra: ObraWithRelations,
   ): AlertaMatch | null {
     if (!this.isProaguaObra(obra)) return null;
-    const excluded: EstatusObra[] = [EstatusObra.concluida, EstatusObra.cancelada, EstatusObra.cerrada];
+    const excluded: EstatusAccion[] = [EstatusAccion.concluida, EstatusAccion.cancelada, EstatusAccion.cerrada];
     if (excluded.includes(obra.estatus)) return null;
     const year = new Date().getFullYear();
     const deadline = new Date(year, 11, 31, 23, 59, 59);

@@ -1,4 +1,4 @@
-﻿import { useParams } from 'react-router-dom';
+﻿import { useParams, useSearchParams } from 'react-router-dom';
 import { useCallback, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PageState } from '@/components/PageState';
@@ -49,10 +49,16 @@ const DOC_CATEGORY_LABELS: Record<DocCategoria, string> = {
 
 export default function ObraDetailPage() {
   const brand = getBrand();
+  const { entity } = brand;
   const isConagua = brand.tenantId === 'conagua';
   const { obraId } = useParams<{ obraId: string }>();
   const { user } = useApp();
-  const [activeTab, setActiveTab] = useState('avance');
+  const [searchParams] = useSearchParams();
+  const VALID_TABS = ['avance', 'estimaciones', 'expediente', 'observaciones', 'proagua'];
+  const requestedTab = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(
+    requestedTab && VALID_TABS.includes(requestedTab) ? requestedTab : 'avance',
+  );
 
   const [docFile, setDocFile] = useState<File | null>(null);
   const [docNombre, setDocNombre] = useState('');
@@ -72,10 +78,10 @@ export default function ObraDetailPage() {
   const [editObraOpen, setEditObraOpen] = useState(false);
 
   const load = useCallback(async () => {
-    if (!obraId) throw new Error('Obra no especificada');
+    if (!obraId) throw new Error(`${entity.singularCap} no especificada`);
     if (!isValidUuid(obraId)) {
       throw new Error(
-        'Identificador de obra no válido. Abra la obra desde el catálogo o use el enlace con UUID.',
+        `Identificador de ${entity.singular} no válido. Abra la ${entity.singular} desde el catálogo o use el enlace con UUID.`,
       );
     }
     const obra = await fetchObra(obraId);
@@ -86,7 +92,7 @@ export default function ObraDetailPage() {
       fetchDocumentosByObra(obraId).catch(() => [] as Documento[]),
     ]);
     return { obra, obraAvances, obraEstimaciones, obraObservaciones, documentos };
-  }, [obraId]);
+  }, [obraId, entity]);
 
   const { data, loading, error, reload } = useAsyncData(load, [load]);
 
@@ -268,7 +274,7 @@ export default function ObraDetailPage() {
             {canManageObra && user && (
               <>
                 <Button type="button" size="sm" variant="outline" onClick={() => setEditObraOpen(true)}>
-                  Editar obra
+                  {`Editar ${entity.singular}`}
                 </Button>
                 <ObraFormModal
                   open={editObraOpen}
@@ -333,7 +339,7 @@ export default function ObraDetailPage() {
               { label: 'FECHA DE INICIO', value: formatDate(obra.fechaInicio) },
               { label: 'FECHA TERMINO', value: formatDate(obra.fechaTerminoProgramada) },
               { label: 'PLAZO', value: `${obra.plazoEjecucion} días` },
-              { label: 'TIPO DE OBRA', value: getTipoObraLabel(obra.tipoObra.toLowerCase()) },
+              { label: `Tipo de ${entity.singular}`.toUpperCase(), value: getTipoObraLabel(obra.tipoObra.toLowerCase()) },
               { label: 'DEPENDENCIA', value: obra.dependencia },
               { label: 'PROGRAMA', value: getProgramaName(obra.programa) },
             ].map((field, i) => (
@@ -520,7 +526,7 @@ export default function ObraDetailPage() {
           <TabsContent value="expediente" className="mt-4">
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
               <Card>
-                <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Expediente Digital de Obra</CardTitle></CardHeader>
+                <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">{`Expediente Digital de ${entity.singularCap}`}</CardTitle></CardHeader>
                 <CardContent>
                   <form onSubmit={handleUploadDocumento} className="mb-4 p-3 border border-dashed border-gray-200 rounded-lg space-y-3">
                     <p className="text-xs font-medium text-gray-700">Subir documento</p>

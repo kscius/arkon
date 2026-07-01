@@ -1,5 +1,5 @@
 import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
-import { EstatusObra, TipoObra } from '@prisma/client';
+import { EstatusAccion, TipoAccion } from '@prisma/client';
 import { IsEnum, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class CreateObraDto {
@@ -12,7 +12,7 @@ export class CreateObraDto {
   @ApiProperty() @IsString() programa!: string;
   @ApiPropertyOptional() @IsOptional() @IsString() tipo_programa?: string;
   @ApiProperty() @IsString() dependencia!: string;
-  @ApiProperty({ enum: TipoObra }) @IsEnum(TipoObra) tipo_obra!: TipoObra;
+  @ApiProperty({ enum: TipoAccion }) @IsEnum(TipoAccion) tipo_obra!: TipoAccion;
   @ApiPropertyOptional() @IsOptional() @IsString() descripcion?: string;
   @ApiPropertyOptional() @IsOptional() @IsNumber() poblacion_beneficiada?: number;
   @ApiProperty() @IsNumber() monto_autorizado!: number;
@@ -25,7 +25,7 @@ export class CreateObraDto {
   @ApiPropertyOptional() @IsOptional() @IsNumber() avance_fisico_programado?: number;
   @ApiPropertyOptional() @IsOptional() @IsNumber() avance_fisico_real?: number;
   @ApiPropertyOptional() @IsOptional() @IsNumber() avance_financiero?: number;
-  @ApiPropertyOptional({ enum: EstatusObra }) @IsOptional() @IsEnum(EstatusObra) estatus?: EstatusObra;
+  @ApiPropertyOptional({ enum: EstatusAccion }) @IsOptional() @IsEnum(EstatusAccion) estatus?: EstatusAccion;
   @ApiPropertyOptional() @IsOptional() @IsString() riesgo?: string;
   @ApiPropertyOptional() @IsOptional() @IsNumber() latitud?: number;
   @ApiPropertyOptional() @IsOptional() @IsNumber() longitud?: number;

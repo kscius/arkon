@@ -32,12 +32,12 @@ if (!existsSync(uploadDir)) {
 export class DocumentosController {
   constructor(private readonly service: DocumentosService) {}
 
-  @Get('obra/:obraId')
+  @Get('accion/:obraId')
   list(@Param('obraId') obraId: string, @CurrentUser() user: Usuario) {
     return this.service.listByObra(obraId, user);
   }
 
-  @Post('obra/:obraId')
+  @Post('accion/:obraId')
   @ApiConsumes('multipart/form-data')
   @UseInterceptors(
     FileInterceptor('file', {

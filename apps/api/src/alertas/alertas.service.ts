@@ -11,11 +11,11 @@ export class AlertasService {
   ) {}
 
   private map(
-    a: Prisma.AlertaGetPayload<{ include: { obra: { select: { nombre: true } } } }>,
+    a: Prisma.AlertaGetPayload<{ include: { accion: { select: { nombre: true } } } }>,
   ) {
     return {
       id: a.id,
-      obra_id: a.obraId,
+      obra_id: a.accionId,
       municipio: a.municipio,
       municipio_id: a.municipioId,
       titulo: a.titulo,
@@ -25,7 +25,7 @@ export class AlertasService {
       fecha_generacion: a.fechaGeneracion,
       atendida: a.atendida,
       accion_tomada: a.accionTomada,
-      obra_nombre: a.obra?.nombre ?? '',
+      obra_nombre: a.accion?.nombre ?? '',
     };
   }
 
@@ -39,7 +39,7 @@ export class AlertasService {
 
     const alertas = await this.prisma.alerta.findMany({
       where,
-      include: { obra: { select: { nombre: true } } },
+      include: { accion: { select: { nombre: true } } },
       orderBy: { createdAt: 'desc' },
     });
     return alertas.map((a) => this.map(a));
@@ -48,7 +48,7 @@ export class AlertasService {
   async findOne(id: string, user: Usuario) {
     const alerta = await this.prisma.alerta.findFirst({
       where: { id, ...this.scope.alertaWhere(user) },
-      include: { obra: { select: { nombre: true } } },
+      include: { accion: { select: { nombre: true } } },
     });
     if (!alerta) throw new NotFoundException('Alerta not found');
     return this.map(alerta);
@@ -79,7 +79,7 @@ export class AlertasService {
     }
     const alerta = await this.prisma.alerta.create({
       data: {
-        obraId: data.obra_id,
+        accionId: data.obra_id,
         municipio: data.municipio,
         municipioId,
         titulo: data.titulo,
@@ -89,7 +89,7 @@ export class AlertasService {
         fechaGeneracion: data.fecha_generacion,
         atendida: false,
       },
-      include: { obra: { select: { nombre: true } } },
+      include: { accion: { select: { nombre: true } } },
     });
     return this.map(alerta);
   }

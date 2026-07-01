@@ -10,7 +10,7 @@ import type {
   EntidadFederativa,
   Estimacion,
   MunicipioData,
-  Obra,
+  Accion,
   Observacion,
   OrganismoOperador,
   SolicitudPrograma,
@@ -50,7 +50,7 @@ export function mapUser(raw: {
   };
 }
 
-export function mapObra(raw: Record<string, unknown>): Obra {
+export function mapObra(raw: Record<string, unknown>): Accion {
   let evidenciaFotografica: string[] = [];
   const evidencia = raw.evidencia_fotografica;
   if (typeof evidencia === 'string') {
@@ -92,8 +92,8 @@ export function mapObra(raw: Record<string, unknown>): Obra {
     avanceFisicoProgramado: Number(raw.avance_fisico_programado ?? 0),
     avanceFisicoReal: Number(raw.avance_fisico_real ?? 0),
     avanceFinanciero: Number(raw.avance_financiero ?? 0),
-    estatus: String(raw.estatus) as Obra['estatus'],
-    riesgo: String(raw.riesgo ?? 'bajo') as Obra['riesgo'],
+    estatus: String(raw.estatus) as Accion['estatus'],
+    riesgo: String(raw.riesgo ?? 'bajo') as Accion['riesgo'],
     latitud: Number(raw.latitud ?? 0),
     longitud: Number(raw.longitud ?? 0),
     evidenciaFotografica,
@@ -323,7 +323,7 @@ export function hasValidGeoCoords(latitud: number, longitud: number): boolean {
   return Math.abs(latitud) <= 90 && Math.abs(longitud) <= 180;
 }
 
-export function obraHasGeo(obra: Pick<Obra, 'latitud' | 'longitud'>): boolean {
+export function obraHasGeo(obra: Pick<Accion, 'latitud' | 'longitud'>): boolean {
   return hasValidGeoCoords(obra.latitud, obra.longitud);
 }
 

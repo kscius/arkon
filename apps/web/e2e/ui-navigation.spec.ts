@@ -13,9 +13,9 @@ test.describe('Full navigation smoke by role', () => {
       await expect(page.locator('main')).not.toBeEmpty();
     }
     await page.getByRole('link', { name: 'Dashboard' }).click();
-    const portfolioCard = page.locator('[class*="rounded"]').filter({ hasText: 'Obras del portafolio' });
+    const portfolioCard = page.locator('[class*="rounded"]').filter({ hasText: 'Acciones del portafolio' });
     await portfolioCard.locator('tbody tr').first().click();
-    await expect(page).toHaveURL(/#\/obras\//, { timeout: 15_000 });
+    await expect(page).toHaveURL(/#\/acciones\//, { timeout: 15_000 });
     await expect(page.getByRole('tab', { name: /Estimaciones/i })).toBeVisible();
   });
 
@@ -27,17 +27,17 @@ test.describe('Full navigation smoke by role', () => {
     }
     await page.getByRole('link', { name: 'Dashboard' }).click();
     await page.locator('main tbody tr').first().click();
-    await expect(page).toHaveURL(/#\/obras\//, { timeout: 15_000 });
+    await expect(page).toHaveURL(/#\/acciones\//, { timeout: 15_000 });
   });
 
   test('contratista visits sidebar and obra from mis obras', async ({ page }) => {
     await login(page, DEMO_USERS.contratista);
-    for (const label of ['Dashboard', 'Mis Obras', 'Alertas']) {
+    for (const label of ['Dashboard', 'Mis Acciones', 'Alertas']) {
       await page.getByRole('link', { name: label }).first().click();
       await expect(page.locator('main')).not.toBeEmpty();
     }
-    await page.getByRole('link', { name: 'Mis Obras' }).click();
+    await page.getByRole('link', { name: 'Mis Acciones' }).click();
     await page.locator('main tbody tr').first().click();
-    await expect(page).toHaveURL(/#\/obras\//, { timeout: 15_000 });
+    await expect(page).toHaveURL(/#\/acciones\//, { timeout: 15_000 });
   });
 });

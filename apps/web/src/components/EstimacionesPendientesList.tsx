@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
 import { fetchEstimacionesByObra } from '@/lib/api';
-import type { Estimacion, Obra } from '@/types';
+import type { Estimacion, Accion } from '@/types';
 import { formatCurrency } from '@/lib/utils';
 
 const PENDING_ESTATUS = new Set<Estimacion['estatus']>(['presentada', 'en_revision_municipal']);
 
-type PendingRow = { estimacion: Estimacion; obra: Obra };
+type PendingRow = { estimacion: Estimacion; obra: Accion };
 
 interface EstimacionesPendientesListProps {
-  obras: Obra[];
+  obras: Accion[];
   onValidate: (estimacionId: string, aprobar: boolean) => void | Promise<void>;
   busyId: string | null;
 }

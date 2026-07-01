@@ -1,10 +1,8 @@
 import { type APIRequestContext, type Page, test } from '@playwright/test';
 
-const tenantId =
-  process.env.TENANT_ID?.trim().toLowerCase() === 'conagua' ? 'conagua' : 'arkon';
-const emailDomain = tenantId === 'conagua' ? 'conagua.gob.mx' : 'arkon.gob.mx';
+const emailDomain = 'conagua.gob.mx';
 
-export const DEMO_PASSWORD = tenantId === 'conagua' ? 'Conagua2024!' : 'Arkon2024!';
+export const DEMO_PASSWORD = 'Conagua2024!';
 
 export const DEMO_USERS = {
   estatal: `estatal@${emailDomain}`,
@@ -12,8 +10,7 @@ export const DEMO_USERS = {
   contratista: `cce@${emailDomain}`,
 } as const;
 
-export const DEMO_ASSISTANT_LABEL =
-  tenantId === 'conagua' ? /Asistente CONAGUA/i : /Asistente ARKON/i;
+export const DEMO_ASSISTANT_LABEL = /Asistente CONAGUA/i;
 
 function apiBase(): string {
   return (process.env.PLAYWRIGHT_BASE_URL ?? 'http://localhost:8080').replace(/\/$/, '');
@@ -78,7 +75,7 @@ export async function ensurePendingAlerta(request: APIRequestContext): Promise<v
   let obraId: string | undefined;
   let municipio = 'León';
   let municipioId: string | undefined;
-  const obrasRes = await request.get(`${apiBase()}/api/obras`, { headers });
+  const obrasRes = await request.get(`${apiBase()}/api/acciones`, { headers });
   if (obrasRes.ok()) {
     const obras = (await obrasRes.json()) as Array<{
       id?: string;

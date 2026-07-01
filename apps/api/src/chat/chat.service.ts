@@ -5,11 +5,11 @@ import {
   AvanceMensual,
   Contratista,
   Documento,
-  EstatusObra,
+  EstatusAccion,
   Estimacion,
   Municipio,
   Observacion,
-  Obra,
+  Accion,
   Usuario,
 } from '@prisma/client';
 import { getApiBrand, type TenantId } from '../common/brand';
@@ -17,14 +17,6 @@ import { ScopeService } from '../common/scope.service';
 import { PrismaService } from '../prisma/prisma.service';
 
 const SUGGESTIONS_BY_TENANT: Record<TenantId, string[]> = {
-  arkon: [
-    'Compara fisico vs financiero por programa',
-    'Detalle de obra: avances, docs y observaciones',
-    'Alertas criticas sin atender y acciones sugeridas',
-    'Inversion total por municipio y dependencia',
-    'Estimaciones en revision sin validar',
-    'Obras en riesgo con enlaces directos',
-  ],
   conagua: [
     'Fisico vs financiero en PROAGUA y PEAS',
     'Detalle PTAR: avances, docs y alertas',
@@ -41,13 +33,13 @@ function getSuggestions(): string[] {
 
 type ChatHistoryMessage = { role: 'user' | 'assistant'; content: string };
 
-type ObraWithRelations = Obra & {
+type ObraWithRelations = Accion & {
   municipio: Municipio;
   contratista: Contratista | null;
 };
 
 type AlertaWithObra = Alerta & {
-  obra: { id: string; folio: string; nombre: string } | null;
+  accion: { id: string; folio: string; nombre: string } | null;
 };
 
 @Injectable()
@@ -77,12 +69,12 @@ export class ChatService {
     return { response, suggestions: getSuggestions() };
   }
 
-  private groupByObraId<T extends { obraId: string }>(items: T[]): Map<string, T[]> {
+  private groupByObraId<T extends { accionId: string }>(items: T[]): Map<string, T[]> {
     const map = new Map<string, T[]>();
     for (const item of items) {
-      const list = map.get(item.obraId) ?? [];
+      const list = map.get(item.accionId) ?? [];
       list.push(item);
-      map.set(item.obraId, list);
+      map.set(item.accionId, list);
     }
     return map;
   }
@@ -157,7 +149,7 @@ export class ChatService {
       programas,
       alertaConfigs,
     ] = await Promise.all([
-      this.prisma.obra.findMany({
+      this.prisma.accion.findMany({
         where: obraWhere,
         orderBy: { avanceFisicoReal: 'asc' },
         include: { municipio: true, contratista: true },
@@ -165,15 +157,15 @@ export class ChatService {
       this.prisma.alerta.findMany({
         where: alertaWhere,
         orderBy: { createdAt: 'desc' },
-        include: { obra: { select: { id: true, folio: true, nombre: true } } },
+        include: { accion: { select: { id: true, folio: true, nombre: true } } },
       }),
       this.prisma.avanceMensual.findMany({
-        where: { obra: obraWhere },
+        where: { accion: obraWhere },
         orderBy: { periodo: 'desc' },
       }),
-      this.prisma.estimacion.findMany({ where: { obra: obraWhere } }),
+      this.prisma.estimacion.findMany({ where: { accion: obraWhere } }),
       this.prisma.documento.findMany({
-        where: { obra: obraWhere },
+        where: { accion: obraWhere },
         select: {
           id: true,
           categoria: true,
@@ -183,10 +175,10 @@ export class ChatService {
           fechaCarga: true,
           responsable: true,
           tamanoBytes: true,
-          obraId: true,
+          accionId: true,
         },
       }),
-      this.prisma.observacion.findMany({ where: { obra: obraWhere } }),
+      this.prisma.observacion.findMany({ where: { accion: obraWhere } }),
       this.prisma.contratista.findMany({
         where: contratistaWhere,
         select: { id: true, nombre: true, rfc: true, representante: true, email: true, telefono: true },
@@ -208,7 +200,7 @@ export class ChatService {
           activa: true,
           programaFiltro: true,
           municipioId: true,
-          obraId: true,
+          accionId: true,
           umbralDias: true,
           umbralPorcentaje: true,
           umbralMonto: true,
@@ -243,8 +235,8 @@ export class ChatService {
     });
 
     const alertaLines = alertas.map((a: AlertaWithObra) => {
-      const obraRef = a.obra
-        ? `obra=${a.obra.folio}(id=${a.obra.id})`
+      const obraRef = a.accion
+        ? `obra=${a.accion.folio}(id=${a.accion.id})`
         : `municipio=${a.municipio}(id=${a.municipioId ?? 'N/A'})`;
       return (
         `id=${a.id} | [${a.severidad}] ${a.tipo}: ${a.titulo} | ${obraRef} | ` +
@@ -281,16 +273,16 @@ export class ChatService {
         `id=${c.id} | nombre=${c.nombre} | tipo=${c.tipo} | sev=${c.severidad} | activa=${c.activa}` +
         (c.programaFiltro ? ` | programa=${c.programaFiltro}` : '') +
         (c.municipioId ? ` | municipioId=${c.municipioId}` : '') +
-        (c.obraId ? ` | obraId=${c.obraId}` : '') +
+        (c.accionId ? ` | obraId=${c.accionId}` : '') +
         (umbrales.length ? ` | umbrales=${umbrales.join(',')}` : '')
       );
     });
 
     const totalObras = obras.length;
-    const enEjecucion = obras.filter((o) => o.estatus === EstatusObra.en_ejecucion_a_tiempo).length;
-    const conRetraso = obras.filter((o) => o.estatus === EstatusObra.en_ejecucion_retraso).length;
-    const concluidas = obras.filter((o) => o.estatus === EstatusObra.concluida).length;
-    const enRiesgo = obras.filter((o) => o.estatus === EstatusObra.en_riesgo).length;
+    const enEjecucion = obras.filter((o) => o.estatus === EstatusAccion.en_ejecucion_a_tiempo).length;
+    const conRetraso = obras.filter((o) => o.estatus === EstatusAccion.en_ejecucion_retraso).length;
+    const concluidas = obras.filter((o) => o.estatus === EstatusAccion.concluida).length;
+    const enRiesgo = obras.filter((o) => o.estatus === EstatusAccion.en_riesgo).length;
     const alertasAbiertas = alertas.filter((a) => !a.atendida).length;
     const montoAutorizadoTotal = obras.reduce((s, o) => s + Number(o.montoAutorizado), 0);
     const avancePromedio =
@@ -298,9 +290,11 @@ export class ChatService {
         ? obras.reduce((s, o) => s + Number(o.avanceFisicoReal), 0) / totalObras
         : 0;
 
+    const term = getApiBrand().entity;
+
     const resumenLines = [
       'Resumen estadistico:',
-      `- Total: ${totalObras} obras | En ejecucion: ${enEjecucion} | Con retraso: ${conRetraso} | Concluidas: ${concluidas} | En riesgo: ${enRiesgo}`,
+      `- Total: ${totalObras} ${term.plural} | En ejecucion: ${enEjecucion} | Con retraso: ${conRetraso} | Concluidas: ${concluidas} | En riesgo: ${enRiesgo}`,
       `- Alertas: ${alertas.length} total (${alertasAbiertas} abiertas, ${alertas.length - alertasAbiertas} atendidas)`,
       `- Monto total autorizado: ${this.formatMoney(montoAutorizadoTotal)} MXN`,
       `- Avance fisico promedio: ${avancePromedio.toFixed(1)}%`,
@@ -309,8 +303,8 @@ export class ChatService {
     ];
 
     return [
-      `Obras en alcance (${obras.length}):`,
-      obraSections.join('\n') || '(sin obras)',
+      `${term.pluralCap} en alcance (${obras.length}):`,
+      obraSections.join('\n') || `(sin ${term.plural})`,
       '',
       `Alertas (${alertas.length}):`,
       alertaLines.join('\n') || '(sin alertas)',
@@ -352,14 +346,14 @@ export class ChatService {
       'Longitud: respuestas cortas para preguntas simples (1-3 oraciones); detalladas con listas para analisis.',
       '',
       'LINKS INTERNOS DEL SISTEMA (formato HashRouter):',
-      '- Detalle de obra: /#/obras/{id}',
-      '- Lista de obras: /#/obras',
+      `- Detalle de ${brand.entity.singular}: /#/acciones/{id}`,
+      `- Lista de ${brand.entity.plural}: /#/acciones`,
       '- Alertas: /#/alertas',
       '- Municipio: /#/municipios/{municipioId}',
       '- Contratista: /#/contratistas/{contratistaId}',
       '- Dashboard: /#/dashboard',
       '- Configurador alertas: /#/configurador-alertas',
-      'Cuando menciones una obra, municipio, contratista o alerta especifica, SIEMPRE incluye el link directo en formato Markdown: [Nombre](/#/obras/{id})',
+      `Cuando menciones una ${brand.entity.singular}, municipio, contratista o alerta especifica, SIEMPRE incluye el link directo en formato Markdown: [Nombre](/#/acciones/{id})`,
       'NUNCA digas al usuario que vaya a un modulo o seccion; tu ya tienes todos los datos para responder.',
       '',
       'PROCESOS DEL SISTEMA:',
@@ -406,16 +400,17 @@ export class ChatService {
   }
 
   private async generateLocalResponse(message: string, user: Usuario): Promise<string> {
+    const term = getApiBrand().entity;
     const obraWhere = this.scope.obraWhere(user);
-    const obras = await this.prisma.obra.findMany({ where: obraWhere });
+    const obras = await this.prisma.accion.findMany({ where: obraWhere });
 
     const totalObras = obras.length;
-    const obrasRetraso = obras.filter((o) => o.estatus === EstatusObra.en_ejecucion_retraso).length;
-    const obrasConcluidas = obras.filter((o) => o.estatus === EstatusObra.concluida).length;
+    const obrasRetraso = obras.filter((o) => o.estatus === EstatusAccion.en_ejecucion_retraso).length;
+    const obrasConcluidas = obras.filter((o) => o.estatus === EstatusAccion.concluida).length;
     const obrasEjecucion = obras.filter(
-      (o) => o.estatus === EstatusObra.en_ejecucion_a_tiempo,
+      (o) => o.estatus === EstatusAccion.en_ejecucion_a_tiempo,
     ).length;
-    const obrasRiesgo = obras.filter((o) => o.estatus === EstatusObra.en_riesgo).length;
+    const obrasRiesgo = obras.filter((o) => o.estatus === EstatusAccion.en_riesgo).length;
     const montoTotal = obras.reduce((s, o) => s + Number(o.montoAutorizado), 0);
 
     const lower = message.toLowerCase();
@@ -425,14 +420,14 @@ export class ChatService {
       const obra = obras.find((o) => o.folio.toLowerCase().includes(folio.toLowerCase()));
       if (obra) {
         return (
-          `La obra **[${obra.nombre}](/#/obras/${obra.id})** (Folio: ${obra.folio}) tiene un avance fisico de ` +
+          `La ${term.singular} **[${obra.nombre}](/#/acciones/${obra.id})** (Folio: ${obra.folio}) tiene un avance fisico de ` +
           `**${Number(obra.avanceFisicoReal)}%** y financiero de **${Number(obra.avanceFinanciero)}%**. ` +
           `Su estatus es: **${obra.estatus}**. ` +
           `Monto autorizado: **$${Number(obra.montoAutorizado).toLocaleString('es-MX', { minimumFractionDigits: 2 })}**.`
         );
       }
       return (
-        `No encontre una obra con folio similar a '${folio}'. ` +
+        `No encontre una ${term.singular} con folio similar a '${folio}'. ` +
         'Verifica que el folio este completo (ej. "MUN-2024-001") o escribe "obra [FOLIO]" con el folio exacto.'
       );
     }
@@ -446,33 +441,33 @@ export class ChatService {
 
     if (['hola', 'buenos dias', 'buenas tardes', 'buenas noches', 'saludos'].some((k) => lower.includes(k))) {
       return (
-        `Hola, soy **${brand.assistantName}**, tu asistente para la gestion de obras publicas. ` +
-        `El portafolio en tu alcance tiene **${totalObras} obras**: avance fisico promedio **${avgFisico.toFixed(1)}%**, ` +
+        `Hola, soy **${brand.assistantName}**, tu asistente para la gestion de ${term.plural} publicas. ` +
+        `El portafolio en tu alcance tiene **${totalObras} ${term.plural}**: avance fisico promedio **${avgFisico.toFixed(1)}%**, ` +
         `**${obrasRetraso} con retraso** y **${obrasRiesgo} en riesgo**. ` +
         'Puedo ayudarte con avances, alertas, contratos, presupuestos y analisis de riesgos. En que puedo ayudarte?'
       );
     }
 
     if (lower.includes('total') || lower.includes('cuantas obras') || lower.includes('cuantas obra')) {
-      return `El sistema registra **${totalObras} obras** en tu alcance.`;
+      return `El sistema registra **${totalObras} ${term.plural}** en tu alcance.`;
     }
 
     if (['retras', 'atras', 'desfas'].some((k) => lower.includes(k))) {
       const pctRetraso = totalObras > 0 ? ((obrasRetraso / totalObras) * 100).toFixed(1) : '0.0';
       return (
-        `Hay **${obrasRetraso} obras con retraso** (${pctRetraso}% del portafolio). ` +
-        'Revisa el desfase fisico de cada obra y solicita informe al contratista; evalua reprogramacion o penalizaciones contractuales si aplica.'
+        `Hay **${obrasRetraso} ${term.plural} con retraso** (${pctRetraso}% del portafolio). ` +
+        `Revisa el desfase fisico de cada ${term.singular} y solicita informe al contratista; evalua reprogramacion o penalizaciones contractuales si aplica.`
       );
     }
 
     if (['concluid', 'terminad', 'finalizad'].some((k) => lower.includes(k))) {
-      return `Hay **${obrasConcluidas} obras concluidas** de ${totalObras} en tu alcance.`;
+      return `Hay **${obrasConcluidas} ${term.plural} concluidas** de ${totalObras} en tu alcance.`;
     }
 
     if (['riesgo', 'alerta critica', 'urgencia', 'analisis'].some((k) => lower.includes(k))) {
       return (
-        `Hay **${obrasRiesgo} obras en riesgo** (retraso fisico o estatus de riesgo directo). ` +
-        'Prioriza las obras con mayor desfase fisico y verifica alertas criticas sin atender en tu alcance.'
+        `Hay **${obrasRiesgo} ${term.plural} en riesgo** (retraso fisico o estatus de riesgo directo). ` +
+        `Prioriza las ${term.plural} con mayor desfase fisico y verifica alertas criticas sin atender en tu alcance.`
       );
     }
 
@@ -487,18 +482,18 @@ export class ChatService {
         .slice(0, 3);
       const desfaseTop =
         obrasConDesfase.length > 0
-          ? ' Las obras con mayor desfase son: ' +
+          ? ` Las ${term.plural} con mayor desfase son: ` +
             obrasConDesfase
               .map(
                 (o) =>
-                  `[**${o.folio}**](/#/obras/${o.id}) (${(Number(o.avanceFisicoProgramado) - Number(o.avanceFisicoReal)).toFixed(1)} pp)`,
+                  `[**${o.folio}**](/#/acciones/${o.id}) (${(Number(o.avanceFisicoProgramado) - Number(o.avanceFisicoReal)).toFixed(1)} pp)`,
               )
               .join(', ') +
             '.'
           : '';
       return (
         `El avance fisico promedio es **${avgFisico.toFixed(1)}%**. ` +
-        `Obras en ejecucion: **${obrasEjecucion}** | Con retraso: **${obrasRetraso}**.` +
+        `${term.pluralCap} en ejecucion: **${obrasEjecucion}** | Con retraso: **${obrasRetraso}**.` +
         desfaseTop
       );
     }
@@ -536,12 +531,12 @@ export class ChatService {
     }
 
     return (
-      `Tu portafolio tiene **${totalObras} obras**: ${obrasEjecucion} en ejecucion, ${obrasRetraso} con retraso, ${obrasConcluidas} concluidas. ` +
+      `Tu portafolio tiene **${totalObras} ${term.plural}**: ${obrasEjecucion} en ejecucion, ${obrasRetraso} con retraso, ${obrasConcluidas} concluidas. ` +
       'Puedo responder preguntas como: ' +
-      '"Cuales obras tienen retraso?", ' +
+      `"Cuales ${term.plural} tienen retraso?", ` +
       '"Cual es el avance financiero del portafolio?", ' +
       '"Que alertas criticas estan abiertas?", ' +
-      '"Dame informacion de la obra [FOLIO]".'
+      `"Dame informacion de la ${term.singular} [FOLIO]".`
     );
   }
 }

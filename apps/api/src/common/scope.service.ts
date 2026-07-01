@@ -1,12 +1,12 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { Obra, Prisma, Rol, Usuario } from '@prisma/client';
+import { Accion, Prisma, Rol, Usuario } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class ScopeService {
   constructor(private readonly prisma: PrismaService) {}
 
-  obraWhere(user: Usuario): Prisma.ObraWhereInput {
+  obraWhere(user: Usuario): Prisma.AccionWhereInput {
     if (user.rol === Rol.estatal) return {};
     if (user.rol === Rol.municipal && user.municipioId) {
       return { municipioId: user.municipioId };
@@ -23,18 +23,18 @@ export class ScopeService {
       return {
         OR: [
           { municipioId: user.municipioId },
-          { obra: { municipioId: user.municipioId } },
+          { accion: { municipioId: user.municipioId } },
         ],
       };
     }
     if (user.rol === Rol.contratista && user.contratistaId) {
-      return { obra: { contratistaId: user.contratistaId } };
+      return { accion: { contratistaId: user.contratistaId } };
     }
     return { id: '00000000-0000-0000-0000-000000000000' };
   }
 
-  async getObraOrThrow(obraId: string, user: Usuario): Promise<Obra> {
-    const obra = await this.prisma.obra.findUnique({
+  async getObraOrThrow(obraId: string, user: Usuario): Promise<Accion> {
+    const obra = await this.prisma.accion.findUnique({
       where: { id: obraId },
       include: { municipio: true, contratista: true },
     });
@@ -43,7 +43,7 @@ export class ScopeService {
     return obra;
   }
 
-  assertObraAccess(obra: Obra, user: Usuario): void {
+  assertObraAccess(obra: Accion, user: Usuario): void {
     if (user.rol === Rol.estatal) return;
     if (user.rol === Rol.municipal && obra.municipioId !== user.municipioId) {
       throw new ForbiddenException('Access denied');
@@ -59,7 +59,7 @@ export class ScopeService {
       return { id: user.municipioId };
     }
     if (user.rol === Rol.contratista && user.contratistaId) {
-      return { obras: { some: { contratistaId: user.contratistaId } } };
+      return { acciones: { some: { contratistaId: user.contratistaId } } };
     }
     return { id: '00000000-0000-0000-0000-000000000000' };
   }
@@ -67,7 +67,7 @@ export class ScopeService {
   contratistaWhere(user: Usuario): Prisma.ContratistaWhereInput {
     if (user.rol === Rol.estatal) return {};
     if (user.rol === Rol.municipal && user.municipioId) {
-      return { obras: { some: { municipioId: user.municipioId } } };
+      return { acciones: { some: { municipioId: user.municipioId } } };
     }
     if (user.rol === Rol.contratista && user.contratistaId) {
       return { id: user.contratistaId };
@@ -92,13 +92,13 @@ export class ScopeService {
       return {
         OR: [
           { municipioId: user.municipioId },
-          { obra: { municipioId: user.municipioId } },
-          { municipioId: null, obraId: null, creador: { municipioId: user.municipioId } },
+          { accion: { municipioId: user.municipioId } },
+          { municipioId: null, accionId: null, creador: { municipioId: user.municipioId } },
         ],
       };
     }
     if (user.rol === Rol.contratista && user.contratistaId) {
-      return { obra: { contratistaId: user.contratistaId } };
+      return { accion: { contratistaId: user.contratistaId } };
     }
     return { id: '00000000-0000-0000-0000-000000000000' };
   }

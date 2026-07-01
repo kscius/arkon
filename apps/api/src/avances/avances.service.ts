@@ -38,7 +38,7 @@ export class AvancesService {
   async listByObra(obraId: string, user: Usuario) {
     await this.scope.getObraOrThrow(obraId, user);
     const avances = await this.prisma.avanceMensual.findMany({
-      where: { obraId },
+      where: { accionId: obraId },
     });
     return avances
       .sort((a, b) => comparePeriodo(a.periodo, b.periodo))
@@ -62,7 +62,7 @@ export class AvancesService {
     await this.scope.getObraOrThrow(obraId, user);
     const avance = await this.prisma.avanceMensual.create({
       data: {
-        obraId,
+        accionId: obraId,
         periodo: data.periodo,
         programado: data.programado,
         reportado: data.reportado,
@@ -73,7 +73,7 @@ export class AvancesService {
         comentarios: data.comentarios ?? '',
       },
     });
-    await this.prisma.obra.update({
+    await this.prisma.accion.update({
       where: { id: obraId },
       data: {
         avanceFisicoReal: data.reportado,
@@ -93,7 +93,7 @@ export class AvancesService {
     }
     const avance = await this.prisma.avanceMensual.findUnique({ where: { id: avanceId } });
     if (!avance) throw new NotFoundException('Avance not found');
-    await this.scope.getObraOrThrow(avance.obraId, user);
+    await this.scope.getObraOrThrow(avance.accionId, user);
     const validado = data.validado ?? 0;
     const updated = await this.prisma.avanceMensual.update({
       where: { id: avanceId },

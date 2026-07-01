@@ -9,16 +9,16 @@ describe('canAccessRoute', () => {
 
   it('grants estatal full navigation', () => {
     expect(canAccessRoute('estatal', '/dashboard', true)).toBe(true);
-    expect(canAccessRoute('estatal', '/obras', true)).toBe(true);
-    expect(canAccessRoute('estatal', '/obras/abc', true)).toBe(true);
+    expect(canAccessRoute('estatal', '/acciones', true)).toBe(true);
+    expect(canAccessRoute('estatal', '/acciones/abc', true)).toBe(true);
     expect(canAccessRoute('estatal', '/admin/usuarios', true)).toBe(true);
     expect(canAccessRoute('estatal', '/municipios/abc', true)).toBe(true);
   });
 
   it('restricts municipal to municipal and contractor catalog routes', () => {
     expect(canAccessRoute('municipal', '/dashboard', true)).toBe(true);
-    expect(canAccessRoute('municipal', '/obras', true)).toBe(true);
-    expect(canAccessRoute('municipal', '/obras/x', true)).toBe(true);
+    expect(canAccessRoute('municipal', '/acciones', true)).toBe(true);
+    expect(canAccessRoute('municipal', '/acciones/x', true)).toBe(true);
     expect(canAccessRoute('municipal', '/municipios/x', true)).toBe(true);
     expect(canAccessRoute('municipal', '/contratistas', true)).toBe(true);
     expect(canAccessRoute('municipal', '/asistente', true)).toBe(true);
@@ -28,10 +28,10 @@ describe('canAccessRoute', () => {
 
   it('restricts contratista to dashboard and contractor panel routes', () => {
     expect(canAccessRoute('contratista', '/dashboard', true)).toBe(true);
-    expect(canAccessRoute('contratista', '/obras', true)).toBe(true);
+    expect(canAccessRoute('contratista', '/acciones', true)).toBe(true);
     expect(canAccessRoute('contratista', '/contratistas/xyz', true)).toBe(true);
     expect(canAccessRoute('contratista', '/alertas', true)).toBe(true);
-    expect(canAccessRoute('contratista', '/obras/1', true)).toBe(true);
+    expect(canAccessRoute('contratista', '/acciones/1', true)).toBe(true);
     expect(canAccessRoute('contratista', '/municipios', true)).toBe(false);
     expect(canAccessRoute('contratista', '/asistente', true)).toBe(false);
     expect(canAccessRoute('contratista', '/configurador-alertas', true)).toBe(false);

@@ -33,8 +33,8 @@ test.describe('CONAGUA UI fixes (review 2026-06)', () => {
 
   test('invalid obra id shows friendly error without server 500', async ({ page }) => {
     await login(page, DEMO_USERS.estatal);
-    await page.goto('/#/obras/1');
-    await expect(page.getByText(/Identificador de obra no válido/i)).toBeVisible({
+    await page.goto('/#/acciones/1');
+    await expect(page.getByText(/Identificador de (acci[oó]n|obra) no válido/i)).toBeVisible({
       timeout: 15_000,
     });
     await expect(page.getByText(/Internal server error/i)).not.toBeVisible();

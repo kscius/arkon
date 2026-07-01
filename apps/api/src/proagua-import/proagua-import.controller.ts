@@ -13,7 +13,7 @@ import { ProaguaImportService, ProaguaObraImportRow } from './proagua-import.ser
 export class ProaguaImportController {
   constructor(private readonly service: ProaguaImportService) {}
 
-  @Post('obras')
+  @Post('acciones')
   @UseGuards(RolesGuard)
   @Roles(Rol.estatal, Rol.municipal)
   importJson(
@@ -23,7 +23,7 @@ export class ProaguaImportController {
     return this.service.importObras(body, user);
   }
 
-  @Post('obras/csv')
+  @Post('acciones/csv')
   @UseGuards(RolesGuard)
   @Roles(Rol.estatal, Rol.municipal)
   @UseInterceptors(FileInterceptor('file'))

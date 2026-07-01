@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { getBrand } from '@/config/brand';
 import { useApp } from '@/context/AppContext';
 import { useAsyncData } from '@/hooks/use-async-data';
 import {
@@ -51,6 +52,7 @@ interface CofinanciamientoTableProps {
 }
 
 export function CofinanciamientoTable({ obraId }: CofinanciamientoTableProps) {
+  const { entity } = getBrand();
   const { user } = useApp();
   const canEdit = canEditCofinanciamiento(user);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -163,7 +165,7 @@ export function CofinanciamientoTable({ obraId }: CofinanciamientoTableProps) {
       <CardContent>
         {rows.length === 0 ? (
           <p className="text-xs text-gray-500 py-4 text-center">
-            No hay registros de cofinanciamiento para esta obra.
+            No hay registros de cofinanciamiento para esta {entity.singular}.
           </p>
         ) : (
           <div className="overflow-x-auto">

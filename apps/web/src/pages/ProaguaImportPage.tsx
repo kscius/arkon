@@ -6,12 +6,14 @@ import { importProaguaObrasCsv, importProaguaObrasJson } from '@/lib/api';
 import { downloadProaguaCsvTemplate } from '@/lib/proagua-csv-template';
 import { toast } from 'sonner';
 import type { ProaguaImportResult } from '@/types';
+import { getBrand } from '@/config/brand';
 
 export default function ProaguaImportPage() {
+  const { entity } = getBrand();
   const [busy, setBusy] = useState(false);
   const [result, setResult] = useState<ProaguaImportResult | null>(null);
   const [jsonText, setJsonText] = useState(
-    '[\n  {\n    "cua": "CUA-EJEMPLO-001",\n    "nombre": "Obra importada de ejemplo",\n    "programa": "PROAGUA"\n  }\n]',
+    `[\n  {\n    "cua": "CUA-EJEMPLO-001",\n    "nombre": "${entity.singularCap} importada de ejemplo",\n    "programa": "PROAGUA"\n  }\n]`,
   );
 
   const handleCsv = async (file: File | null) => {
@@ -53,7 +55,7 @@ export default function ProaguaImportPage() {
           Importación histórica PROAGUA
         </h1>
         <p className="text-xs text-gray-500 mt-1">
-          Carga masiva de obras por CUA desde CSV o JSON (upsert)
+          Carga masiva de {entity.plural} por CUA desde CSV o JSON (upsert)
         </p>
       </div>
 
@@ -92,7 +94,7 @@ export default function ProaguaImportPage() {
 
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold">JSON (array de obras)</CardTitle>
+            <CardTitle className="text-sm font-semibold">JSON (array de {entity.plural})</CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <textarea

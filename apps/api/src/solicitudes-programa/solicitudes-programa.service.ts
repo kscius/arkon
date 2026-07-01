@@ -25,10 +25,10 @@ export class SolicitudesProgramaService {
     componente: string;
     montoSolicitado: unknown;
     estatus: string;
-    obraResultanteId: string | null;
+    accionResultanteId: string | null;
     entidad?: { nombre: string } | null;
     municipio?: { nombre: string } | null;
-    obraResultante?: { folio: string } | null;
+    accionResultante?: { folio: string } | null;
   }) {
     return {
       id: s.id,
@@ -40,8 +40,8 @@ export class SolicitudesProgramaService {
       componente: s.componente,
       monto_solicitado: Number(s.montoSolicitado),
       estatus: s.estatus,
-      obra_resultante_id: s.obraResultanteId,
-      obra_resultante_folio: s.obraResultante?.folio ?? null,
+      obra_resultante_id: s.accionResultanteId,
+      obra_resultante_folio: s.accionResultante?.folio ?? null,
       entidad_nombre: s.entidad?.nombre ?? '',
       municipio_nombre: s.municipio?.nombre ?? '',
     };
@@ -61,7 +61,7 @@ export class SolicitudesProgramaService {
         ...this.solicitudWhere(user),
         ...(estatus ? { estatus } : {}),
       },
-      include: { entidad: true, municipio: true, obraResultante: true },
+      include: { entidad: true, municipio: true, accionResultante: true },
       orderBy: [{ ejercicioFiscal: 'desc' }, { createdAt: 'desc' }],
     });
     return list.map((s) => this.map(s));
@@ -70,7 +70,7 @@ export class SolicitudesProgramaService {
   async findOne(id: string, user: Usuario) {
     const s = await this.prisma.solicitudPrograma.findFirst({
       where: { id, ...this.solicitudWhere(user) },
-      include: { entidad: true, municipio: true, obraResultante: true },
+      include: { entidad: true, municipio: true, accionResultante: true },
     });
     if (!s) throw new NotFoundException('Solicitud not found');
     return this.map(s);
@@ -102,7 +102,7 @@ export class SolicitudesProgramaService {
         montoSolicitado: data.monto_solicitado,
         estatus: 'borrador',
       },
-      include: { entidad: true, municipio: true, obraResultante: true },
+      include: { entidad: true, municipio: true, accionResultante: true },
     });
     return this.map(s);
   }
@@ -127,9 +127,9 @@ export class SolicitudesProgramaService {
         tipoApoyo: data.tipo_apoyo,
         componente: data.componente,
         montoSolicitado: data.monto_solicitado,
-        obraResultanteId: data.obra_resultante_id,
+        accionResultanteId: data.obra_resultante_id,
       },
-      include: { entidad: true, municipio: true, obraResultante: true },
+      include: { entidad: true, municipio: true, accionResultante: true },
     });
     return this.map(s);
   }
@@ -161,10 +161,10 @@ export class SolicitudesProgramaService {
       data: {
         estatus: nuevoEstatus,
         ...(nuevoEstatus === 'aprobada'
-          ? { obraResultanteId: obraResultanteId ?? existing.obra_resultante_id ?? undefined }
+          ? { accionResultanteId: obraResultanteId ?? existing.obra_resultante_id ?? undefined }
           : {}),
       },
-      include: { entidad: true, municipio: true, obraResultante: true },
+      include: { entidad: true, municipio: true, accionResultante: true },
     });
     return this.map(s);
   }

@@ -1,5 +1,5 @@
 import { BadRequestException, ForbiddenException, Injectable } from '@nestjs/common';
-import { EstatusObra, Rol, TipoObra, Usuario } from '@prisma/client';
+import { EstatusAccion, Rol, TipoAccion, Usuario } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 export interface ProaguaObraImportRow {
@@ -9,7 +9,7 @@ export interface ProaguaObraImportRow {
   localidad: string;
   programa?: string;
   dependencia?: string;
-  tipo_obra?: TipoObra;
+  tipo_obra?: TipoAccion;
   monto_autorizado?: number;
   municipio_id?: string;
   contratista_id?: string;
@@ -40,7 +40,7 @@ export class ProaguaImportService {
         throw new BadRequestException('Each row must have a CUA');
       }
       const cua = row.cua.trim();
-      const existing = await this.prisma.obra.findFirst({ where: { cua } });
+      const existing = await this.prisma.accion.findFirst({ where: { cua } });
 
       const data = {
         folio: row.folio,
@@ -48,7 +48,7 @@ export class ProaguaImportService {
         localidad: row.localidad,
         programa: row.programa ?? 'PROAGUA',
         dependencia: row.dependencia ?? 'CONAGUA',
-        tipoObra: row.tipo_obra ?? TipoObra.agua_potable,
+        tipoAccion: row.tipo_obra ?? TipoAccion.agua_potable,
         montoAutorizado: row.monto_autorizado ?? 0,
         municipioId: row.municipio_id,
         contratistaId: row.contratista_id,
@@ -62,14 +62,14 @@ export class ProaguaImportService {
       };
 
       if (existing) {
-        const updated = await this.prisma.obra.update({
+        const updated = await this.prisma.accion.update({
           where: { id: existing.id },
           data: {
             nombre: data.nombre ?? existing.nombre,
             localidad: data.localidad ?? existing.localidad,
             programa: data.programa,
             dependencia: data.dependencia,
-            tipoObra: data.tipoObra,
+            tipoAccion: data.tipoAccion,
             montoAutorizado: data.montoAutorizado,
             subcomponente: data.subcomponente,
             organismoOperadorId: data.organismoOperadorId,
@@ -91,14 +91,14 @@ export class ProaguaImportService {
         const folio =
           data.folio ??
           `PROAGUA-${new Date().getFullYear()}-${cua.replace(/\W/g, '').slice(-6)}`;
-        const created = await this.prisma.obra.create({
+        const created = await this.prisma.accion.create({
           data: {
             folio,
             nombre: data.nombre,
             localidad: data.localidad,
             programa: data.programa,
             dependencia: data.dependencia,
-            tipoObra: data.tipoObra,
+            tipoAccion: data.tipoAccion,
             montoAutorizado: data.montoAutorizado,
             municipioId: data.municipioId!,
             contratistaId: data.contratistaId,
@@ -109,7 +109,7 @@ export class ProaguaImportService {
             idSisba: data.idSisba,
             numContrato: data.numContrato,
             cua,
-            estatus: EstatusObra.en_preparacion,
+            estatus: EstatusAccion.en_preparacion,
           },
         });
         results.push({ cua, action: 'created', id: created.id });

@@ -1,4 +1,20 @@
-export type TenantId = 'arkon' | 'conagua';
+export type TenantId = 'conagua';
+
+/**
+ * Terminology for the core tracked entity. CONAGUA (PROAGUA) manages each
+ * record as an "acción" (1 acción = 1 CUA). These labels drive all
+ * user-visible copy.
+ */
+export type EntityTerms = {
+  /** lowercase singular, mid-sentence (e.g. "nueva acción"). */
+  singular: string;
+  /** lowercase plural, mid-sentence (e.g. "obras en riesgo"). */
+  plural: string;
+  /** Capitalized singular, start-of-phrase/label (e.g. "Detalle de Acción"). */
+  singularCap: string;
+  /** Capitalized plural, headings/menus (e.g. "Catálogo de Acciones"). */
+  pluralCap: string;
+};
 
 export type BrandConfig = {
   tenantId: TenantId;
@@ -7,6 +23,8 @@ export type BrandConfig = {
   institutionName: string;
   tagline: string;
   loginSubtitle: string;
+  /** Terminology for the core tracked entity (obra vs acción). */
+  entity: EntityTerms;
   assistantName: string;
   assistantGreeting: string;
   /** Program codes for obra forms and filters (tenant-specific). */
@@ -34,63 +52,19 @@ export type BrandConfig = {
   };
 };
 
-const ARKON_BRAND: BrandConfig = {
-  tenantId: 'arkon',
-  productName: 'ARKON',
-  productShortName: 'ARKON',
-  institutionName: 'Sistema Integral de Gestión de Obras Públicas',
-  tagline: 'Plataforma multi-nivel para gobiernos estatales y municipales',
-  loginSubtitle: 'Sistema Integral de Gestión de Obras Públicas',
-  assistantName: 'Asistente ARKON',
-  assistantGreeting:
-    'Buen día. Soy el Asistente Inteligente de ARKON. Consulto obras, alertas, avances, estimaciones, documentos, observaciones, contratistas y municipios en tiempo real.\n\nCruzo datos físico-financieros, detecto riesgos, resumo por programa (FAPAA, CAM, FAIS) y te envío enlaces directos a cada obra.\n\nRecuerdo el contexto de nuestra conversación. ¿Cómo puedo ayudarte hoy?',
-  programas: ['FAPAA', 'CAM', 'FAIS', 'FORTAMUN', 'FOMAGUA', 'FOISE', 'PEF', 'SISPLADE'],
-  dependencias: [
-    'Comision de Agua Potable',
-    'Proteccion Civil Estatal',
-    'Secretaria de Cultura',
-    'Secretaria de Cultura y Deporte',
-    'Secretaria de Desarrollo Social',
-    'Secretaria de Educacion',
-    'Secretaria de Energia',
-    'Secretaria de Infraestructura',
-    'Secretaria de Salud',
-    'Secretaria del Medio Ambiente',
-  ],
-  assistantSuggestions: [
-    'Compara fisico vs financiero por programa',
-    'Detalle de obra: avances, docs y observaciones',
-    'Alertas criticas sin atender y acciones sugeridas',
-    'Inversion total por municipio y dependencia',
-    'Estimaciones en revisión sin validar',
-    'Obras en riesgo con enlaces directos',
-  ],
-  demoEmail: 'estatal@arkon.gob.mx',
-  demoPasswordHint: 'Arkon2024!',
-  logoSrc: null,
-  logoAlt: 'ARKON',
-  colors: {
-    primary: '#1B3A5C',
-    primaryLight: '#2C5282',
-    secondary: '#0D7377',
-    accent: '#E8913A',
-    surface: '#F7F8FA',
-    surfaceDark: '#E2E8F0',
-  },
-  roleColors: {
-    estatal: '#1B3A5C',
-    municipal: '#0D7377',
-    contratista: '#E8913A',
-  },
-};
-
 const CONAGUA_BRAND: BrandConfig = {
   tenantId: 'conagua',
   productName: 'CONAGUA',
   productShortName: 'CONAGUA',
   institutionName: 'Comisión Nacional del Agua',
-  tagline: 'Seguimiento y control de obras públicas del sector hídrico',
+  tagline: 'Seguimiento y control de obras del sector hídrico',
   loginSubtitle: 'Comisión Nacional del Agua',
+  entity: {
+    singular: 'obra',
+    plural: 'obras',
+    singularCap: 'Obra',
+    pluralCap: 'Obras',
+  },
   assistantName: 'Asistente CONAGUA',
   assistantGreeting:
     'Buen día. Soy el Asistente CONAGUA. Accedo al portafolio hídrico completo: obras PROAGUA, PEAS, PRODDER, PTAR, avances, alertas, estimaciones y documentos.\n\nAnalizo desviaciones físico-financieras, inversión por programa, alertas críticas y te comparto enlaces directos a cada obra.\n\nMantengo el hilo de nuestra conversación. ¿Cómo puedo ayudarte hoy?',
@@ -124,14 +98,11 @@ const CONAGUA_BRAND: BrandConfig = {
 };
 
 const BRANDS: Record<TenantId, BrandConfig> = {
-  arkon: ARKON_BRAND,
   conagua: CONAGUA_BRAND,
 };
 
 function resolveTenantId(): TenantId {
-  const raw = (import.meta.env.VITE_TENANT as string | undefined)?.trim().toLowerCase();
-  if (raw === 'conagua') return 'conagua';
-  return 'arkon';
+  return 'conagua';
 }
 
 function resolvePublicAsset(path: string): string {
