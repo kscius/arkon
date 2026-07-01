@@ -18,6 +18,9 @@ import { SUMMARY_ORDER, TIPO_META } from '@/lib/pendientes-meta';
 
 type TabValue = 'todas' | PendienteTipo;
 
+const tabCountBadgeClass =
+  'rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold text-gray-700 group-data-[state=active]:bg-white group-data-[state=active]:text-brand-primary';
+
 function filterItems(
   items: PendienteItem[],
   tab: TabValue,
@@ -170,10 +173,10 @@ export default function BandejaAccionesPage() {
                 <TabsList className="flex h-auto flex-wrap gap-1 border border-gray-200 bg-white p-1">
                   <TabsTrigger
                     value="todas"
-                    className="gap-1.5 text-xs data-[state=active]:bg-brand-primary data-[state=active]:text-white"
+                    className="group gap-1.5 text-xs data-[state=active]:bg-brand-primary data-[state=active]:text-white"
                   >
                     Todas
-                    <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold data-[state=active]:bg-white/20">
+                    <span className={tabCountBadgeClass}>
                       {data.total}
                     </span>
                   </TabsTrigger>
@@ -184,11 +187,11 @@ export default function BandejaAccionesPage() {
                       <TabsTrigger
                         key={tipo}
                         value={tipo}
-                        className="gap-1.5 text-xs data-[state=active]:bg-brand-primary data-[state=active]:text-white"
+                        className="group gap-1.5 text-xs data-[state=active]:bg-brand-primary data-[state=active]:text-white"
                       >
                         <Icon className="h-3.5 w-3.5" />
                         {TIPO_META[tipo].label}
-                        <span className="rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-semibold">
+                        <span className={tabCountBadgeClass}>
                           {count}
                         </span>
                       </TabsTrigger>
