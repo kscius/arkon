@@ -157,7 +157,7 @@ export async function login(page: Page, email: string): Promise<void> {
   await page.locator('input[type="email"]').fill(email);
   await page.locator('input[type="password"]').fill(DEMO_PASSWORD);
   await page.getByRole('button', { name: /Iniciar sesi[oó]n/i }).click();
-  await page.waitForURL(/#\/dashboard/, { timeout: 30_000 });
+  await page.waitForURL(/#\/bandeja/, { timeout: 30_000 });
 }
 
 /** HashRouter does not always re-render on `page.goto('/#/…')` from an in-app route — use nav link. */

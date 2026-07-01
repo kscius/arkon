@@ -1,53 +1,19 @@
 import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
-import {
-  Activity,
-  Bell,
-  CheckCircle2,
-  ChevronRight,
-  DollarSign,
-  FileText,
-  Folder,
-  Inbox,
-  MessageSquare,
-} from 'lucide-react';
-import type { LucideIcon } from 'lucide-react';
+import { CheckCircle2, ChevronRight, Inbox } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { PageState } from '@/components/PageState';
+import { PendienteRow } from '@/components/PendienteRow';
 import { useAsyncData } from '@/hooks/use-async-data';
 import { fetchPendientes } from '@/lib/api';
-import type { PendienteItem, PendienteTipo, PendientesTotales } from '@/lib/api';
-import { formatDate } from '@/lib/utils';
-
-const TIPO_META: Record<PendienteTipo, { label: string; icon: LucideIcon }> = {
-  avance: { label: 'Avance', icon: Activity },
-  estimacion: { label: 'Estimación', icon: DollarSign },
-  documento: { label: 'Documento', icon: Folder },
-  observacion: { label: 'Observación', icon: MessageSquare },
-  alerta: { label: 'Alerta', icon: Bell },
-  solicitud: { label: 'Solicitud', icon: FileText },
-};
-
-const SUMMARY_ORDER: { key: keyof PendientesTotales; tipo: PendienteTipo }[] = [
-  { key: 'alertas', tipo: 'alerta' },
-  { key: 'avances', tipo: 'avance' },
-  { key: 'estimaciones', tipo: 'estimacion' },
-  { key: 'documentos', tipo: 'documento' },
-  { key: 'observaciones', tipo: 'observacion' },
-  { key: 'solicitudes', tipo: 'solicitud' },
-];
-
-const SEVERITY_STRIPE: Record<PendienteItem['severidad'], string> = {
-  alta: 'bg-red-500',
-  media: 'bg-amber-500',
-  baja: 'bg-gray-300',
-};
+import { SUMMARY_ORDER, TIPO_META } from '@/lib/pendientes-meta';
 
 export function PendingActionsInbox() {
   const navigate = useNavigate();
   const { data, loading, error, reload } = useAsyncData(fetchPendientes, []);
+
+  const handleResolve = (enlace: string) => navigate(enlace);
 
   return (
     <Card className="border-brand-primary/15 shadow-sm">
@@ -63,9 +29,20 @@ export function PendingActionsInbox() {
             </div>
           </div>
           {data && data.total > 0 && (
-            <Badge className="bg-brand-primary text-white hover:bg-brand-primary">
-              {data.total} pendiente{data.total === 1 ? '' : 's'}
-            </Badge>
+            <div className="flex shrink-0 items-center gap-2">
+              <Badge className="bg-brand-primary text-white hover:bg-brand-primary">
+                {data.total} pendiente{data.total === 1 ? '' : 's'}
+              </Badge>
+              <Button
+                size="sm"
+                variant="outline"
+                className="gap-1 text-brand-primary"
+                onClick={() => navigate('/bandeja')}
+              >
+                Ver todas las acciones
+                <ChevronRight className="h-4 w-4" />
+              </Button>
+            </div>
           )}
         </div>
       </CardHeader>
@@ -96,51 +73,27 @@ export function PendingActionsInbox() {
               </div>
 
               <ul className="divide-y divide-gray-100 rounded-lg border border-gray-100">
-                {data?.items.map((item, index) => {
-                  const Icon = TIPO_META[item.tipo].icon;
-                  return (
-                    <motion.li
-                      key={`${item.tipo}-${item.id}`}
-                      initial={{ opacity: 0, y: 6 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.2, delay: Math.min(index * 0.02, 0.3) }}
-                      className="flex items-center gap-3 px-3 py-2.5 hover:bg-brand-surface/60"
-                    >
-                      <span className={`h-9 w-1 shrink-0 rounded-full ${SEVERITY_STRIPE[item.severidad]}`} />
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-brand-primary/5 text-brand-primary">
-                        <Icon className="h-4 w-4" />
-                      </span>
-                      <div className="min-w-0 flex-1">
-                        <div className="flex items-center gap-2">
-                          <p className="truncate text-sm font-medium text-gray-900">{item.titulo}</p>
-                          <Badge variant="outline" className="hidden shrink-0 text-[10px] sm:inline-flex">
-                            {TIPO_META[item.tipo].label}
-                          </Badge>
-                        </div>
-                        <p className="truncate text-xs text-gray-500">
-                          {[item.accionFolio, item.accionNombre ?? item.descripcion, item.municipio]
-                            .filter(Boolean)
-                            .join(' · ')}
-                        </p>
-                      </div>
-                      {item.fecha && (
-                        <span className="hidden shrink-0 text-[11px] text-gray-400 md:inline">
-                          {formatDate(item.fecha)}
-                        </span>
-                      )}
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="shrink-0 gap-1 text-brand-primary hover:bg-brand-primary/10"
-                        onClick={() => navigate(item.enlace)}
-                      >
-                        Resolver
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </motion.li>
-                  );
-                })}
+                {data?.items.slice(0, 6).map((item, index) => (
+                  <PendienteRow
+                    key={`${item.tipo}-${item.id}`}
+                    item={item}
+                    index={index}
+                    onResolve={handleResolve}
+                  />
+                ))}
               </ul>
+              {data && data.total > 6 && (
+                <div className="text-center">
+                  <Button
+                    variant="link"
+                    size="sm"
+                    className="h-auto p-0 text-xs text-gray-500 hover:text-brand-primary"
+                    onClick={() => navigate('/bandeja')}
+                  >
+                    +{data.total - 6} más
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </PageState>

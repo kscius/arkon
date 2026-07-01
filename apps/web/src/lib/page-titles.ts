@@ -5,6 +5,7 @@ export function getPageTitle(pathname: string, productName: string): string {
   const path = pathname.replace(/\/+$/, '') || '/';
   const { entity } = getBrand();
 
+  if (path === '/bandeja') return 'Bandeja de Acciones';
   if (path === '/dashboard') return 'Dashboard Ejecutivo';
   if (path === '/acciones') return `Catálogo de ${entity.pluralCap}`;
   if (path.startsWith('/acciones/')) return `Detalle de ${entity.singularCap}`;

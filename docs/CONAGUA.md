@@ -27,6 +27,40 @@ en runtime).
 
 - No confundir con `AccionPrograma` (catalogo del Anexo VII), que es una entidad distinta y se mantiene igual.
 
+## Enfoque de producto: Bandeja de Acciones
+
+El portal CONAGUA sigue llamando **Obra** / **Obras** a la entidad del catalogo y del detalle (ver `entity.pluralCap` en `apps/web/src/config/brand.ts`). Eso no cambia. Lo que cambia es **como se organiza la navegacion y la pantalla de entrada** tras iniciar sesion: el sistema se centra en las **acciones pendientes** que cada usuario (estatal, municipal o contratista) puede o debe realizar **sobre** esas obras — avances, estimaciones, documentos, observaciones, alertas, solicitudes — y no al reves (entrar primero al listado de obras o al tablero de KPIs).
+
+### Principio
+
+- La **obra** sigue siendo la unidad de registro y el objeto del catalogo (`/#/acciones`, etiqueta visible **Obras**).
+- La **interaccion diaria** del usuario se guia por una **bandeja de tareas**: todo lo que requiere su atencion, agrupado y accionable desde un solo lugar.
+- El **Dashboard** (KPIs, graficas) y el **catalogo de obras** siguen existiendo y son accesibles desde el menu; dejan de ser la via principal ni la pantalla de aterrizaje.
+
+### Cambios concretos (web)
+
+| Aspecto | Antes | Ahora |
+|---------|-------|-------|
+| Pantalla tras login | `/#/dashboard` | `/#/bandeja` |
+| Primer item del menu (3 roles) | Dashboard u Obras segun rol | **Bandeja de Acciones** |
+| Segundo item del menu | — | **Dashboard** |
+| Bandeja completa de pendientes | Solo widget resumido en Dashboard | Pagina dedicada `BandejaAccionesPage.tsx` en `/#/bandeja` |
+
+Detalle de implementacion en front:
+
+- **Ruta y pagina:** `/#/bandeja` → `apps/web/src/pages/BandejaAccionesPage.tsx`. Muestra todas las acciones pendientes del usuario (misma fuente que el widget).
+- **Menu lateral** (`AppContext.tsx`): para estatal, municipal y contratista, el primer item es `{ path: '/bandeja', label: 'Bandeja de Acciones' }`; el Dashboard pasa a ser el segundo.
+- **Redireccion post-login** (`LoginPage.tsx`, `App.tsx`, `CatalogRedirect.tsx`): rutas por defecto y catch-all apuntan a `/#/bandeja` en lugar de `/#/dashboard`.
+- **Widget en Dashboard** (`PendingActionsInbox.tsx`): se mantiene como **resumen** (primeros items); incluye el enlace **Ver todas las acciones** que navega a `/#/bandeja`.
+- **API:** sin cambios de backend. La bandeja reutiliza el endpoint existente `GET /dashboard/pendientes` (cliente en `apps/web/src/lib/api.ts`).
+
+### Lo que no cambia
+
+- Nombres visibles de la entidad: **Obra** / **Obras** (y **Mis Obras** para contratista) en catalogo, detalle y titulos de pagina.
+- Catalogo en `/#/acciones` (`ObrasPage.tsx`) y flujos de detalle por obra.
+- Dashboard con KPIs y graficas en `/#/dashboard`, accesible como segundo item del menu.
+- Rename tecnico interno Obra → Accion en Prisma/API (seccion anterior); la bandeja de **acciones pendientes** es un concepto de **producto/UX** distinto del nombre del modelo de datos.
+
 ## Variables de entorno
 
 | Variable | Capa | Valor en esta rama |

@@ -5,6 +5,7 @@ import { BrandLogo } from '@/components/brand/BrandLogo';
 import { getBrand } from '@/config/brand';
 import {
   LayoutDashboard,
+  Inbox,
   Building2,
   MapPin,
   Users,
@@ -27,6 +28,7 @@ import type { LucideIcon } from 'lucide-react';
 
 const iconMap: Record<string, LucideIcon> = {
   LayoutDashboard,
+  Inbox,
   Building2,
   MapPin,
   Users,
@@ -50,6 +52,7 @@ export function Sidebar() {
   const menuItems = getMenuItems();
 
   const isActive = (path: string) => {
+    if (path === '/bandeja') return location.pathname === '/bandeja';
     if (path === '/dashboard') return location.pathname === '/dashboard';
     if (path === '/acciones') return location.pathname === '/acciones' || location.pathname.startsWith('/acciones/');
     if (path.includes('/municipios/')) return location.pathname.startsWith('/municipios');

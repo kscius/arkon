@@ -10,7 +10,7 @@ test.describe('CONAGUA UI fixes (review 2026-06)', () => {
     await page.goto('/#/');
     await expect(page.locator('input[type="password"]')).not.toHaveValue('');
     await page.getByRole('button', { name: /Iniciar sesi[oó]n/i }).click();
-    await page.waitForURL(/#\/dashboard/, { timeout: 30_000 });
+    await page.waitForURL(/#\/bandeja/, { timeout: 30_000 });
   });
 
   test('top bar shows route title on solicitudes', async ({ page }) => {

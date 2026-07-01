@@ -24,7 +24,7 @@ export function MunicipiosRedirect() {
   if (data[0]) {
     return <Navigate to={`/municipios/${data[0].id}`} replace />;
   }
-  return <Navigate to="/dashboard" replace />;
+  return <Navigate to="/bandeja" replace />;
 }
 
 export function ContratistasRedirect() {
@@ -47,5 +47,5 @@ export function ContratistasRedirect() {
   if (data[0]) {
     return <Navigate to={`/contratistas/${data[0].id}`} replace />;
   }
-  return <Navigate to="/dashboard" replace />;
+  return <Navigate to="/bandeja" replace />;
 }

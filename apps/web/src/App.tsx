@@ -7,6 +7,7 @@ import { TopBar } from '@/components/layout/TopBar';
 import { MobileDrawer } from '@/components/layout/MobileDrawer';
 import { Spinner } from '@/components/ui/spinner';
 import LoginPage from '@/pages/LoginPage';
+import BandejaAccionesPage from '@/pages/BandejaAccionesPage';
 import DashboardRouter from '@/components/dashboard/DashboardRouter';
 import ObraDetailPage from '@/pages/ObraDetailPage';
 import ObrasPage from '@/pages/ObrasPage';
@@ -42,7 +43,7 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   if (!user) return <Navigate to="/" replace />;
 
   if (!canAccess(path)) {
-    return <Navigate to="/dashboard" replace />;
+    return <Navigate to="/bandeja" replace />;
   }
 
   return <>{children}</>;
@@ -75,7 +76,17 @@ function AppRoutes() {
     <Routes>
       <Route
         path="/"
-        element={user ? <Navigate to="/dashboard" replace /> : <LoginPage />}
+        element={user ? <Navigate to="/bandeja" replace /> : <LoginPage />}
+      />
+      <Route
+        path="/bandeja"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <BandejaAccionesPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
       />
       <Route
         path="/dashboard"
@@ -227,7 +238,7 @@ function AppRoutes() {
           </ProtectedRoute>
         }
       />
-      <Route path="*" element={<Navigate to="/dashboard" replace />} />
+      <Route path="*" element={<Navigate to="/bandeja" replace />} />
     </Routes>
   );
 }

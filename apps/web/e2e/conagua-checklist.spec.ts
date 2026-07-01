@@ -278,11 +278,13 @@ test.describe('CONAGUA checklist (browser registry)', () => {
 
   test('MUN-R01: municipal dashboard Guadalupe Victoria', async ({ page }) => {
     await login(page, DEMO_USERS.municipal);
+    await page.getByRole('link', { name: 'Dashboard' }).click();
     await expect(page.getByRole('heading', { name: /Dashboard Municipal.*Guadalupe Victoria/i })).toBeVisible();
   });
 
   test('CTR-R01: contratista panel', async ({ page }) => {
     await login(page, DEMO_USERS.contratista);
+    await page.getByRole('link', { name: 'Mi Empresa' }).click();
     await expect(page.getByRole('heading', { name: /Panel del Contratista/i })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Mis Acciones' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Mi Empresa' })).toBeVisible();
@@ -291,8 +293,8 @@ test.describe('CONAGUA checklist (browser registry)', () => {
   test('CTR-R04: contratista blocked from admin and asistente', async ({ page }) => {
     await login(page, DEMO_USERS.contratista);
     await page.goto('/#/admin/usuarios');
-    await expect(page).toHaveURL(/#\/dashboard/);
+    await expect(page).toHaveURL(/#\/bandeja/);
     await page.goto('/#/asistente');
-    await expect(page).toHaveURL(/#\/dashboard/);
+    await expect(page).toHaveURL(/#\/bandeja/);
   });
 });

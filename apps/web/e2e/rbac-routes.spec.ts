@@ -9,8 +9,8 @@ test.describe('RBAC route guards', () => {
   test('municipal cannot open admin usuarios', async ({ page }) => {
     await login(page, DEMO_USERS.municipal);
     await page.goto('/#/admin/usuarios', { waitUntil: 'domcontentloaded' });
-    await expect(page).toHaveURL(/#\/dashboard/, { timeout: 10_000 });
-    await expect(page.getByRole('heading', { name: /Dashboard Municipal/i })).toBeVisible({
+    await expect(page).toHaveURL(/#\/bandeja/, { timeout: 10_000 });
+    await expect(page.getByRole('heading', { name: 'Bandeja de Acciones' })).toBeVisible({
       timeout: 15_000,
     });
   });
@@ -18,17 +18,17 @@ test.describe('RBAC route guards', () => {
   test('contratista cannot open admin nor asistente', async ({ page }) => {
     await login(page, DEMO_USERS.contratista);
     await page.goto('/#/admin/usuarios');
-    await expect(page).toHaveURL(/#\/dashboard/, { timeout: 10_000 });
+    await expect(page).toHaveURL(/#\/bandeja/, { timeout: 10_000 });
 
     await page.goto('/#/asistente');
-    await expect(page).toHaveURL(/#\/dashboard/, { timeout: 10_000 });
-    await expect(page.getByRole('heading', { name: /Panel del Contratista/i })).toBeVisible();
+    await expect(page).toHaveURL(/#\/bandeja/, { timeout: 10_000 });
+    await expect(page.getByRole('heading', { name: 'Bandeja de Acciones' })).toBeVisible();
   });
 
   test('contratista cannot open municipios catalog', async ({ page }) => {
     await login(page, DEMO_USERS.contratista);
     await page.goto('/#/municipios');
-    await expect(page).toHaveURL(/#\/dashboard/, { timeout: 10_000 });
+    await expect(page).toHaveURL(/#\/bandeja/, { timeout: 10_000 });
   });
 
   test('municipal can open asistente', async ({ page }) => {

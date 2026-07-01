@@ -7,6 +7,13 @@ describe('canAccessRoute', () => {
     expect(canAccessRoute(null, '/dashboard', false)).toBe(false);
   });
 
+  it('allows bandeja for all authenticated roles', () => {
+    expect(canAccessRoute('estatal', '/bandeja', true)).toBe(true);
+    expect(canAccessRoute('municipal', '/bandeja', true)).toBe(true);
+    expect(canAccessRoute('contratista', '/bandeja', true)).toBe(true);
+    expect(canAccessRoute(null, '/bandeja', false)).toBe(false);
+  });
+
   it('grants estatal full navigation', () => {
     expect(canAccessRoute('estatal', '/dashboard', true)).toBe(true);
     expect(canAccessRoute('estatal', '/acciones', true)).toBe(true);

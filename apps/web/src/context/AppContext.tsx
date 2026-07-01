@@ -129,6 +129,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ? `/contratistas/${selectedContratista}`
         : '/contratistas';
       return [
+        { path: '/bandeja', label: 'Bandeja de Acciones', icon: 'Inbox' },
         { path: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
         { path: '/acciones', label: entity.pluralCap, icon: 'HardHat' },
         ...(solicitudesItem ? [solicitudesItem] : []),
@@ -144,6 +145,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
     if (role === 'municipal') {
       return [
+        { path: '/bandeja', label: 'Bandeja de Acciones', icon: 'Inbox' },
         { path: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
         { path: '/acciones', label: entity.pluralCap, icon: 'HardHat' },
         ...(solicitudesItem ? [solicitudesItem] : []),
@@ -162,6 +164,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
 
     return [
+      { path: '/bandeja', label: 'Bandeja de Acciones', icon: 'Inbox' },
       { path: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
       { path: '/acciones', label: `Mis ${entity.pluralCap}`, icon: 'HardHat' },
       {

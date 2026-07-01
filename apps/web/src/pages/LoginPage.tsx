@@ -32,7 +32,7 @@ export default function LoginPage() {
     setLoading(true);
     try {
       await login(email.trim(), password);
-      navigate('/dashboard');
+      navigate('/bandeja');
     } catch (err) {
       const msg =
         err instanceof ApiError

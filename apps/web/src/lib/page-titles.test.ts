@@ -5,6 +5,7 @@ describe('getPageTitle', () => {
   const product = 'CONAGUA';
 
   it('maps core and PROAGUA routes', () => {
+    expect(getPageTitle('/bandeja', product)).toBe('Bandeja de Acciones');
     expect(getPageTitle('/dashboard', product)).toBe('Dashboard Ejecutivo');
     expect(getPageTitle('/solicitudes', product)).toBe('Solicitudes de Programa');
     expect(getPageTitle('/anexos', product)).toBe('Anexos XII y XIII');
