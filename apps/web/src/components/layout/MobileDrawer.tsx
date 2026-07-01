@@ -72,7 +72,19 @@ export function MobileDrawer({ onClose }: { onClose: () => void }) {
 
   return (
     <>
-      <div className="fixed inset-0 bg-black/50 z-40 lg:hidden" onClick={onClose} />
+      <div
+        className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+        role="button"
+        tabIndex={0}
+        aria-label="Cerrar menú de navegación"
+        onClick={onClose}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ' || e.key === 'Escape') {
+            e.preventDefault();
+            onClose();
+          }
+        }}
+      />
       <div
         className="fixed left-0 top-0 bottom-0 w-64 text-white z-50 lg:hidden flex flex-col animate-in slide-in-from-left duration-300"
         style={{ backgroundColor: brand.colors.primary }}

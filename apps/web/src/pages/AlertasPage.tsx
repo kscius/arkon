@@ -133,19 +133,27 @@ export default function AlertasPage() {
               <Filter className="w-4 h-4" /> Filtros
             </CardTitle>
             <div className="flex flex-wrap gap-2 lg:ml-auto">
+              <label htmlFor="alertas-filter-estado" className="sr-only">
+                Filtrar por estado
+              </label>
               <select
+                id="alertas-filter-estado"
                 value={filterEstado}
                 onChange={(e) => setFilterEstado(e.target.value as 'pendientes' | 'atendidas' | 'todas')}
-                className="text-xs border border-gray-200 rounded-lg px-2 py-1.5"
+                className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 min-h-9"
               >
                 <option value="pendientes">Pendientes ({pendientesTotal})</option>
                 <option value="atendidas">Atendidas</option>
                 <option value="todas">Todas</option>
               </select>
+              <label htmlFor="alertas-filter-severidad" className="sr-only">
+                Filtrar por severidad
+              </label>
               <select
+                id="alertas-filter-severidad"
                 value={filterSeveridad}
                 onChange={(e) => setFilterSeveridad(e.target.value)}
-                className="text-xs border border-gray-200 rounded-lg px-2 py-1.5"
+                className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 min-h-9"
               >
                 <option value="todas">Todas las severidades</option>
                 <option value="critica">Crítica</option>
@@ -153,10 +161,14 @@ export default function AlertasPage() {
                 <option value="media">Media</option>
                 <option value="baja">Baja</option>
               </select>
+              <label htmlFor="alertas-filter-tipo" className="sr-only">
+                Filtrar por tipo
+              </label>
               <select
+                id="alertas-filter-tipo"
                 value={filterTipo}
                 onChange={(e) => setFilterTipo(e.target.value)}
-                className="text-xs border border-gray-200 rounded-lg px-2 py-1.5"
+                className="text-xs border border-gray-200 rounded-lg px-2 py-1.5 min-h-9"
               >
                 <option value="todas">Todos los tipos</option>
                 {tiposUnicos.map((tipo) => (
@@ -166,13 +178,17 @@ export default function AlertasPage() {
                 ))}
               </select>
               <div className="relative">
-                <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" />
+                <label htmlFor="alertas-search" className="sr-only">
+                  Buscar alertas
+                </label>
+                <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400" aria-hidden />
                 <input
-                  type="text"
-                  placeholder="Buscar..."
+                  id="alertas-search"
+                  type="search"
+                  placeholder="Buscar…"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="text-xs border border-gray-200 rounded-lg pl-7 pr-2 py-1.5 w-40"
+                  className="text-xs border border-gray-200 rounded-lg pl-7 pr-2 py-1.5 w-40 min-h-9"
                 />
               </div>
             </div>
@@ -185,10 +201,21 @@ export default function AlertasPage() {
                 key={alerta.id}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className={`flex gap-3 p-4 rounded-lg border transition-colors cursor-pointer ${
+                role={alerta.obraId ? 'link' : undefined}
+                tabIndex={alerta.obraId ? 0 : undefined}
+                className={`flex gap-3 p-4 rounded-lg border transition-colors ${
+                  alerta.obraId ? 'cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30' : ''
+                } ${
                   alerta.atendida ? 'border-gray-100 bg-gray-50 opacity-70' : 'border-gray-200 hover:bg-gray-50'
                 }`}
                 onClick={() => alerta.obraId && navigate(`/acciones/${alerta.obraId}`)}
+                onKeyDown={(e) => {
+                  if (!alerta.obraId) return;
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    navigate(`/acciones/${alerta.obraId}`);
+                  }
+                }}
               >
                 <div className="w-1 rounded-full flex-shrink-0" style={{ backgroundColor: getSeverityColor(alerta.severidad) }} />
                 <div className="flex-1 min-w-0">
@@ -262,11 +289,15 @@ export default function AlertasPage() {
               </span>
             </p>
           )}
+          <label htmlFor="atender-accion-text" className="sr-only">
+            Acción tomada
+          </label>
           <textarea
+            id="atender-accion-text"
             value={accionText}
             onChange={(e) => setAccionText(e.target.value)}
-            className="w-full h-24 px-3 py-2 text-xs border border-gray-200 rounded-md resize-none"
-            placeholder="Describa la acción tomada..."
+            className="w-full h-24 px-3 py-2 text-xs border border-gray-200 rounded-md resize-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30"
+            placeholder="Describa la acción tomada…"
           />
           {atenderError && <p className="text-xs text-red-600">{atenderError}</p>}
           <DialogFooter className="gap-2">

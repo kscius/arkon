@@ -115,7 +115,7 @@ export default function ObrasPage() {
   const canExport = user.role === 'estatal';
   const showMunicipioFilter = user.role === 'estatal';
   const pageTitle =
-    user.role === 'contratista' ? `Mis ${entity.pluralCap}` : `Catálogo de ${entity.plural}`;
+    user.role === 'contratista' ? `Mis ${entity.pluralCap}` : `Catálogo de ${entity.pluralCap}`;
 
   return (
     <PageState loading={loading} error={error} onRetry={reload}>
@@ -195,11 +195,15 @@ export default function ObrasPage() {
           </CardHeader>
           <CardContent className="space-y-3">
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <label htmlFor="obras-search" className="sr-only">
+                Buscar {entity.plural}
+              </label>
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" aria-hidden />
               <Input
+                id="obras-search"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                placeholder="Buscar por nombre, folio, CUA, municipio o contratista..."
+                placeholder="Buscar por nombre, folio, CUA, municipio o contratista…"
                 className="pl-9 text-xs h-9"
               />
             </div>
@@ -277,8 +281,16 @@ export default function ObrasPage() {
                   {filteredObras.map((obra) => (
                     <tr
                       key={obra.id}
-                      className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors"
+                      role="link"
+                      tabIndex={0}
+                      className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30 focus-visible:ring-inset"
                       onClick={() => navigate(`/acciones/${obra.id}`)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                          e.preventDefault();
+                          navigate(`/acciones/${obra.id}`);
+                        }
+                      }}
                     >
                       <td className="py-2 px-2 text-gray-600 whitespace-nowrap">{obra.folio}</td>
                       <td className="py-2 px-2 font-medium text-gray-900">

@@ -127,31 +127,6 @@ export default function BandejaAccionesPage() {
             </Card>
           ) : (
             <>
-              <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-6">
-                {tabsWithItems.map(({ key, tipo }) => {
-                  const Icon = TIPO_META[tipo].icon;
-                  const count = data.totales[key];
-                  return (
-                    <button
-                      key={key}
-                      type="button"
-                      onClick={() => setActiveTab(tipo)}
-                      className={`flex flex-col items-center gap-2 rounded-xl border p-4 text-center transition-colors ${
-                        activeTab === tipo
-                          ? 'border-brand-primary/30 bg-brand-primary/5'
-                          : 'border-gray-200 bg-white hover:border-brand-primary/20 hover:bg-brand-surface/60'
-                      }`}
-                    >
-                      <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-brand-primary/10 text-brand-primary">
-                        <Icon className="h-5 w-5" />
-                      </span>
-                      <span className="text-2xl font-bold text-brand-primary">{count}</span>
-                      <span className="text-xs font-medium text-gray-600">{TIPO_META[tipo].label}</span>
-                    </button>
-                  );
-                })}
-              </div>
-
               <div className="relative max-w-md">
                 <label htmlFor="bandeja-search" className="sr-only">
                   Buscar en la bandeja

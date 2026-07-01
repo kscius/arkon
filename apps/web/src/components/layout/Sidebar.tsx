@@ -116,6 +116,8 @@ export function Sidebar() {
             <NavLink
               key={item.path}
               to={item.path}
+              aria-label={sidebarCollapsed ? item.label : undefined}
+              title={sidebarCollapsed ? item.label : undefined}
               className={cn(
                 'flex items-center gap-3 px-3 py-2.5 min-h-11 rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40',
                 active
@@ -152,8 +154,10 @@ export function Sidebar() {
           )}
         </div>
         <button
+          type="button"
           onClick={logout}
-          className="flex items-center gap-2 px-2 py-2 text-white/60 hover:text-white text-xs transition-colors w-full mt-1"
+          aria-label="Cerrar sesión"
+          className="flex items-center gap-2 px-2 py-2 text-white/60 hover:text-white text-xs transition-colors w-full mt-1 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
         >
           <LogOut className="w-4 h-4" />
           {!sidebarCollapsed && <span>Cerrar sesión</span>}

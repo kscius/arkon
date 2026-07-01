@@ -196,10 +196,14 @@ export default function SolicitudesPage() {
       <Card>
         <CardHeader className="pb-2 flex flex-row items-center justify-between">
           <CardTitle className="text-sm font-semibold">Listado de solicitudes</CardTitle>
+          <label htmlFor="solicitudes-estatus-filter" className="sr-only">
+            Filtrar por estatus
+          </label>
           <select
+            id="solicitudes-estatus-filter"
             value={estatusFilter}
             onChange={(e) => setEstatusFilter(e.target.value)}
-            className="h-8 px-2 text-xs border border-gray-200 rounded-md bg-white"
+            className="h-9 px-2 text-xs border border-gray-200 rounded-md bg-white min-w-[140px]"
           >
             <option value={ALL}>Todos los estatus</option>
             {FILTER_ESTATUS.map((e) => (
@@ -277,7 +281,7 @@ export default function SolicitudesPage() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className="h-6 text-[9px] px-2"
+                                    className="h-8 text-[10px] px-2.5 min-h-9"
                                     disabled={busy}
                                     onClick={() =>
                                       void runAction(sol.id, () => presentarSolicitud(sol.id))
@@ -288,7 +292,7 @@ export default function SolicitudesPage() {
                                   <Button
                                     size="sm"
                                     variant="ghost"
-                                    className="h-6 text-[9px] px-2 text-red-600"
+                                    className="h-8 text-[10px] px-2.5 min-h-9 text-red-600"
                                     disabled={busy}
                                     onClick={() => void handleDelete(sol.id)}
                                   >
@@ -301,7 +305,7 @@ export default function SolicitudesPage() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className="h-6 text-[9px] px-2"
+                                    className="h-8 text-[10px] px-2.5 min-h-9"
                                     disabled={busy}
                                     onClick={() =>
                                       void runAction(sol.id, () =>
@@ -314,7 +318,7 @@ export default function SolicitudesPage() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className="h-6 text-[9px] px-2 text-red-600 border-red-200"
+                                    className="h-8 text-[10px] px-2.5 min-h-9 text-red-600 border-red-200"
                                     disabled={busy}
                                     onClick={() => setRejectTarget(sol)}
                                   >
@@ -327,7 +331,7 @@ export default function SolicitudesPage() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className="h-6 text-[9px] px-2"
+                                    className="h-8 text-[10px] px-2.5 min-h-9"
                                     disabled={busy}
                                     onClick={() => void openApproveDialog(sol)}
                                   >
@@ -336,7 +340,7 @@ export default function SolicitudesPage() {
                                   <Button
                                     size="sm"
                                     variant="outline"
-                                    className="h-6 text-[9px] px-2 text-red-600 border-red-200"
+                                    className="h-8 text-[10px] px-2.5 min-h-9 text-red-600 border-red-200"
                                     disabled={busy}
                                     onClick={() => setRejectTarget(sol)}
                                   >
@@ -366,14 +370,17 @@ export default function SolicitudesPage() {
             Vincule la {entity.singular} resultante que se generará o actualizará con esta solicitud aprobada.
           </p>
           <div>
-            <label className="text-[10px] text-gray-500 uppercase tracking-wide">{entity.singularCap} resultante</label>
+            <label htmlFor="approve-obra-select" className="text-[10px] text-gray-500 uppercase tracking-wide">
+              {entity.singularCap} resultante
+            </label>
             <select
+              id="approve-obra-select"
               value={obraPickerId}
               onChange={(e) => setObraPickerId(e.target.value)}
               disabled={loadingObras}
               className="mt-1 w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white"
             >
-              <option value="">Seleccione una {entity.singular}...</option>
+              <option value="">Seleccione una {entity.singular}…</option>
               {obrasOptions.map((o) => (
                 <option key={o.id} value={o.id}>
                   {o.folio} — {o.nombre.slice(0, 60)}

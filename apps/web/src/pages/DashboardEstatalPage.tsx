@@ -376,7 +376,12 @@ export default function DashboardPage() {
                 <div className="flex items-center gap-2">
                   {alertasCriticas > 0 && <Badge className="bg-red-500 text-[10px]">{alertasCriticas} críticas</Badge>}
                   {alertasAltas > 0 && <Badge className="bg-orange-500 text-[10px]">{alertasAltas} altas</Badge>}
-                  <button onClick={() => navigate('/alertas')} className="text-[11px] text-brand-primary-light hover:underline font-medium flex items-center gap-1">
+                  <button
+                    type="button"
+                    onClick={() => navigate('/alertas')}
+                    aria-label="Ver todas las alertas"
+                    className="text-[11px] text-brand-primary-light hover:underline font-medium flex items-center gap-1 min-h-9 px-1 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30"
+                  >
                     Ver todas <ArrowRight className="w-3 h-3" />
                   </button>
                 </div>
@@ -437,7 +442,7 @@ export default function DashboardPage() {
                     <th className="text-center py-2 px-3 font-medium text-gray-500">Avance Físico</th>
                     <th className="text-center py-2 px-3 font-medium text-gray-500">Avance Financiero</th>
                     <th className="text-center py-2 px-3 font-medium text-gray-500">Sem.</th>
-                    <th className="text-center py-2 px-3 font-medium text-gray-500">Acciones</th>
+                    <th className="text-center py-2 px-3 font-medium text-gray-500">Ver</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -445,7 +450,19 @@ export default function DashboardPage() {
                     const diff = m.avanceFinancieroPromedio - m.avanceFisicoPromedio;
                     const semColor = diff >= 15 ? '#DC2626' : diff >= 5 ? '#D69E2E' : '#38A169';
                     return (
-                      <tr key={m.id} className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => navigate(`/municipios/${m.id}`)}>
+                      <tr
+                        key={m.id}
+                        role="link"
+                        tabIndex={0}
+                        className="border-b border-gray-100 hover:bg-gray-50 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30 focus-visible:ring-inset"
+                        onClick={() => navigate(`/municipios/${m.id}`)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            navigate(`/municipios/${m.id}`);
+                          }
+                        }}
+                      >
                         <td className="py-2.5 px-3 font-medium text-gray-900">{i + 1}</td>
                         <td className="py-2.5 px-3 font-medium text-gray-900">{m.nombre}</td>
                         <td className="py-2.5 px-3 text-center">{m.obras}</td>
@@ -463,7 +480,7 @@ export default function DashboardPage() {
                           <div className="w-3 h-3 rounded-full mx-auto" style={{ backgroundColor: semColor }} />
                         </td>
                         <td className="py-2.5 px-3 text-center">
-                          <button className="text-brand-primary-light hover:underline text-[10px] font-medium">Ver</button>
+                          <span className="text-brand-primary-light text-[10px] font-medium">Ver</span>
                         </td>
                       </tr>
                     );

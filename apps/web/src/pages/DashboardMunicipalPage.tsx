@@ -281,13 +281,25 @@ export default function DashboardMunicipalPage() {
                     <th className="text-left py-2 px-2 font-medium text-gray-500">Programa</th>
                     <th className="text-left py-2 px-2 font-medium text-gray-500">Contratista</th>
                     <th className="text-right py-2 px-2 font-medium text-gray-500">Inversión</th>
-                    <th className="text-center py-2 px-2 font-medium text-gray-500">Avance Fisico</th>
+                    <th className="text-center py-2 px-2 font-medium text-gray-500">Avance Físico</th>
                     <th className="text-center py-2 px-2 font-medium text-gray-500">Estatus</th>
-                    <th className="text-center py-2 px-2 font-medium text-gray-500">Accion</th>
+                    <th className="text-center py-2 px-2 font-medium text-gray-500">Ver</th>
                   </tr></thead>
                   <tbody>
                     {munObras.map((obra) => (
-                      <tr key={obra.id} className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer" onClick={() => navigate(`/acciones/${obra.id}`)}>
+                      <tr
+                        key={obra.id}
+                        role="link"
+                        tabIndex={0}
+                        className="border-b border-gray-100 hover:bg-gray-50 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30 focus-visible:ring-inset"
+                        onClick={() => navigate(`/acciones/${obra.id}`)}
+                        onKeyDown={(e) => {
+                          if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            navigate(`/acciones/${obra.id}`);
+                          }
+                        }}
+                      >
                         <td className="py-2 px-2 font-medium text-gray-900 max-w-[150px] truncate">{obra.nombre}</td>
                         <td className="py-2 px-2"><span className="px-2 py-0.5 rounded-full text-[10px] font-medium text-white" style={{ backgroundColor: getProgramaColor(obra.programa) }}>{getProgramaName(obra.programa)}</span></td>
                         <td className="py-2 px-2 text-gray-600 max-w-[120px] truncate">{obra.contratista}</td>
@@ -301,7 +313,9 @@ export default function DashboardMunicipalPage() {
                           </div>
                         </td>
                         <td className="py-2 px-2 text-center"><span className="px-2 py-0.5 rounded-full text-[10px] font-medium text-white" style={{ backgroundColor: getObraStatusColor(obra.estatus) }}>{getObraStatusLabel(obra.estatus)}</span></td>
-                        <td className="py-2 px-2 text-center"><button className="text-brand-primary-light hover:underline text-[10px] font-medium">Ver</button></td>
+                        <td className="py-2 px-2 text-center">
+                          <span className="text-brand-primary-light text-[10px] font-medium">Ver</span>
+                        </td>
                       </tr>
                     ))}
                   </tbody>
