@@ -416,7 +416,7 @@ export class DashboardService {
             'estimacion',
             r.id,
             this.estimacionTitulo(r.estatus),
-            `Estimacion #${r.numero} · ${r.periodo}`,
+            `Estimación #${r.numero} · ${r.periodo}`,
             r.estatus,
             r.accion,
             'estimaciones',
@@ -466,8 +466,8 @@ export class DashboardService {
       for (const r of rows) {
         const titulo =
           r.estatus === EstatusObservacion.en_atencion
-            ? 'Observacion en atencion'
-            : 'Observacion por atender';
+            ? 'Observación en atención'
+            : 'Observación por atender';
         items.push(
           this.buildPendiente('observacion', r.id, titulo, r.descripcion, r.estatus, r.accion, 'observaciones', r.createdAt),
         );
@@ -574,15 +574,15 @@ export class DashboardService {
       estatus === EstatusEstimacion.observada_estado ||
       estatus === EstatusEstimacion.rechazada
     ) {
-      return 'Estimacion observada por corregir';
+      return 'Estimación observada por corregir';
     }
     if (
       estatus === EstatusEstimacion.validada_municipio ||
       estatus === EstatusEstimacion.en_revision_estatal
     ) {
-      return 'Estimacion por autorizar (estatal)';
+      return 'Estimación por autorizar (estatal)';
     }
-    return 'Estimacion por validar (municipal)';
+    return 'Estimación por validar (municipal)';
   }
 
   private buildPendiente(

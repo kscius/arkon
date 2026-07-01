@@ -150,12 +150,16 @@ export default function BandejaAccionesPage() {
               </div>
 
               <div className="relative max-w-md">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                <label htmlFor="bandeja-search" className="sr-only">
+                  Buscar en la bandeja
+                </label>
+                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" aria-hidden />
                 <Input
+                  id="bandeja-search"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   placeholder="Buscar por folio, obra, municipio o título..."
-                  className="h-9 pl-9 text-xs"
+                  className="h-10 pl-9 text-sm"
                 />
               </div>
 

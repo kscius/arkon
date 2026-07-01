@@ -208,7 +208,7 @@ export default function DashboardMunicipalPage() {
 
   const kpis = [
     { label: `${entity.pluralCap} Municipales`, value: totalObras.toString(), sub: `${obrasEjecucion} en ejecución`, icon: Building2, color: brand.colors.primary },
-    { label: 'Inversion Autorizada', value: formatCurrencyM(montoAutorizado), sub: 'Para su municipio', icon: DollarSign, color: brand.colors.accent },
+    { label: 'Inversión Autorizada', value: formatCurrencyM(montoAutorizado), sub: 'Para su municipio', icon: DollarSign, color: brand.colors.accent },
     { label: 'Avance Promedio', value: formatPercentage(avancePromedio), sub: 'Avance fisico', icon: TrendingUp, color: '#3182CE', trend: avancePromedio },
     { label: `${entity.pluralCap} con Retraso`, value: obrasRetraso.toString(), sub: `${Math.round((obrasRetraso / totalObras) * 100)}% del total`, icon: AlertTriangle, color: '#DC2626' },
     { label: 'Contratistas', value: munContratistas.length.toString(), sub: 'Empresas asignadas', icon: Users, color: brand.colors.secondary },
@@ -280,7 +280,7 @@ export default function DashboardMunicipalPage() {
                     <th className="text-left py-2 px-2 font-medium text-gray-500">Nombre</th>
                     <th className="text-left py-2 px-2 font-medium text-gray-500">Programa</th>
                     <th className="text-left py-2 px-2 font-medium text-gray-500">Contratista</th>
-                    <th className="text-right py-2 px-2 font-medium text-gray-500">Inversion</th>
+                    <th className="text-right py-2 px-2 font-medium text-gray-500">Inversión</th>
                     <th className="text-center py-2 px-2 font-medium text-gray-500">Avance Fisico</th>
                     <th className="text-center py-2 px-2 font-medium text-gray-500">Estatus</th>
                     <th className="text-center py-2 px-2 font-medium text-gray-500">Accion</th>

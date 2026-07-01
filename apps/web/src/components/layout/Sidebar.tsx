@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
-import { cn } from '@/lib/utils';
+import { cn, getRoleLabel } from '@/lib/utils';
 import { BrandLogo } from '@/components/brand/BrandLogo';
 import { getBrand } from '@/config/brand';
 import {
@@ -65,16 +65,6 @@ export function Sidebar() {
     return location.pathname === path;
   };
 
-  const getRoleLabel = () => {
-    if (!user) return '';
-    const labels: Record<string, string> = {
-      estatal: 'Servidor Estatal',
-      municipal: 'Servidor Municipal',
-      contratista: 'Contratista',
-    };
-    return labels[user.role] || user.role;
-  };
-
   const getRoleBadgeColor = () => {
     if (!user) return '#718096';
     const colors = brand.roleColors as Record<string, string>;
@@ -97,8 +87,10 @@ export function Sidebar() {
           className={sidebarCollapsed ? 'flex-1' : 'flex-1 min-w-0'}
         />
         <button
+          type="button"
           onClick={toggleSidebar}
-          className="text-white/60 hover:text-white transition-colors shrink-0"
+          className="min-h-11 min-w-11 flex items-center justify-center text-white/60 hover:text-white transition-colors shrink-0 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+          aria-label={sidebarCollapsed ? 'Expandir barra lateral' : 'Contraer barra lateral'}
         >
           {sidebarCollapsed ? <ChevronRight className="w-4 h-4" /> : <ChevronLeft className="w-4 h-4" />}
         </button>
@@ -111,7 +103,7 @@ export function Sidebar() {
             style={{ backgroundColor: `${getRoleBadgeColor()}25` }}
           >
             <span className="w-2 h-2 rounded-full" style={{ backgroundColor: getRoleBadgeColor() }} />
-            <span className="text-[10px] font-medium text-white/90">{getRoleLabel()}</span>
+            <span className="text-[10px] font-medium text-white/90">{getRoleLabel(user.role)}</span>
           </div>
         </div>
       )}
@@ -125,7 +117,7 @@ export function Sidebar() {
               key={item.path}
               to={item.path}
               className={cn(
-                'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150',
+                'flex items-center gap-3 px-3 py-2.5 min-h-11 rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40',
                 active
                   ? 'bg-white/15 border-l-2 text-white'
                   : 'text-white/70 hover:bg-white/10 hover:text-white',
@@ -155,7 +147,7 @@ export function Sidebar() {
           {!sidebarCollapsed && (
             <div className="min-w-0">
               <div className="text-xs font-medium truncate">{user?.name?.split(' ').slice(0, 2).join(' ')}</div>
-              <div className="text-[10px] text-white/60 truncate">{getRoleLabel()}</div>
+              <div className="text-[10px] text-white/60 truncate">{getRoleLabel(user?.role)}</div>
             </div>
           )}
         </div>

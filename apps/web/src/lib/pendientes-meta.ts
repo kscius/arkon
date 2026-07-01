@@ -32,3 +32,20 @@ export const SEVERITY_STRIPE: Record<PendienteItem['severidad'], string> = {
   media: 'bg-amber-500',
   baja: 'bg-gray-300',
 };
+
+/** Accent stripe by activity type — avoids treating every open observación as critical. */
+export const TIPO_STRIPE: Record<PendienteTipo, string> = {
+  alerta: 'bg-red-500',
+  observacion: 'bg-sky-500',
+  solicitud: 'bg-amber-500',
+  documento: 'bg-violet-500',
+  estimacion: 'bg-emerald-500',
+  avance: 'bg-teal-500',
+};
+
+export function getPendienteStripe(item: PendienteItem): string {
+  if (item.tipo === 'alerta') {
+    return SEVERITY_STRIPE[item.severidad];
+  }
+  return TIPO_STRIPE[item.tipo];
+}

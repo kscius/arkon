@@ -2,6 +2,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { getBrand } from '@/config/brand';
 import { getPageTitle } from '@/lib/page-titles';
+import { getRoleLabel } from '@/lib/utils';
 import { Bell, Menu } from 'lucide-react';
 
 export function TopBar() {
@@ -18,7 +19,7 @@ export function TopBar() {
         <button
           type="button"
           onClick={toggleMobileDrawer}
-          className="lg:hidden p-1.5 hover:bg-gray-100 rounded-lg text-gray-600 cursor-pointer"
+          className="lg:hidden min-h-11 min-w-11 flex items-center justify-center hover:bg-gray-100 rounded-lg text-gray-600 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30"
           aria-label="Abrir menú de navegación"
         >
           <Menu className="w-5 h-5" />
@@ -26,7 +27,7 @@ export function TopBar() {
         <button
           type="button"
           onClick={toggleSidebar}
-          className="hidden lg:block p-1.5 hover:bg-gray-100 rounded-lg text-gray-600 cursor-pointer"
+          className="hidden lg:flex min-h-11 min-w-11 items-center justify-center hover:bg-gray-100 rounded-lg text-gray-600 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30"
           aria-label="Alternar barra lateral"
         >
           <Menu className="w-5 h-5" />
@@ -42,7 +43,7 @@ export function TopBar() {
         <button
           type="button"
           onClick={() => navigate('/alertas')}
-          className="relative p-2 hover:bg-gray-100 rounded-lg text-gray-600 transition-colors cursor-pointer"
+          className="relative min-h-11 min-w-11 flex items-center justify-center hover:bg-gray-100 rounded-lg text-gray-600 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30"
           aria-label={
             notifications > 0
               ? `Ir al centro de alertas, ${notifications} pendientes`
@@ -65,7 +66,7 @@ export function TopBar() {
           </div>
           <div className="hidden md:block">
             <div className="text-xs font-medium text-gray-900">{user?.name?.split(' ').slice(0, 2).join(' ')}</div>
-            <div className="text-[10px] text-gray-500">{user?.role}</div>
+            <div className="text-[10px] text-gray-500">{getRoleLabel(user?.role)}</div>
           </div>
         </div>
       </div>

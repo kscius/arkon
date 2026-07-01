@@ -1,6 +1,6 @@
 import { NavLink, useLocation } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
-import { cn } from '@/lib/utils';
+import { cn, getRoleLabel } from '@/lib/utils';
 import { BrandLogo } from '@/components/brand/BrandLogo';
 import { getBrand } from '@/config/brand';
 import {
@@ -50,16 +50,6 @@ export function MobileDrawer({ onClose }: { onClose: () => void }) {
   const location = useLocation();
   const menuItems = getMenuItems();
 
-  const getRoleLabel = () => {
-    if (!user) return '';
-    const labels: Record<string, string> = {
-      estatal: 'Servidor Estatal',
-      municipal: 'Servidor Municipal',
-      contratista: 'Contratista',
-    };
-    return labels[user.role] || user.role;
-  };
-
   const getRoleBadgeColor = () => {
     if (!user) return '#718096';
     const colors = brand.roleColors as Record<string, string>;
@@ -73,7 +63,6 @@ export function MobileDrawer({ onClose }: { onClose: () => void }) {
     if (path.includes('/municipios/')) return location.pathname.startsWith('/municipios');
     if (path.includes('/contratistas/')) return location.pathname.startsWith('/contratistas');
     if (path === '/alertas') return location.pathname === '/alertas';
-    if (path === '/configurador-alertas') return location.pathname === '/configurador-alertas';
     if (path === '/configurador-alertas') return location.pathname === '/configurador-alertas';
     if (path === '/asistente') return location.pathname === '/asistente';
     if (path === '/solicitudes') return location.pathname === '/solicitudes';
@@ -90,7 +79,12 @@ export function MobileDrawer({ onClose }: { onClose: () => void }) {
       >
         <div className="flex items-center gap-1.5 px-3 py-2.5 border-b border-white/10">
           <BrandLogo compact imageOnly className="flex-1 min-w-0" />
-          <button onClick={onClose} className="text-white/60 hover:text-white">
+          <button
+            type="button"
+            onClick={onClose}
+            className="min-h-11 min-w-11 flex items-center justify-center text-white/60 hover:text-white rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+            aria-label="Cerrar menú de navegación"
+          >
             <X className="w-5 h-5" />
           </button>
         </div>
@@ -102,7 +96,7 @@ export function MobileDrawer({ onClose }: { onClose: () => void }) {
               style={{ backgroundColor: `${getRoleBadgeColor()}25` }}
             >
               <span className="w-2 h-2 rounded-full" style={{ backgroundColor: getRoleBadgeColor() }} />
-              <span className="text-[10px] font-medium text-white/90">{getRoleLabel()}</span>
+              <span className="text-[10px] font-medium text-white/90">{getRoleLabel(user.role)}</span>
             </div>
           </div>
         )}
@@ -116,8 +110,8 @@ export function MobileDrawer({ onClose }: { onClose: () => void }) {
                 key={item.path}
                 to={item.path}
                 onClick={onClose}
-                className={cn(
-                  'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-150',
+                  className={cn(
+                  'flex items-center gap-3 px-3 py-2.5 min-h-11 rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40',
                   active
                     ? 'bg-white/15 border-l-2 text-white'
                     : 'text-white/70 hover:bg-white/10 hover:text-white',

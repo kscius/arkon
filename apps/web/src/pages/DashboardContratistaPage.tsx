@@ -198,7 +198,7 @@ export default function DashboardContratistaPage() {
 
   const kpis = [
     { label: `Mis ${entity.pluralCap}`, value: totalObras.toString(), sub: `${obrasEjecucion} en ejecución`, icon: Building2, color: brand.colors.primary },
-    { label: 'Inversion Total', value: formatCurrencyM(montoTotal), sub: 'Monto contratado', icon: DollarSign, color: brand.colors.accent },
+    { label: 'Inversión Total', value: formatCurrencyM(montoTotal), sub: 'Monto contratado', icon: DollarSign, color: brand.colors.accent },
     { label: 'Avance Promedio', value: formatPercentage(avancePromedio), sub: 'Avance fisico', icon: TrendingUp, color: '#3182CE', trend: avancePromedio },
     { label: `${entity.pluralCap} con Retraso`, value: obrasRetraso.toString(), sub: 'Requieren atencion', icon: AlertTriangle, color: '#DC2626' },
   ];

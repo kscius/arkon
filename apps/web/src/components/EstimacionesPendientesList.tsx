@@ -47,7 +47,7 @@ export function EstimacionesPendientesList({ obras, onValidate, busyId }: Estima
 
   return (
     <div className="mt-6 pt-4 border-t border-gray-200">
-      <h4 className="text-xs font-semibold text-gray-900 mb-3">Estimaciones pendientes de validacion municipal</h4>
+      <h4 className="text-xs font-semibold text-gray-900 mb-3">Estimaciones pendientes de validación municipal</h4>
       {loadError && <p className="text-xs text-red-600 mb-2">{loadError}</p>}
       {loading && <p className="text-xs text-gray-400 py-2">Cargando...</p>}
       {!loading && rows.length === 0 && (

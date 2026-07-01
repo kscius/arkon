@@ -160,7 +160,7 @@ export default function ObraDetailPage() {
       toast.success(aprobar ? 'Estimacion autorizada' : 'Estimacion observada');
       reload();
     } catch (err) {
-      const msg = err instanceof ApiError ? err.message : 'Error en validacion estatal';
+      const msg = err instanceof ApiError ? err.message : 'Error en validación estatal';
       setActionError(msg);
       toast.error(msg);
     } finally {

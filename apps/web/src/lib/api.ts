@@ -660,11 +660,24 @@ export interface PendientesResponse {
   items: PendienteItem[];
 }
 
+const PENDIENTE_TITULO_ALIASES: Record<string, string> = {
+  'Observacion por atender': 'Observación por atender',
+  'Observacion en atencion': 'Observación en atención',
+  'Estimacion observada por corregir': 'Estimación observada por corregir',
+  'Estimacion por autorizar (estatal)': 'Estimación por autorizar (estatal)',
+  'Estimacion por validar (municipal)': 'Estimación por validar (municipal)',
+};
+
+function normalizePendienteTitulo(titulo: string): string {
+  return PENDIENTE_TITULO_ALIASES[titulo] ?? titulo;
+}
+
 function mapPendienteItem(row: Record<string, unknown>): PendienteItem {
+  const titulo = String(row.titulo ?? '');
   return {
     id: String(row.id),
     tipo: String(row.tipo) as PendienteTipo,
-    titulo: String(row.titulo ?? ''),
+    titulo: normalizePendienteTitulo(titulo),
     descripcion: String(row.descripcion ?? ''),
     estatus: String(row.estatus ?? ''),
     severidad: (String(row.severidad ?? 'media') as PendienteItem['severidad']),

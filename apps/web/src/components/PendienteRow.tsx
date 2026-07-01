@@ -3,7 +3,7 @@ import { ChevronRight } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import type { PendienteItem } from '@/lib/api';
-import { SEVERITY_STRIPE, TIPO_META } from '@/lib/pendientes-meta';
+import { getPendienteStripe, TIPO_META } from '@/lib/pendientes-meta';
 import { formatDate } from '@/lib/utils';
 
 export function PendienteRow({
@@ -24,7 +24,7 @@ export function PendienteRow({
       transition={{ duration: 0.2, delay: Math.min(index * 0.02, 0.3) }}
       className="flex items-center gap-3 px-4 py-3 hover:bg-brand-surface/60"
     >
-      <span className={`h-10 w-1 shrink-0 rounded-full ${SEVERITY_STRIPE[item.severidad]}`} />
+      <span className={`h-10 w-1 shrink-0 rounded-full ${getPendienteStripe(item)}`} />
       <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-md bg-brand-primary/5 text-brand-primary">
         <Icon className="h-4 w-4" />
       </span>
@@ -49,7 +49,7 @@ export function PendienteRow({
       <Button
         size="sm"
         variant="ghost"
-        className="shrink-0 gap-1 text-brand-primary hover:bg-brand-primary/10"
+        className="min-h-11 shrink-0 gap-1 px-3 text-brand-primary hover:bg-brand-primary/10"
         onClick={() => onResolve(item.enlace)}
       >
         Resolver

@@ -20,7 +20,7 @@ const defaultAssistantSuggestions = (entity: EntityTerms): string[] => [
   'Compara fisico vs financiero por programa',
   `Detalle de ${entity.singular}: avances, docs y observaciones`,
   'Alertas criticas sin atender y acciones sugeridas',
-  'Inversion total por municipio y dependencia',
+  'Inversión total por municipio y dependencia',
   'Estimaciones en revision sin validar',
   `${entity.pluralCap} en riesgo con enlaces directos`,
 ];

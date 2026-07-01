@@ -101,12 +101,23 @@ export function getSeverityColor(sev: string): string {
 
 export function getSeverityLabel(sev: string): string {
   const labels: Record<string, string> = {
-    'critica': 'Critica',
-    'alta': 'Alta',
-    'media': 'Media',
-    'baja': 'Baja',
+    critica: 'Crítica',
+    alta: 'Alta',
+    media: 'Media',
+    baja: 'Baja',
   };
   return labels[sev] || sev;
+}
+
+const ROLE_LABELS: Record<string, string> = {
+  estatal: 'Servidor Estatal',
+  municipal: 'Servidor Municipal',
+  contratista: 'Contratista',
+};
+
+export function getRoleLabel(role: string | undefined | null): string {
+  if (!role) return '';
+  return ROLE_LABELS[role] ?? role;
 }
 
 export function getRiesgoColor(nivel: string): string {
