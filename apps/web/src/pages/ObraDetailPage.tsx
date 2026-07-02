@@ -14,6 +14,7 @@ import {
   fetchEstimacionesByObra,
   fetchObra,
   fetchObservacionesByObra,
+  fetchEvmByObra,
   updateDocumentoEstatus,
   updateObservacionEstatus,
   uploadDocumento,
@@ -85,13 +86,14 @@ export default function ObraDetailPage() {
       );
     }
     const obra = await fetchObra(obraId);
-    const [obraAvances, obraEstimaciones, obraObservaciones, documentos] = await Promise.all([
+    const [obraAvances, obraEstimaciones, obraObservaciones, documentos, evm] = await Promise.all([
       fetchAvancesByObra(obraId),
       fetchEstimacionesByObra(obraId),
       fetchObservacionesByObra(obraId).catch(() => []),
       fetchDocumentosByObra(obraId).catch(() => [] as Documento[]),
+      fetchEvmByObra(obraId).catch(() => null),
     ]);
-    return { obra, obraAvances, obraEstimaciones, obraObservaciones, documentos };
+    return { obra, obraAvances, obraEstimaciones, obraObservaciones, documentos, evm };
   }, [obraId, entity]);
 
   const { data, loading, error, reload } = useAsyncData(load, [load]);
@@ -187,7 +189,7 @@ export default function ObraDetailPage() {
     return <PageState loading={loading} error={error} onRetry={reload}><span /></PageState>;
   }
 
-  const { obra, obraAvances, obraEstimaciones, obraObservaciones } = data;
+  const { obra, obraAvances, obraEstimaciones, obraObservaciones, documentos, evm } = data;
 
   const chartData = obraAvances.map((a) => ({
     periodo: a.periodo,
@@ -287,8 +289,24 @@ export default function ObraDetailPage() {
             )}
             <Badge variant="outline" className="text-[10px] flex items-center gap-1">
               <AlertCircle className="w-3 h-3" style={{ color: getRiesgoColor(obra.riesgo) }} />
-              Riesgo: {getRiesgoLabel(obra.riesgo)}
+              Riesgo manual: {getRiesgoLabel(obra.riesgo)}
             </Badge>
+            {evm?.score && (
+              <Badge
+                variant="outline"
+                className="text-[10px] flex items-center gap-1"
+                style={{
+                  borderColor:
+                    evm.score.riesgo_nivel === 'rojo'
+                      ? '#DC2626'
+                      : evm.score.riesgo_nivel === 'ambar'
+                        ? '#D69E2E'
+                        : '#38A169',
+                }}
+              >
+                Riesgo calculado: {Number(evm.score.riesgo_score ?? 0).toFixed(0)}
+              </Badge>
+            )}
           </div>
         </div>
 
@@ -323,6 +341,50 @@ export default function ObraDetailPage() {
           </div>
         </div>
       </div>
+
+      {evm && evm.curva_s.length > 0 && (
+        <Card>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold text-gray-900">EVM — Curva S y desempeño</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 text-xs">
+              {[
+                { label: 'SPI', value: evm.spi },
+                { label: 'CPI', value: evm.cpi },
+                { label: 'EAC', value: evm.eac },
+                { label: 'VAC', value: evm.vac },
+              ].map((m) => (
+                <div key={m.label} className="p-2 rounded border bg-gray-50">
+                  <div className="text-gray-500">{m.label}</div>
+                  <div className="font-bold text-gray-900">
+                    {m.value != null ? m.value.toFixed(2) : '—'}
+                  </div>
+                </div>
+              ))}
+            </div>
+            <ResponsiveContainer width="100%" height={220}>
+              <LineChart
+                data={evm.curva_s.map((p) => ({
+                  periodo: p.periodo,
+                  pv: p.pv,
+                  ev: p.ev,
+                  ac: p.ac,
+                }))}
+              >
+                <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" />
+                <XAxis dataKey="periodo" tick={{ fontSize: 10 }} />
+                <YAxis tick={{ fontSize: 10 }} />
+                <Tooltip />
+                <Legend wrapperStyle={{ fontSize: '11px' }} />
+                <Line type="monotone" dataKey="pv" name="PV" stroke="#A0AEC0" strokeDasharray="4 4" dot={false} />
+                <Line type="monotone" dataKey="ev" name="EV" stroke="#3182CE" dot={false} />
+                <Line type="monotone" dataKey="ac" name="AC" stroke="#38A169" dot={false} />
+              </LineChart>
+            </ResponsiveContainer>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Ficha Técnica */}
       <Card>

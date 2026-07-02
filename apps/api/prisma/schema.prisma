@@ -293,6 +293,11 @@ model Accion {
   cofinanciamientos   Cofinanciamiento[]
   avancesTrimestrales AvanceTrimestral[]
   solicitudesResultado SolicitudPrograma[] @relation("SolicitudObraResultante")
+  score                AccionScore?
+  metricSnapshots      MetricSnapshot[]
+  documentChunks       DocumentChunk[]
+  recomendaciones      Recomendacion[]
+  activosHidraulicos   ActivoHidraulico[]
 
   @@index([municipioId])
   @@index([contratistaId])
@@ -570,4 +575,117 @@ model SolicitudPrograma {
   @@index([accionResultanteId])
   @@index([estatus])
   @@map("solicitudes_programa")
+}
+
+model AccionScore {
+  id             String   @id @default(uuid()) @db.Uuid
+  accionId       String   @unique @map("accion_id") @db.Uuid
+  riesgoScore    Decimal  @default(0) @map("riesgo_score") @db.Decimal(5, 2)
+  riesgoNivel    String   @default("verde") @map("riesgo_nivel")
+  riesgoFactores Json     @default("{}") @map("riesgo_factores")
+  spi            Decimal? @db.Decimal(8, 4)
+  cpi            Decimal? @db.Decimal(8, 4)
+  eac            Decimal? @db.Decimal(14, 2)
+  etc            Decimal? @db.Decimal(14, 2)
+  vac            Decimal? @db.Decimal(14, 2)
+  tcpi           Decimal? @db.Decimal(8, 4)
+  pv             Decimal? @db.Decimal(14, 2)
+  ev             Decimal? @db.Decimal(14, 2)
+  ac             Decimal? @db.Decimal(14, 2)
+  bac            Decimal? @db.Decimal(14, 2)
+  probRetraso    Decimal? @map("prob_retraso") @db.Decimal(5, 4)
+  probSobrecosto Decimal? @map("prob_sobrecosto") @db.Decimal(5, 4)
+  anomaliaScore  Decimal? @map("anomalia_score") @db.Decimal(5, 2)
+  saludScore     Decimal? @map("salud_score") @db.Decimal(5, 2)
+  computedAt     DateTime @default(now()) @map("computed_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  accion Accion @relation(fields: [accionId], references: [id], onDelete: Cascade)
+
+  @@map("accion_scores")
+}
+
+model MetricSnapshot {
+  id         String   @id @default(uuid()) @db.Uuid
+  accionId   String?  @map("accion_id") @db.Uuid
+  metricKey  String   @map("metric_key")
+  periodo    String?
+  valor      Decimal  @db.Decimal(14, 4)
+  metadata   Json     @default("{}")
+  capturedAt DateTime @default(now()) @map("captured_at")
+
+  accion Accion? @relation(fields: [accionId], references: [id], onDelete: Cascade)
+
+  @@index([accionId, metricKey, capturedAt])
+  @@map("metric_snapshots")
+}
+
+model DocumentChunk {
+  id          String   @id @default(uuid()) @db.Uuid
+  accionId    String?  @map("accion_id") @db.Uuid
+  documentoId String?  @map("documento_id") @db.Uuid
+  fuente      String   @default("documento")
+  chunkText   String   @map("chunk_text")
+  embedding   Json?
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  accion Accion? @relation(fields: [accionId], references: [id], onDelete: Cascade)
+
+  @@index([accionId])
+  @@map("document_chunks")
+}
+
+model Recomendacion {
+  id          String   @id @default(uuid()) @db.Uuid
+  accionId    String?  @map("accion_id") @db.Uuid
+  tipo        String
+  titulo      String
+  descripcion String
+  prioridad   String   @default("media")
+  estatus     String   @default("pendiente")
+  factores    Json     @default("{}")
+  aprobadoPor String?  @map("aprobado_por") @db.Uuid
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  accion Accion? @relation(fields: [accionId], references: [id], onDelete: SetNull)
+
+  @@index([estatus, prioridad])
+  @@map("recomendaciones")
+}
+
+model ActivoHidraulico {
+  id          String   @id @default(uuid()) @db.Uuid
+  accionId    String   @map("accion_id") @db.Uuid
+  tipoActivo  String   @map("tipo_activo")
+  nombre      String
+  condicion   String   @default("desconocida")
+  criticidad  String   @default("media")
+  pof         Decimal? @db.Decimal(5, 2)
+  cof         Decimal? @db.Decimal(5, 2)
+  riesgoScore Decimal? @map("riesgo_score") @db.Decimal(5, 2)
+  rulAnios    Decimal? @map("rul_anios") @db.Decimal(6, 2)
+  caudalLps   Decimal? @map("caudal_lps") @db.Decimal(8, 2)
+  metadata    Json     @default("{}")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  accion Accion @relation(fields: [accionId], references: [id], onDelete: Cascade)
+
+  @@index([accionId])
+  @@map("activos_hidraulicos")
+}
+
+model IaAuditLog {
+  id        String   @id @default(uuid()) @db.Uuid
+  tipo      String
+  modelo    String?
+  inputs    Json     @default("{}")
+  outputs   Json     @default("{}")
+  usuarioId String?  @map("usuario_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@index([tipo, createdAt])
+  @@map("ia_audit_logs")
 }

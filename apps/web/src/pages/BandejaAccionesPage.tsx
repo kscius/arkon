@@ -15,6 +15,7 @@ import { useAsyncData } from '@/hooks/use-async-data';
 import { fetchPendientes } from '@/lib/api';
 import type { PendienteItem, PendienteTipo } from '@/lib/api';
 import { SUMMARY_ORDER, TIPO_META } from '@/lib/pendientes-meta';
+import { RecommendationsPanel } from '@/components/dashboard/RecommendationsPanel';
 
 type TabValue = 'todas' | PendienteTipo;
 
@@ -185,6 +186,8 @@ export default function BandejaAccionesPage() {
               </Tabs>
             </>
           )}
+
+          <RecommendationsPanel />
         </div>
       )}
     </PageState>

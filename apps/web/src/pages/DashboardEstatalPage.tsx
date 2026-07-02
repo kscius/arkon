@@ -4,6 +4,11 @@ import { motion } from 'framer-motion';
 import { PageState } from '@/components/PageState';
 import { DashboardExportActions } from '@/components/dashboard/DashboardExportActions';
 import { MapaTerritorial } from '@/components/dashboard/MapaTerritorial';
+import { GeoDecisionMap } from '@/components/dashboard/GeoDecisionMap';
+import { AttentionTodayPanel } from '@/components/dashboard/AttentionTodayPanel';
+import { DataQualityWidget } from '@/components/dashboard/DataQualityWidget';
+import { EvmSummaryChart } from '@/components/dashboard/EvmSummaryChart';
+import { ContractorScorecard } from '@/components/dashboard/ContractorScorecard';
 import { RankingContratistasChart } from '@/components/dashboard/RankingContratistasChart';
 import { useApp } from '@/context/AppContext';
 import { ObraFormModal } from '@/components/ObraFormModal';
@@ -20,6 +25,12 @@ import {
   fetchDashboardKpis,
   fetchMunicipios,
   fetchObras,
+  fetchAttentionToday,
+  fetchDataQuality,
+  fetchEvmPortfolio,
+  fetchGeoAggregates,
+  fetchContractorScores,
+  recomputeMetrics,
 } from '@/lib/api';
 import { mapProgramaChartFromApi } from '@/lib/programa-chart';
 import { normalizeName } from '@/lib/api-mappers';
@@ -62,6 +73,17 @@ export default function DashboardPage() {
           programaFilter === '__all__' ? undefined : programaFilter,
         ).catch(() => []),
       ]);
+
+    await recomputeMetrics().catch(() => ({ processed: 0 }));
+
+    const [attention, dataQuality, evm, geo, contractorScores] = await Promise.all([
+      fetchAttentionToday().catch(() => null),
+      fetchDataQuality().catch(() => null),
+      fetchEvmPortfolio().catch(() => null),
+      fetchGeoAggregates().catch(() => []),
+      fetchContractorScores().catch(() => []),
+    ]);
+
     const programas = mapProgramaChartFromApi(chartPrograma, obras);
     return {
       obras,
@@ -73,6 +95,11 @@ export default function DashboardPage() {
       avanceTimeline,
       obrasPorEstatus,
       topContratistas,
+      attention,
+      dataQuality,
+      evm,
+      geo,
+      contractorScores,
     };
   }, [programaFilter]);
 
@@ -97,7 +124,7 @@ export default function DashboardPage() {
     return <PageState loading={loading} error={error} onRetry={reload}><span /></PageState>;
   }
 
-  const { obras, municipios, alertas, kpis, programas, topMunicipios, avanceTimeline, obrasPorEstatus, topContratistas } = data;
+  const { obras, municipios, alertas, kpis, programas, topMunicipios, avanceTimeline, obrasPorEstatus, topContratistas, attention, dataQuality, evm, geo, contractorScores } = data;
 
   const estatusChartData = obrasPorEstatus
     .filter((row) => row.estatus && (row.count ?? 0) > 0)
@@ -130,12 +157,12 @@ export default function DashboardPage() {
   }));
 
   const kpiCards = [
-    { label: `Total de ${entity.pluralCap}`, value: totalObras.toString(), sub: 'Registradas en el sistema', icon: Building2, color: brand.colors.primary, trend: null },
-    { label: 'Inversión Autorizada', value: formatCurrencyM(montoAutorizado), sub: 'Presupuesto total', icon: DollarSign, color: brand.colors.accent, trend: null },
-    { label: `${entity.pluralCap} en Ejecución`, value: obrasEjecucion.toString(), sub: `${Math.round((obrasEjecucion/totalObras)*100)}% del total`, icon: Activity, color: '#38A169', trend: null },
-    { label: `${entity.pluralCap} con Retraso`, value: obrasRetraso.toString(), sub: `${Math.round((obrasRetraso/totalObras)*100)}% del total`, icon: AlertTriangle, color: '#DC2626', trend: null },
-    { label: 'Avance Físico Prom.', value: formatPercentage(avanceFisicoPromedio), sub: `Meta: 65%`, icon: TrendingUp, color: '#3182CE', trend: avanceFisicoPromedio },
-    { label: 'Monto Ejercido', value: formatCurrencyM(montoEjercido), sub: `${Math.round((montoEjercido/montoAutorizado)*100)}% autorizado`, icon: CreditCard, color: brand.colors.secondary, trend: (montoEjercido/montoAutorizado)*100 },
+    { label: `Total de ${entity.pluralCap}`, value: totalObras.toString(), sub: 'Registradas en el sistema', icon: Building2, color: brand.colors.primary, trend: null, onClick: () => navigate('/obras') },
+    { label: 'Inversión Autorizada', value: formatCurrencyM(montoAutorizado), sub: 'Presupuesto total', icon: DollarSign, color: brand.colors.accent, trend: null, onClick: () => navigate('/obras') },
+    { label: `${entity.pluralCap} en Ejecución`, value: obrasEjecucion.toString(), sub: `${Math.round((obrasEjecucion/totalObras)*100)}% del total`, icon: Activity, color: '#38A169', trend: null, onClick: () => navigate('/obras?estatus=en_ejecucion') },
+    { label: `${entity.pluralCap} con Retraso`, value: obrasRetraso.toString(), sub: `${Math.round((obrasRetraso/totalObras)*100)}% del total`, icon: AlertTriangle, color: '#DC2626', trend: null, onClick: () => navigate('/obras?estatus=en_ejecucion_retraso') },
+    { label: 'Avance Físico Prom.', value: formatPercentage(avanceFisicoPromedio), sub: `Meta: 65%`, icon: TrendingUp, color: '#3182CE', trend: avanceFisicoPromedio, onClick: () => navigate('/obras') },
+    { label: 'Monto Ejercido', value: formatCurrencyM(montoEjercido), sub: `${Math.round((montoEjercido/montoAutorizado)*100)}% autorizado`, icon: CreditCard, color: brand.colors.secondary, trend: (montoEjercido/montoAutorizado)*100, onClick: () => navigate('/obras') },
   ];
 
   return (
@@ -154,7 +181,13 @@ export default function DashboardPage() {
       <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         {kpiCards.map((kpi, i) => (
           <motion.div key={i} variants={item}>
-            <Card className="hover:shadow-md transition-shadow">
+            <Card
+              className="hover:shadow-md transition-shadow cursor-pointer"
+              onClick={kpi.onClick}
+              role="button"
+              tabIndex={0}
+              onKeyDown={(e) => e.key === 'Enter' && kpi.onClick?.()}
+            >
               <CardContent className="p-4">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[10px] uppercase tracking-wider text-gray-500 font-medium">{kpi.label}</span>
@@ -174,6 +207,32 @@ export default function DashboardPage() {
           </motion.div>
         ))}
       </div>
+
+      {(attention || dataQuality || evm) && (
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {attention && (
+            <motion.div variants={item} className="xl:col-span-1">
+              <AttentionTodayPanel data={attention} />
+            </motion.div>
+          )}
+          {dataQuality && (
+            <motion.div variants={item}>
+              <DataQualityWidget data={dataQuality} />
+            </motion.div>
+          )}
+          {evm && (
+            <motion.div variants={item} className="xl:col-span-2">
+              <EvmSummaryChart data={evm} />
+            </motion.div>
+          )}
+        </div>
+      )}
+
+      {contractorScores.length > 0 && (
+        <motion.div variants={item}>
+          <ContractorScorecard rows={contractorScores} />
+        </motion.div>
+      )}
 
       {avanceTimeline.length > 0 && (
         <motion.div variants={item}>
@@ -549,10 +608,14 @@ export default function DashboardPage() {
       <motion.div variants={item}>
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-base font-semibold text-gray-900">Mapa georreferenciado de {entity.plural}</CardTitle>
+            <CardTitle className="text-base font-semibold text-gray-900">Mapa georreferenciado — decisión GIS</CardTitle>
           </CardHeader>
           <CardContent>
-            <MapaTerritorial municipios={municipios} obras={obras} />
+            {geo.length > 0 ? (
+              <GeoDecisionMap aggregates={geo} />
+            ) : (
+              <MapaTerritorial municipios={municipios} obras={obras} />
+            )}
           </CardContent>
         </Card>
       </motion.div>

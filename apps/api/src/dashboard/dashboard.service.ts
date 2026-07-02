@@ -317,8 +317,7 @@ export class DashboardService {
 
     return rows
       .sort((a, b) => b.ranking_score - a.ranking_score)
-      .slice(0, 15)
-      .map(({ ranking_score: _rs, ...rest }) => rest);
+      .slice(0, 15);
   }
 
   async avanceTimeline(user: Usuario) {

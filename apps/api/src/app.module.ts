@@ -19,6 +19,7 @@ import { DocumentosModule } from './documentos/documentos.module';
 import { EntidadesFederativasModule } from './entidades-federativas/entidades-federativas.module';
 import { EstimacionesModule } from './estimaciones/estimaciones.module';
 import { HealthModule } from './health/health.module';
+import { MetricsModule } from './metrics/metrics.module';
 import { MunicipiosModule } from './municipios/municipios.module';
 import { ObservacionesModule } from './observaciones/observaciones.module';
 import { ObrasModule } from './obras/obras.module';
@@ -59,6 +60,7 @@ import { UsersModule } from './users/users.module';
     AlertasModule,
     AlertaConfigsModule,
     DashboardModule,
+    MetricsModule,
     ChatModule,
   ],
   providers: [{ provide: APP_GUARD, useClass: JwtAuthGuard }],

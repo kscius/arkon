@@ -3,6 +3,9 @@ import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { DashboardExportActions } from '@/components/dashboard/DashboardExportActions';
 import { EstimacionesPendientesList } from '@/components/EstimacionesPendientesList';
+import { AttentionTodayPanel } from '@/components/dashboard/AttentionTodayPanel';
+import { EvmSummaryChart } from '@/components/dashboard/EvmSummaryChart';
+import { DataQualityWidget } from '@/components/dashboard/DataQualityWidget';
 import { PageState } from '@/components/PageState';
 import { useApp } from '@/context/AppContext';
 import { useAsyncData } from '@/hooks/use-async-data';
@@ -15,6 +18,9 @@ import {
   fetchEstimacionesByObra,
   fetchMunicipio,
   fetchObras,
+  fetchAttentionToday,
+  fetchEvmPortfolio,
+  fetchDataQuality,
   validateAvance,
   validateEstimacion,
 } from '@/lib/api';
@@ -76,7 +82,13 @@ export default function DashboardMunicipalPage() {
       }
     }
 
-    return { munObras, munContratistas, munAlertas, municipio, pendingAvances };
+    const [attention, evm, dataQuality] = await Promise.all([
+      fetchAttentionToday().catch(() => null),
+      fetchEvmPortfolio().catch(() => null),
+      fetchDataQuality().catch(() => null),
+    ]);
+
+    return { munObras, munContratistas, munAlertas, municipio, pendingAvances, attention, evm, dataQuality };
   }, [municipioId]);
 
   const { data, loading, error, reload } = useAsyncData(load, [load]);
@@ -196,7 +208,7 @@ export default function DashboardMunicipalPage() {
     return <PageState loading={loading} error={error} onRetry={reload}><span /></PageState>;
   }
 
-  const { munObras, munContratistas, munAlertas, municipio, pendingAvances } = data;
+  const { munObras, munContratistas, munAlertas, municipio, pendingAvances, attention, evm, dataQuality } = data;
   const municipioNombre = municipio?.nombre ?? munObras[0]?.municipio ?? 'Municipio';
 
   const totalObras = munObras.length;
@@ -258,6 +270,26 @@ export default function DashboardMunicipalPage() {
           </motion.div>
         ))}
       </div>
+
+      {(attention || evm || dataQuality) && (
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
+          {attention && (
+            <motion.div variants={item}>
+              <AttentionTodayPanel data={attention} />
+            </motion.div>
+          )}
+          {dataQuality && (
+            <motion.div variants={item}>
+              <DataQualityWidget data={dataQuality} />
+            </motion.div>
+          )}
+          {evm && (
+            <motion.div variants={item} className="xl:col-span-2">
+              <EvmSummaryChart data={evm} />
+            </motion.div>
+          )}
+        </div>
+      )}
 
       <Tabs defaultValue="obras">
         <TabsList className="bg-white border border-gray-200 p-1 h-auto">

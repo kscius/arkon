@@ -1005,3 +1005,192 @@ export async function transitionSolicitud(
 export async function deleteSolicitud(id: string): Promise<void> {
   await apiFetch<void>(`/solicitudes-programa/${id}`, { method: 'DELETE' });
 }
+
+// --- Metrics / Intelligence API ---
+
+export interface DataQualityMetrics {
+  score_global: number;
+  pct_geo: number;
+  pct_contratista: number;
+  pct_avances: number;
+  pct_documentos: number;
+  pct_cua: number;
+  total_acciones: number;
+}
+
+export interface RiskScoreRow {
+  accion_id: string;
+  folio: string;
+  nombre: string;
+  municipio: string;
+  riesgo_score: number;
+  riesgo_nivel: 'verde' | 'ambar' | 'rojo';
+  factores: Record<string, number>;
+  prob_retraso: number | null;
+  prob_sobrecosto: number | null;
+  anomalia_score: number | null;
+  salud_score: number | null;
+}
+
+export interface EvmPortfolio {
+  acciones: Array<{
+    accion_id: string;
+    folio: string;
+    nombre: string;
+    spi: number | null;
+    cpi: number | null;
+    eac: number | null;
+    vac: number | null;
+    tcpi: number | null;
+  }>;
+  promedio_spi: number | null;
+  promedio_cpi: number | null;
+}
+
+export interface GeoAggregate {
+  municipio_id: string;
+  municipio: string;
+  latitud: number | null;
+  longitud: number | null;
+  es_zap: boolean;
+  marginacion: string | null;
+  poblacion: number;
+  obras_count: number;
+  inversion_total: number;
+  avance_promedio: number;
+  retraso_count: number;
+  riesgo_promedio: number;
+  inversion_per_capita: number;
+  gap_index: number;
+  marginacion_ordinal: number;
+}
+
+export interface AttentionToday {
+  top_riesgos: RiskScoreRow[];
+  anomalias: Array<{
+    accion_id: string;
+    folio: string;
+    nombre: string;
+    municipio: string;
+    anomalia_score: number;
+    riesgo_score: number;
+  }>;
+  plazos_criticos: Array<{
+    codigo: string;
+    descripcion: string;
+    fecha_limite: string;
+    dias_restantes: number;
+  }>;
+  recomendaciones_pendientes: number;
+  recomendaciones: Array<{
+    id: string;
+    titulo: string;
+    descripcion: string;
+    prioridad: string;
+    estatus: string;
+  }>;
+}
+
+export async function recomputeMetrics(): Promise<{ processed: number }> {
+  return apiFetch('/metrics/recompute', { method: 'POST' });
+}
+
+export async function fetchDataQuality(): Promise<DataQualityMetrics> {
+  return apiFetch<DataQualityMetrics>('/metrics/data-quality');
+}
+
+export async function fetchRiskScores(): Promise<RiskScoreRow[]> {
+  return apiFetch<RiskScoreRow[]>('/metrics/risk');
+}
+
+export async function fetchEvmPortfolio(): Promise<EvmPortfolio> {
+  return apiFetch<EvmPortfolio>('/metrics/evm');
+}
+
+export interface EvmByObra {
+  pv: number;
+  ev: number;
+  ac: number;
+  bac: number;
+  spi: number | null;
+  cpi: number | null;
+  eac: number | null;
+  etc: number | null;
+  vac: number | null;
+  tcpi: number | null;
+  curva_s: Array<{ periodo: string; pv: number; ev: number; ac: number }>;
+  score: {
+    riesgo_score?: number | string;
+    riesgo_nivel?: string;
+  } | null;
+}
+
+export async function fetchEvmByObra(obraId: string): Promise<EvmByObra> {
+  return apiFetch<EvmByObra>(`/metrics/evm/${obraId}`);
+}
+
+export async function fetchGeoAggregates(): Promise<GeoAggregate[]> {
+  return apiFetch<GeoAggregate[]>('/metrics/geo');
+}
+
+export async function fetchContractorScores() {
+  return apiFetch<
+    Array<{
+      contratista_id: string;
+      contratista: string;
+      obras_count: number;
+      score: number;
+      avance_promedio: number;
+      alertas_activas: number;
+    }>
+  >('/metrics/contractors');
+}
+
+export async function fetchAttentionToday(): Promise<AttentionToday> {
+  return apiFetch<AttentionToday>('/metrics/attention-today');
+}
+
+export async function fetchComplianceCalendar() {
+  return apiFetch<{
+    ejercicio: number;
+    obras_en_alcance: number;
+    plazos: AttentionToday['plazos_criticos'];
+  }>('/metrics/compliance');
+}
+
+export async function fetchMirKpis() {
+  return apiFetch<Record<string, number>>('/metrics/mir');
+}
+
+export async function fetchExecutiveBriefing() {
+  return apiFetch<Record<string, unknown>>('/metrics/briefing');
+}
+
+export async function fetchRecommendations() {
+  return apiFetch<Record<string, unknown>[]>('/metrics/recommendations');
+}
+
+export async function approveRecommendation(id: string) {
+  return apiFetch(`/metrics/recommendations/${id}/approve`, { method: 'POST' });
+}
+
+export async function fetchActivosHidraulicos() {
+  return apiFetch<Record<string, unknown>[]>('/metrics/activos');
+}
+
+export async function indexDocumentsForRag() {
+  return apiFetch<{ total: number; indexed: number }>('/metrics/documents/index', {
+    method: 'POST',
+  });
+}
+
+export async function searchDocumentsRag(q: string) {
+  return apiFetch<Record<string, unknown>[]>(`/metrics/documents/search?q=${encodeURIComponent(q)}`);
+}
+
+export async function semanticMetricQuery(intent: string) {
+  return apiFetch<{ metric: string; description: string } | null>('/metrics/semantic', {
+    method: 'POST',
+    body: JSON.stringify({ intent }),
+  });
+}

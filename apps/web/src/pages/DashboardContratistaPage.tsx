@@ -4,7 +4,9 @@ import { motion } from 'framer-motion';
 import { PageState } from '@/components/PageState';
 import { useApp } from '@/context/AppContext';
 import { useAsyncData } from '@/hooks/use-async-data';
-import { createAvance, fetchAlertas, fetchAvancesByObra, fetchEstimacionesByObra, fetchObras } from '@/lib/api';
+import { createAvance, fetchAlertas, fetchAvancesByObra, fetchEstimacionesByObra, fetchObras, fetchAttentionToday, fetchEvmPortfolio, fetchContractorScores } from '@/lib/api';
+import { AttentionTodayPanel } from '@/components/dashboard/AttentionTodayPanel';
+import { EvmSummaryChart } from '@/components/dashboard/EvmSummaryChart';
 import { ApiError } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { formatCurrencyM, formatPercentage, getObraStatusColor, getObraStatusLabel, getProgramaColor, getProgramaName, getSeverityColor, getSeverityLabel } from '@/lib/utils';
@@ -46,7 +48,16 @@ export default function DashboardContratistaPage() {
       })),
     );
 
-    return { misObras, misAlertas, avancesPorObra, estimacionesPorObra };
+    const [attention, evm, contractorScores] = await Promise.all([
+      fetchAttentionToday().catch(() => null),
+      fetchEvmPortfolio().catch(() => null),
+      fetchContractorScores().catch(() => []),
+    ]);
+    const miScore = contratistaId
+      ? contractorScores.find((c) => c.contratista_id === contratistaId)
+      : contractorScores[0];
+
+    return { misObras, misAlertas, avancesPorObra, estimacionesPorObra, attention, evm, miScore };
   }, [contratistaId]);
 
   const { data, loading, error, reload } = useAsyncData(load, [load]);
@@ -188,7 +199,7 @@ export default function DashboardContratistaPage() {
     return <PageState loading={loading} error={error} onRetry={reload}><span /></PageState>;
   }
 
-  const { misObras, misAlertas } = data;
+  const { misObras, misAlertas, attention, evm, miScore } = data;
 
   const totalObras = misObras.length;
   const obrasEjecucion = misObras.filter(o => o.estatus === 'en_ejecucion_a_tiempo' || o.estatus === 'en_ejecucion_retraso').length;
@@ -235,6 +246,37 @@ export default function DashboardContratistaPage() {
           </motion.div>
         ))}
       </div>
+
+      {miScore && (
+        <motion.div variants={item}>
+          <Card>
+            <CardContent className="p-4 flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs text-gray-500 uppercase">Mi score de desempeño</p>
+                <p className="text-2xl font-bold text-brand-primary">{Math.round(miScore.score)}</p>
+              </div>
+              <div className="text-sm text-gray-600">
+                {miScore.obras_count} obras · avance {miScore.avance_promedio}% · {miScore.alertas_activas} alertas
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      )}
+
+      {(attention || evm) && (
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+          {attention && (
+            <motion.div variants={item}>
+              <AttentionTodayPanel data={attention} />
+            </motion.div>
+          )}
+          {evm && (
+            <motion.div variants={item}>
+              <EvmSummaryChart data={evm} />
+            </motion.div>
+          )}
+        </div>
+      )}
 
       <Tabs defaultValue="obras">
         <TabsList className="bg-white border border-gray-200 p-1 h-auto">
