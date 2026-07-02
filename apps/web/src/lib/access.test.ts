@@ -20,6 +20,7 @@ describe('canAccessRoute', () => {
     expect(canAccessRoute('estatal', '/acciones/abc', true)).toBe(true);
     expect(canAccessRoute('estatal', '/admin/usuarios', true)).toBe(true);
     expect(canAccessRoute('estatal', '/municipios/abc', true)).toBe(true);
+    expect(canAccessRoute('estatal', '/asistente', true)).toBe(false);
   });
 
   it('restricts municipal to municipal and contractor catalog routes', () => {
@@ -28,7 +29,7 @@ describe('canAccessRoute', () => {
     expect(canAccessRoute('municipal', '/acciones/x', true)).toBe(true);
     expect(canAccessRoute('municipal', '/municipios/x', true)).toBe(true);
     expect(canAccessRoute('municipal', '/contratistas', true)).toBe(true);
-    expect(canAccessRoute('municipal', '/asistente', true)).toBe(true);
+    expect(canAccessRoute('municipal', '/asistente', true)).toBe(false);
     expect(canAccessRoute('municipal', '/configurador-alertas', true)).toBe(true);
     expect(canAccessRoute('municipal', '/admin/usuarios', true)).toBe(false);
   });

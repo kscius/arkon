@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { DEMO_ASSISTANT_LABEL, DEMO_USERS, login, skipIfApiDown } from './helpers';
+import { DEMO_USERS, login, skipIfApiDown } from './helpers';
 
 test.describe('RBAC route guards', () => {
   test.beforeEach(async ({ request }) => {
@@ -31,10 +31,17 @@ test.describe('RBAC route guards', () => {
     await expect(page).toHaveURL(/#\/bandeja/, { timeout: 10_000 });
   });
 
-  test('municipal can open asistente', async ({ page }) => {
+  test('estatal cannot open asistente (hidden from nav)', async ({ page }) => {
+    await login(page, DEMO_USERS.estatal);
+    await expect(page.getByRole('link', { name: 'Asistente IA' })).toHaveCount(0);
+    await page.goto('/#/asistente');
+    await expect(page).toHaveURL(/#\/bandeja/, { timeout: 10_000 });
+  });
+
+  test('municipal cannot open asistente (hidden from nav)', async ({ page }) => {
     await login(page, DEMO_USERS.municipal);
-    await page.getByRole('link', { name: 'Asistente IA' }).click();
-    await expect(page).toHaveURL(/#\/asistente/, { timeout: 10_000 });
-    await expect(page.getByText(DEMO_ASSISTANT_LABEL).first()).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Asistente IA' })).toHaveCount(0);
+    await page.goto('/#/asistente');
+    await expect(page).toHaveURL(/#\/bandeja/, { timeout: 10_000 });
   });
 });

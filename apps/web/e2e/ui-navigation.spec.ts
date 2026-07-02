@@ -8,7 +8,7 @@ test.describe('Full navigation smoke by role', () => {
 
   test('estatal visits all sidebar sections and obra detail', async ({ page }) => {
     await login(page, DEMO_USERS.estatal);
-    for (const label of ['Dashboard', 'Municipios', 'Contratistas', 'Usuarios', 'Alertas', 'Asistente IA']) {
+    for (const label of ['Dashboard', 'Municipios', 'Contratistas', 'Usuarios', 'Alertas']) {
       await page.getByRole('link', { name: label }).first().click();
       await expect(page.locator('main')).not.toBeEmpty();
     }
@@ -21,7 +21,7 @@ test.describe('Full navigation smoke by role', () => {
 
   test('municipal visits sidebar and obra from dashboard table', async ({ page }) => {
     await login(page, DEMO_USERS.municipal);
-    for (const label of ['Dashboard', 'Mi Municipio', 'Contratistas', 'Alertas', 'Asistente IA']) {
+    for (const label of ['Dashboard', 'Mi Municipio', 'Contratistas', 'Alertas']) {
       await page.getByRole('link', { name: label }).first().click();
       await expect(page.locator('main')).not.toBeEmpty();
     }

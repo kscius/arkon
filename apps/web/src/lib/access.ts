@@ -13,7 +13,7 @@ export function canAccessRoute(
     return role === 'estatal' || role === 'municipal';
   }
   if (route === '/asistente') {
-    return role === 'estatal' || role === 'municipal';
+    return false;
   }
   if (route === '/acciones' || route.startsWith('/acciones/')) return true;
   if (route === '/bandeja') return true;

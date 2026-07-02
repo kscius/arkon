@@ -97,12 +97,28 @@ export class MetricsController {
 
   @Get('documents/search')
   @ApiQuery({ name: 'q', required: true })
+  @ApiQuery({ name: 'accionId', required: false })
   searchDocuments(
     @Query('q') query: string,
     @CurrentUser() user: Usuario,
     @Query('limit') limit?: string,
   ) {
     return this.service.searchDocuments(query, user, limit ? Number(limit) : 10);
+  }
+
+  @Get('idp')
+  runIdpPortfolio(@CurrentUser() user: Usuario) {
+    return this.service.runIdp(user);
+  }
+
+  @Get('idp/:accionId')
+  getIdpByAccion(@Param('accionId') accionId: string, @CurrentUser() user: Usuario) {
+    return this.service.getIdpByAccion(accionId, user);
+  }
+
+  @Post('idp/:accionId/run')
+  runIdpAccion(@Param('accionId') accionId: string, @CurrentUser() user: Usuario) {
+    return this.service.runIdp(user, accionId, true);
   }
 
   @Get('briefing')

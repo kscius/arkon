@@ -35,7 +35,7 @@ export function RecommendationsPanel() {
           {(data ?? []).length === 0 && (
             <p className="text-sm text-gray-500">Sin recomendaciones pendientes.</p>
           )}
-          {(data ?? []).map((rec) => {
+          {(data ?? []).map((rec, index) => {
             const r = rec as {
               id: string;
               titulo: string;
@@ -45,7 +45,7 @@ export function RecommendationsPanel() {
               accion?: { folio?: string };
             };
             return (
-              <div key={r.id} className="border rounded-lg p-3 space-y-2">
+              <div key={`${r.id}-${index}`} className="border rounded-lg p-3 space-y-2">
                 <div className="flex items-start justify-between gap-2">
                   <div>
                     <p className="font-medium text-sm">{r.titulo}</p>

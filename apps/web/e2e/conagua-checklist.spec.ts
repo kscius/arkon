@@ -108,16 +108,12 @@ test.describe('CONAGUA checklist (browser registry)', () => {
     await page.getByRole('button', { name: 'Cancelar' }).click();
   });
 
-  test('ASST-02 assistant accepts query and responds', async ({ page }) => {
+  test('ASST-02 asistente hidden from navigation and route blocked', async ({ page }) => {
     await login(page, DEMO_USERS.estatal);
-    await page.getByRole('link', { name: /Asistente/i }).click();
-    await expect(page.getByText(/Asistente CONAGUA/i).first()).toBeVisible();
-    const input = page.getByPlaceholder(/Escribe tu consulta/i);
-    await input.fill('¿Cuántas acciones hay en el sistema?');
-    await input.press('Enter');
-    await expect(page.locator('main').getByText(/acci[oó]n|obra|22/i).last()).toBeVisible({
-      timeout: 30_000,
-    });
+    await expect(page.getByRole('link', { name: /Asistente/i })).toHaveCount(0);
+    await page.goto('/#/asistente');
+    await expect(page).toHaveURL(/#\/bandeja/, { timeout: 10_000 });
+    await expect(page.getByRole('heading', { name: 'Bandeja de Acciones' })).toBeVisible();
   });
 
   test('DASH-04: click Obras CSV and wait for download', async ({ page }) => {

@@ -13,7 +13,6 @@ import ObraDetailPage from '@/pages/ObraDetailPage';
 import ObrasPage from '@/pages/ObrasPage';
 import MunicipioPanelPage from '@/pages/MunicipioPanelPage';
 import ContratistaPanelPage from '@/pages/ContratistaPanelPage';
-import AsistentePage from '@/pages/AsistentePage';
 import AlertasPage from '@/pages/AlertasPage';
 import ConfiguradorAlertasPage from '@/pages/ConfiguradorAlertasPage';
 import AdminUsuariosPage from '@/pages/AdminUsuariosPage';
@@ -174,16 +173,6 @@ function AppRoutes() {
           <ProtectedRoute>
             <AppLayout>
               <ConfiguradorAlertasPage />
-            </AppLayout>
-          </ProtectedRoute>
-        }
-      />
-      <Route
-        path="/asistente"
-        element={
-          <ProtectedRoute>
-            <AppLayout>
-              <AsistentePage />
             </AppLayout>
           </ProtectedRoute>
         }

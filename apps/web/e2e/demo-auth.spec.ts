@@ -11,7 +11,7 @@ test.describe('Demo login flows by role', () => {
     await expect(page.getByRole('heading', { name: 'Bandeja de Acciones' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Dashboard' })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Municipios' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Asistente IA' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Asistente IA' })).toHaveCount(0);
   });
 
   test('municipal login reaches municipal dashboard', async ({ page }) => {

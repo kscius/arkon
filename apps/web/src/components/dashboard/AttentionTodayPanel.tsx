@@ -70,8 +70,8 @@ export function AttentionTodayPanel({ data }: AttentionTodayPanelProps) {
             <p className="text-xs font-medium text-gray-500 uppercase mb-2 flex items-center gap-1">
               <Sparkles className="w-3 h-3" /> Recomendaciones pendientes ({data.recomendaciones_pendientes})
             </p>
-            {data.recomendaciones.slice(0, 3).map((rec) => (
-              <p key={rec.id} className="text-sm text-gray-700 border-l-2 border-brand-primary pl-2 mb-1">
+            {data.recomendaciones.slice(0, 3).map((rec, i) => (
+              <p key={`${rec.titulo}-${i}`} className="text-sm text-gray-700 border-l-2 border-brand-primary pl-2 mb-1">
                 {rec.titulo}
               </p>
             ))}

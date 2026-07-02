@@ -15,6 +15,7 @@ import {
   predictDelayAndCost,
   proaguaComplianceCalendar,
 } from './metrics-calculator';
+import { validateAccionIdp, validatePortfolioIdp } from './idp-validator';
 
 @Injectable()
 export class MetricsService {
@@ -47,7 +48,38 @@ export class MetricsService {
 
     await this.syncActivosFromAcciones(where);
     await this.generateRecommendations(where);
+    await this.deduplicateRecommendations(where);
     return { processed: acciones.length };
+  }
+
+  private dedupeRecommendationsList<
+    T extends { accionId: string | null; tipo: string; id: string },
+  >(rows: T[]): T[] {
+    const seen = new Set<string>();
+    return rows.filter((r) => {
+      const key = `${r.accionId ?? 'global'}:${r.tipo}`;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+  }
+
+  private async deduplicateRecommendations(where: Prisma.AccionWhereInput) {
+    const pending = await this.prisma.recomendacion.findMany({
+      where: { estatus: 'pendiente', accion: where },
+      orderBy: { createdAt: 'desc' },
+    });
+    const seen = new Set<string>();
+    const toDelete: string[] = [];
+    for (const r of pending) {
+      const key = `${r.accionId ?? 'global'}:${r.tipo}`;
+      if (seen.has(key)) toDelete.push(r.id);
+      else seen.add(key);
+    }
+    if (toDelete.length > 0) {
+      await this.prisma.recomendacion.deleteMany({ where: { id: { in: toDelete } } });
+      this.logger.log(`Removed ${toDelete.length} duplicate recommendations`);
+    }
   }
 
   private async recomputeAccion(
@@ -418,29 +450,31 @@ export class MetricsService {
     const compliance = (await this.getCompliance(user)).plazos.filter(
       (p) => p.dias_restantes <= 30 && p.dias_restantes >= -7,
     );
-    const recomendaciones = await this.prisma.recomendacion.findMany({
+    const recomendacionesRaw = await this.prisma.recomendacion.findMany({
       where: {
         estatus: 'pendiente',
         accion: this.obraWhere(user),
       },
-      take: 10,
       orderBy: { createdAt: 'desc' },
+      take: 20,
     });
+    const recomendaciones = this.dedupeRecommendationsList(recomendacionesRaw).slice(0, 5);
     return {
       top_riesgos: risks.slice(0, 10),
       anomalias: anomalies.slice(0, 10),
       plazos_criticos: compliance,
-      recomendaciones_pendientes: recomendaciones.length,
-      recomendaciones: recomendaciones.slice(0, 5),
+      recomendaciones_pendientes: recomendacionesRaw.length,
+      recomendaciones,
     };
   }
 
   async getRecommendations(user: Usuario) {
-    return this.prisma.recomendacion.findMany({
-      where: { accion: this.obraWhere(user) },
+    const rows = await this.prisma.recomendacion.findMany({
+      where: { accion: this.obraWhere(user), estatus: 'pendiente' },
       include: { accion: { select: { folio: true, nombre: true } } },
       orderBy: [{ prioridad: 'asc' }, { createdAt: 'desc' }],
     });
+    return this.dedupeRecommendationsList(rows);
   }
 
   async approveRecommendation(id: string, user: Usuario) {
@@ -482,6 +516,7 @@ export class MetricsService {
         },
       });
     }
+    await this.deduplicateRecommendations(where);
   }
 
   private async syncActivosFromAcciones(where: Prisma.AccionWhereInput) {
@@ -564,17 +599,137 @@ export class MetricsService {
   }
 
   async searchDocuments(query: string, user: Usuario, limit = 10) {
-    const chunks = await this.prisma.documentChunk.findMany({
-      where: {
-        accion: this.obraWhere(user),
-        chunkText: { contains: query, mode: 'insensitive' },
-      },
-      take: limit,
-      include: {
-        accion: { select: { folio: true, nombre: true } },
-      },
+    const q = query.trim();
+    if (!q) return [];
+
+    const acciones = await this.prisma.accion.findMany({
+      where: this.obraWhere(user),
+      select: { id: true },
     });
-    return chunks;
+    const accionIds = acciones.map((a) => a.id);
+    if (accionIds.length === 0) return [];
+
+    try {
+      const rows = await this.prisma.$queryRaw<
+        Array<{
+          id: string;
+          accion_id: string | null;
+          documento_id: string | null;
+          chunk_text: string;
+          fuente: string;
+          rank: number;
+          folio: string | null;
+          nombre: string | null;
+        }>
+      >`
+        SELECT dc.id, dc.accion_id, dc.documento_id, dc.chunk_text, dc.fuente,
+          (
+            COALESCE(ts_rank(to_tsvector('spanish', dc.chunk_text), plainto_tsquery('spanish', ${q})), 0) * 2
+            + similarity(dc.chunk_text, ${q})
+          )::float AS rank,
+          a.folio, a.nombre
+        FROM document_chunks dc
+        LEFT JOIN acciones a ON a.id = dc.accion_id
+        WHERE dc.accion_id IN (${Prisma.join(accionIds)})
+          AND (
+            to_tsvector('spanish', dc.chunk_text) @@ plainto_tsquery('spanish', ${q})
+            OR dc.chunk_text ILIKE ${'%' + q + '%'}
+            OR similarity(dc.chunk_text, ${q}) > 0.15
+          )
+        ORDER BY rank DESC
+        LIMIT ${limit}
+      `;
+      return rows.map((r) => ({
+        id: r.id,
+        accionId: r.accion_id,
+        documentoId: r.documento_id,
+        chunkText: r.chunk_text,
+        fuente: r.fuente,
+        rank: Number(r.rank),
+        accion: r.folio ? { folio: r.folio, nombre: r.nombre ?? '' } : null,
+      }));
+    } catch (err) {
+      this.logger.warn(`Lexical search fallback: ${err}`);
+      const chunks = await this.prisma.documentChunk.findMany({
+        where: {
+          accionId: { in: accionIds },
+          chunkText: { contains: q, mode: 'insensitive' },
+        },
+        take: limit,
+        include: { accion: { select: { folio: true, nombre: true } } },
+      });
+      return chunks;
+    }
+  }
+
+  async runIdp(user: Usuario, accionId?: string, persist = true) {
+    const where: Prisma.AccionWhereInput = accionId
+      ? { AND: [this.obraWhere(user), { id: accionId }] }
+      : this.obraWhere(user);
+
+    const acciones = await this.prisma.accion.findMany({
+      where,
+      include: { documentos: true, estimaciones: true },
+    });
+
+    const payload = acciones.map((a) => ({
+      accion: a,
+      documentos: a.documentos,
+      estimaciones: a.estimaciones,
+    }));
+    const report = validatePortfolioIdp(payload);
+
+    if (persist) {
+      for (const item of report.acciones) {
+        for (const d of item.discrepancias) {
+          const exists = await this.prisma.recomendacion.findFirst({
+            where: {
+              accionId: item.accion_id,
+              tipo: 'idp_discrepancia',
+              titulo: d.titulo,
+              estatus: { in: ['pendiente', 'aprobada'] },
+            },
+          });
+          if (exists) continue;
+          await this.prisma.recomendacion.create({
+            data: {
+              accionId: item.accion_id,
+              tipo: 'idp_discrepancia',
+              titulo: d.titulo,
+              descripcion: d.descripcion,
+              prioridad: d.severidad === 'alta' ? 'alta' : d.severidad === 'media' ? 'media' : 'baja',
+              factores: {
+                codigo: d.codigo,
+                ...(d.metadata ?? {}),
+              } as Prisma.InputJsonValue,
+            },
+          });
+        }
+      }
+      await this.deduplicateRecommendations(this.obraWhere(user));
+      await this.prisma.iaAuditLog.create({
+        data: {
+          tipo: 'idp_rules',
+          inputs: { acciones: acciones.length },
+          outputs: {
+            total_discrepancias: report.total_discrepancias,
+          } as Prisma.InputJsonValue,
+          usuarioId: user.id,
+        },
+      });
+    }
+
+    return report;
+  }
+
+  async getIdpByAccion(accionId: string, user: Usuario) {
+    await this.scope.getObraOrThrow(accionId, user);
+    const accion = await this.prisma.accion.findUnique({
+      where: { id: accionId },
+      include: { documentos: true, estimaciones: true },
+    });
+    if (!accion) throw new NotFoundException('Accion not found');
+    return validateAccionIdp(accion, accion.documentos, accion.estimaciones);
   }
 
   async generateBriefing(user: Usuario) {

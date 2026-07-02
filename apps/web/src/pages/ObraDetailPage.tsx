@@ -31,6 +31,8 @@ import { isValidUuid } from '@/lib/ids';
 import { FichaProaguaSection } from '@/components/proagua/FichaProaguaSection';
 import { CofinanciamientoTable } from '@/components/proagua/CofinanciamientoTable';
 import { AvanceTrimestralPanel } from '@/components/proagua/AvanceTrimestralPanel';
+import { IdpDiscrepanciesPanel } from '@/components/dashboard/IdpDiscrepanciesPanel';
+import { DocumentLexicalSearch } from '@/components/dashboard/DocumentLexicalSearch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -586,7 +588,9 @@ export default function ObraDetailPage() {
 
           {/* Expediente Tab */}
           <TabsContent value="expediente" className="mt-4">
-            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
+            <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="space-y-4">
+              {obraId && <IdpDiscrepanciesPanel obraId={obraId} />}
+              <DocumentLexicalSearch />
               <Card>
                 <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">{`Expediente Digital de ${entity.singularCap}`}</CardTitle></CardHeader>
                 <CardContent>

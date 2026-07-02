@@ -1185,7 +1185,53 @@ export async function indexDocumentsForRag() {
 }
 
 export async function searchDocumentsRag(q: string) {
-  return apiFetch<Record<string, unknown>[]>(`/metrics/documents/search?q=${encodeURIComponent(q)}`);
+  return searchDocumentsLexical(q);
+}
+
+export interface DocumentSearchHit {
+  id: string;
+  accionId?: string | null;
+  documentoId?: string | null;
+  chunkText: string;
+  fuente?: string;
+  rank?: number;
+  accion?: { folio: string; nombre: string } | null;
+}
+
+export interface IdpDiscrepancy {
+  codigo: string;
+  severidad: 'alta' | 'media' | 'baja';
+  titulo: string;
+  descripcion: string;
+  accion_id: string;
+  folio: string;
+  metadata?: Record<string, unknown>;
+}
+
+export interface IdpAccionReport {
+  accion_id: string;
+  folio: string;
+  nombre: string;
+  discrepancias: IdpDiscrepancy[];
+  completitud_pct: number;
+}
+
+export async function searchDocumentsLexical(q: string, limit = 10): Promise<DocumentSearchHit[]> {
+  return apiFetch<DocumentSearchHit[]>(
+    `/metrics/documents/search?q=${encodeURIComponent(q)}&limit=${limit}`,
+  );
+}
+
+export async function fetchIdpByObra(obraId: string): Promise<IdpAccionReport> {
+  return apiFetch<IdpAccionReport>(`/metrics/idp/${obraId}`);
+}
+
+export async function runIdpObra(obraId: string) {
+  return apiFetch(`/metrics/idp/${obraId}/run`, { method: 'POST' });
+}
+
+export async function runIdpPortfolio() {
+  return apiFetch('/metrics/idp');
 }
 
 export async function semanticMetricQuery(intent: string) {
