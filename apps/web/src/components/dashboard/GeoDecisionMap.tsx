@@ -122,7 +122,7 @@ export function GeoDecisionMap({ aggregates }: GeoDecisionMapProps) {
                   <div className="text-sm space-y-1 min-w-[180px]">
                     <p className="font-semibold">{a.municipio}</p>
                     {a.es_zap && <p className="text-xs text-amber-700">Zona de Atención Prioritaria</p>}
-                    <p>Obras: {a.obras_count}</p>
+                    <p>Acciones: {a.obras_count}</p>
                     <p>Inversión: {formatCurrencyM(a.inversion_total)}</p>
                     <p>Avance: {formatPercentage(a.avance_promedio)}</p>
                     <p>Riesgo prom.: {Math.round(a.riesgo_promedio)}</p>

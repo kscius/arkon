@@ -2,7 +2,7 @@
   "name": "arkon",
   "private": true,
   "version": "1.0.0",
-  "description": "ARKON - Sistema Integral de Gestion de Obras Publicas",
+  "description": "ARKON - Sistema Integral de Seguimiento de Acciones de Programas",
   "scripts": {
     "dev": "pnpm -r --parallel run dev",
     "dev:web": "pnpm --filter @arkon/web dev",

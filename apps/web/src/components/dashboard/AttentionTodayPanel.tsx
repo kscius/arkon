@@ -31,7 +31,7 @@ export function AttentionTodayPanel({ data }: AttentionTodayPanelProps) {
               <button
                 key={r.accion_id}
                 type="button"
-                onClick={() => navigate(`/obras/${r.accion_id}`)}
+                onClick={() => navigate(`/acciones/${r.accion_id}`)}
                 className="w-full flex items-center justify-between p-2 rounded-lg border border-gray-100 hover:bg-gray-50 text-left"
               >
                 <div className="min-w-0">
@@ -85,7 +85,7 @@ export function AttentionTodayPanel({ data }: AttentionTodayPanelProps) {
               <button
                 key={a.accion_id}
                 type="button"
-                onClick={() => navigate(`/obras/${a.accion_id}`)}
+                onClick={() => navigate(`/acciones/${a.accion_id}`)}
                 className="block w-full text-left text-sm text-gray-700 hover:underline"
               >
                 {a.folio}: score {formatPercentage(a.anomalia_score)}

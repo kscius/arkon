@@ -29,6 +29,6 @@ test.describe('Demo login flows by role', () => {
     await expect(page.getByRole('heading', { name: /Panel del Contratista/i })).toBeVisible({
       timeout: 30_000,
     });
-    await expect(page.getByRole('link', { name: 'Mis Obras' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'Mis Acciones' })).toBeVisible();
   });
 });

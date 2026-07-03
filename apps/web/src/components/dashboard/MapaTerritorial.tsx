@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, CircleMarker, Popup, useMap } from 'react-leaflet';
 import type { LatLngBoundsExpression, LatLngExpression } from 'leaflet';
-import { obraHasGeo } from '@/lib/api-mappers';
+import { obraHasGeo, resolveAccionGeo } from '@/lib/api-mappers';
 import type { MunicipioData, Accion } from '@/types';
 import {
   formatCurrencyM,
@@ -40,13 +40,21 @@ export function MapaTerritorial({ municipios, obras }: MapaTerritorialProps) {
     setMounted(true);
   }, []);
 
-  const georeferenced = useMemo(() => obras.filter(obraHasGeo), [obras]);
+  const georeferenced = useMemo(
+    () =>
+      obras
+        .map((o) => ({ obra: o, geo: resolveAccionGeo(o) }))
+        .filter((item): item is { obra: Accion; geo: { latitud: number; longitud: number } } =>
+          item.geo !== null,
+        ),
+    [obras],
+  );
   const withoutCoords = obras.length - georeferenced.length;
 
   const bounds = useMemo((): LatLngBoundsExpression | null => {
     if (georeferenced.length === 0) return null;
-    const lats = georeferenced.map((o) => o.latitud);
-    const lngs = georeferenced.map((o) => o.longitud);
+    const lats = georeferenced.map((o) => o.geo.latitud);
+    const lngs = georeferenced.map((o) => o.geo.longitud);
     return [
       [Math.min(...lats), Math.min(...lngs)],
       [Math.max(...lats), Math.max(...lngs)],
@@ -65,8 +73,8 @@ export function MapaTerritorial({ municipios, obras }: MapaTerritorialProps) {
       }
       return DEFAULT_CENTER;
     }
-    const lat = georeferenced.reduce((s, o) => s + o.latitud, 0) / georeferenced.length;
-    const lng = georeferenced.reduce((s, o) => s + o.longitud, 0) / georeferenced.length;
+    const lat = georeferenced.reduce((s, o) => s + o.geo.latitud, 0) / georeferenced.length;
+    const lng = georeferenced.reduce((s, o) => s + o.geo.longitud, 0) / georeferenced.length;
     return [lat, lng];
   }, [georeferenced, municipios]);
 
@@ -128,10 +136,10 @@ export function MapaTerritorial({ municipios, obras }: MapaTerritorialProps) {
             url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           />
           {bounds && <FitBounds bounds={bounds} />}
-          {georeferenced.map((obra) => (
+          {georeferenced.map(({ obra, geo }) => (
             <CircleMarker
               key={obra.id}
-              center={[obra.latitud, obra.longitud]}
+              center={[geo.latitud, geo.longitud]}
               radius={8}
               pathOptions={{
                 color: '#fff',

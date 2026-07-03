@@ -50,7 +50,7 @@ export function RecommendationsPanel() {
                   <div>
                     <p className="font-medium text-sm">{r.titulo}</p>
                     {r.accion?.folio && (
-                      <p className="text-xs text-gray-500">Obra: {r.accion.folio}</p>
+                      <p className="text-xs text-gray-500">Acción: {r.accion.folio}</p>
                     )}
                   </div>
                   <Badge variant={r.prioridad === 'alta' ? 'destructive' : 'secondary'}>

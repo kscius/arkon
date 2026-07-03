@@ -1,5 +1,5 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
-import { Accion, Prisma, Rol, Usuario } from '@prisma/client';
+import { Accion, Obra, Prisma, Rol, Usuario } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -13,6 +13,17 @@ export class ScopeService {
     }
     if (user.rol === Rol.contratista && user.contratistaId) {
       return { contratistaId: user.contratistaId };
+    }
+    return { id: '00000000-0000-0000-0000-000000000000' };
+  }
+
+  obraFisicaWhere(user: Usuario): Prisma.ObraWhereInput {
+    if (user.rol === Rol.estatal) return {};
+    if (user.rol === Rol.municipal && user.municipioId) {
+      return { municipioId: user.municipioId };
+    }
+    if (user.rol === Rol.contratista && user.contratistaId) {
+      return { acciones: { some: { contratistaId: user.contratistaId } } };
     }
     return { id: '00000000-0000-0000-0000-000000000000' };
   }
@@ -38,7 +49,7 @@ export class ScopeService {
       where: { id: obraId },
       include: { municipio: true, contratista: true },
     });
-    if (!obra) throw new NotFoundException('Obra not found');
+    if (!obra) throw new NotFoundException('Accion not found');
     this.assertObraAccess(obra, user);
     return obra;
   }
@@ -51,6 +62,25 @@ export class ScopeService {
     if (user.rol === Rol.contratista && obra.contratistaId !== user.contratistaId) {
       throw new ForbiddenException('Access denied');
     }
+  }
+
+  async getObraFisicaOrThrow(obraId: string, user: Usuario): Promise<Obra> {
+    const obra = await this.prisma.obra.findUnique({
+      where: { id: obraId },
+      include: { municipio: true },
+    });
+    if (!obra) throw new NotFoundException('Obra not found');
+    if (user.rol === Rol.estatal) return obra;
+    if (user.rol === Rol.municipal && obra.municipioId !== user.municipioId) {
+      throw new ForbiddenException('Access denied');
+    }
+    if (user.rol === Rol.contratista && user.contratistaId) {
+      const linked = await this.prisma.accion.count({
+        where: { obraFisicaId: obraId, contratistaId: user.contratistaId },
+      });
+      if (linked === 0) throw new ForbiddenException('Access denied');
+    }
+    return obra;
   }
 
   municipioWhere(user: Usuario): Prisma.MunicipioWhereInput {

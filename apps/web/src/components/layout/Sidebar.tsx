@@ -23,6 +23,7 @@ import {
   FileStack,
   Landmark,
   Upload,
+  Layers,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -43,6 +44,7 @@ const iconMap: Record<string, LucideIcon> = {
   FileStack,
   Landmark,
   Upload,
+  Layers,
 };
 
 export function Sidebar() {
@@ -55,6 +57,8 @@ export function Sidebar() {
     if (path === '/bandeja') return location.pathname === '/bandeja';
     if (path === '/dashboard') return location.pathname === '/dashboard';
     if (path === '/acciones') return location.pathname === '/acciones' || location.pathname.startsWith('/acciones/');
+    if (path === '/programas') return location.pathname === '/programas' || location.pathname.startsWith('/programas/');
+    if (path === '/obras') return location.pathname === '/obras' || location.pathname.startsWith('/obras/');
     if (path.includes('/municipios/')) return location.pathname.startsWith('/municipios');
     if (path.includes('/contratistas/')) return location.pathname.startsWith('/contratistas');
     if (path === '/alertas') return location.pathname === '/alertas';
@@ -109,31 +113,39 @@ export function Sidebar() {
       )}
 
       <nav className="flex-1 py-2 px-2 space-y-0.5 overflow-y-auto">
-        {menuItems.map((item) => {
+        {menuItems.map((item, index) => {
           const Icon = iconMap[item.icon] || LayoutDashboard;
           const active = isActive(item.path);
+          const prevSection = index > 0 ? menuItems[index - 1].section : undefined;
+          const showSection = !sidebarCollapsed && item.section && item.section !== prevSection;
           return (
-            <NavLink
-              key={item.path}
-              to={item.path}
-              aria-label={sidebarCollapsed ? item.label : undefined}
-              title={sidebarCollapsed ? item.label : undefined}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2.5 min-h-11 rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40',
-                active
-                  ? 'bg-white/15 border-l-2 text-white'
-                  : 'text-white/70 hover:bg-white/10 hover:text-white',
+            <div key={`${item.path}-${item.label}`}>
+              {showSection && (
+                <div className="px-3 pt-3 pb-1 text-[10px] font-semibold uppercase tracking-wide text-white/45">
+                  {item.section}
+                </div>
               )}
-              style={active ? { borderLeftColor: brand.colors.accent } : undefined}
-            >
-              <Icon className="w-5 h-5 flex-shrink-0" />
-              {!sidebarCollapsed && <span className="text-sm font-medium">{item.label}</span>}
-              {item.path === '/alertas' && !sidebarCollapsed && notifications > 0 && (
-                <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                  {notifications}
-                </span>
-              )}
-            </NavLink>
+              <NavLink
+                to={item.path}
+                aria-label={sidebarCollapsed ? item.label : undefined}
+                title={sidebarCollapsed ? item.label : undefined}
+                className={cn(
+                  'flex items-center gap-3 px-3 py-2.5 min-h-11 rounded-lg transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/40',
+                  active
+                    ? 'bg-white/15 border-l-2 text-white'
+                    : 'text-white/70 hover:bg-white/10 hover:text-white',
+                )}
+                style={active ? { borderLeftColor: brand.colors.accent } : undefined}
+              >
+                <Icon className="w-5 h-5 flex-shrink-0" />
+                {!sidebarCollapsed && <span className="text-sm font-medium">{item.label}</span>}
+                {item.path === '/alertas' && !sidebarCollapsed && notifications > 0 && (
+                  <span className="ml-auto bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                    {notifications}
+                  </span>
+                )}
+              </NavLink>
+            </div>
           );
         })}
       </nav>

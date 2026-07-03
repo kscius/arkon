@@ -2,6 +2,7 @@ import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { Prisma, Usuario } from '@prisma/client';
 import { ScopeService } from '../common/scope.service';
+import { accionHasGeo } from '../common/geo';
 import { PrismaService } from '../prisma/prisma.service';
 import {
   calculateEvm,
@@ -196,11 +197,12 @@ export class MetricsService {
         longitud: true,
         contratistaId: true,
         cua: true,
+        obraFisica: { select: { latitud: true, longitud: true } },
         _count: { select: { avances: true, documentos: true } },
       },
     });
     const total = acciones.length;
-    const conGeo = acciones.filter((a) => a.latitud && a.longitud).length;
+    const conGeo = acciones.filter((a) => accionHasGeo(a)).length;
     const conContratista = acciones.filter((a) => a.contratistaId).length;
     const conAvances = acciones.filter((a) => a._count.avances > 0).length;
     const conDocumentos = acciones.filter((a) => a._count.documentos > 0).length;

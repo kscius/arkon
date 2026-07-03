@@ -13,6 +13,7 @@ const OBRA_INCLUDE = {
   organismoOperador: true,
   accionPrograma: true,
   cofinanciamientos: true,
+  obraFisica: { include: { municipio: true } },
 } as const;
 
 type ObraPayload = Prisma.AccionGetPayload<{ include: typeof OBRA_INCLUDE }>;
@@ -90,6 +91,18 @@ export class ObrasService {
       organismo_operador_id: obra.organismoOperadorId,
       organismo_operador_nombre: obra.organismoOperador?.nombre ?? '',
       anexo_tecnico_id: obra.anexoTecnicoId,
+      obra_fisica_id: obra.obraFisicaId,
+      obra_fisica: obra.obraFisica
+        ? {
+            id: obra.obraFisica.id,
+            clave: obra.obraFisica.clave,
+            nombre: obra.obraFisica.nombre,
+            estatus_fisico: obra.obraFisica.estatusFisico,
+            municipio_nombre: obra.obraFisica.municipio?.nombre ?? '',
+            latitud: obra.obraFisica.latitud != null ? Number(obra.obraFisica.latitud) : null,
+            longitud: obra.obraFisica.longitud != null ? Number(obra.obraFisica.longitud) : null,
+          }
+        : null,
       cofinanciamientos: obra.cofinanciamientos.map((c) => ({
         id: c.id,
         fuente: c.fuente,
@@ -124,6 +137,7 @@ export class ObrasService {
       ...(dto.entidad_federativa_id !== undefined && { entidadFederativaId: dto.entidad_federativa_id }),
       ...(dto.organismo_operador_id !== undefined && { organismoOperadorId: dto.organismo_operador_id }),
       ...(dto.anexo_tecnico_id !== undefined && { anexoTecnicoId: dto.anexo_tecnico_id }),
+      ...(dto.obra_fisica_id !== undefined && { obraFisicaId: dto.obra_fisica_id }),
     };
   }
 
@@ -164,7 +178,7 @@ export class ObrasService {
       where: { id },
       include: OBRA_INCLUDE,
     });
-    if (!obra) throw new NotFoundException('Obra not found');
+    if (!obra) throw new NotFoundException('Accion not found');
     this.scope.assertObraAccess(obra, user);
     return this.mapObra(obra);
   }
@@ -190,7 +204,7 @@ export class ObrasService {
 
   async create(dto: CreateObraDto, user: Usuario) {
     if (user.rol === Rol.contratista) {
-      throw new ForbiddenException('Contratistas cannot create obras');
+      throw new ForbiddenException('Contratistas cannot create acciones');
     }
     const municipioId =
       user.rol === Rol.municipal && user.municipioId ? user.municipioId : dto.municipio_id;
@@ -258,7 +272,7 @@ export class ObrasService {
   }
 
   async remove(id: string, user: Usuario) {
-    if (user.rol !== Rol.estatal) throw new ForbiddenException('Only estatal can delete obras');
+    if (user.rol !== Rol.estatal) throw new ForbiddenException('Only estatal can delete acciones');
     await this.prisma.accion.delete({ where: { id } });
     return { deleted: true };
   }

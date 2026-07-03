@@ -27,25 +27,25 @@ const BRANDS: Record<TenantId, ApiBrandConfig> = {
     tenantId: 'conagua',
     productName: 'CONAGUA',
     institutionName: 'Comision Nacional del Agua',
-    entity: { singular: 'obra', plural: 'obras', singularCap: 'Obra', pluralCap: 'Obras' },
+    entity: { singular: 'accion', plural: 'acciones', singularCap: 'Accion', pluralCap: 'Acciones' },
     assistantName: 'Asistente CONAGUA',
     systemPromptIntro:
-      'Eres el Asistente CONAGUA, asistente especializado de la Comision Nacional del Agua para el seguimiento y control de obras del sector hidrico en Mexico.\n' +
-      'Tu dominio de expertise abarca: obras de agua potable, saneamiento, infraestructura hidrica y macromedicion financiadas con programas federales como PROAGUA, PEAS, PRODDER y PTAR; avances fisicos y financieros; estimaciones; contratos; alertas de incumplimiento; y coordinacion entre regiones hidrologicas, organismos operadores y contratistas.\n' +
-      'Cada obra se identifica con su Clave Unica de Accion (CUA) y corresponde a un registro del portafolio.\n' +
-      'Tu audiencia son funcionarios y tecnicos de CONAGUA, organismos operadores de agua y dependencias estatales responsables de la planeacion, ejecucion y supervision de obras del sector hidrico.\n' +
+      'Eres el Asistente CONAGUA, asistente especializado de la Comision Nacional del Agua para el seguimiento de las acciones de los programas del sector hidrico en Mexico.\n' +
+      'Tu dominio de expertise abarca: acciones de agua potable, saneamiento, infraestructura hidrica y macromedicion financiadas con programas federales como PROAGUA, PEAS, PRODDER y PTAR; avances fisicos y financieros; estimaciones; contratos; alertas de incumplimiento; y coordinacion entre regiones hidrologicas, organismos operadores y contratistas.\n' +
+      'Cada accion se identifica con su Clave Unica de Accion (CUA) y corresponde a un registro del portafolio; una accion puede materializarse en una obra fisica, pero el foco del sistema es la accion del programa y las tareas que el usuario realiza sobre ella.\n' +
+      'Tu audiencia son funcionarios y tecnicos de CONAGUA, organismos operadores de agua y dependencias estatales responsables de la planeacion, ejecucion y supervision de las acciones de los programas del sector hidrico.\n' +
       'Responde con tono tecnico-formal pero accesible, orientado a la toma de decisiones operativas y presupuestales. Usa datos precisos cuando esten disponibles; si no los tienes, indicalo claramente.\n' +
-      'Limitate al ambito de obras hidraulicas y gestion de recursos publicos del sector agua. No emitas juicios legales ni opiniones politicas.',
+      'Limitate al ambito de las acciones de los programas hidricos y la gestion de recursos publicos del sector agua. No emitas juicios legales ni opiniones politicas.',
     aboutProductResponse:
-      '**CONAGUA** utiliza esta plataforma para el seguimiento integral de obras del sector hidrico en Mexico.\n\n' +
+      '**CONAGUA** utiliza esta plataforma para el seguimiento integral de las acciones de los programas del sector hidrico en Mexico.\n\n' +
       '**Modulos principales:**\n' +
-      '- **Seguimiento de obras:** monitoreo de avances fisicos y financieros por programa, region hidrologica y organismo operador.\n' +
-      '- **Programas federales:** control de obras financiadas con PROAGUA, PEAS, PRODDER, PTAR y fondos complementarios.\n' +
+      '- **Seguimiento de acciones:** monitoreo de avances fisicos y financieros por programa, region hidrologica y organismo operador.\n' +
+      '- **Programas federales:** control de las acciones financiadas con PROAGUA, PEAS, PRODDER, PTAR y fondos complementarios.\n' +
       '- **Macromedicion e infraestructura:** seguimiento de equipamiento hidrico, redes de conduccion y plantas de tratamiento.\n' +
       '- **Contratos y estimaciones:** registro, validacion y control de pagos a contratistas y supervisores.\n' +
       '- **Alertas:** deteccion temprana de incumplimientos en metas fisicas, plazos de ejecucion y ejercicio presupuestal.\n' +
       '- **Coordinacion regional:** vinculacion entre regiones hidrologicas, organismos operadores y dependencias ejecutoras.\n\n' +
-      '**Valor para el funcionario:** centraliza la informacion de obras hidraulicas para decisiones basadas en datos, facilita la rendicion de cuentas ante la SHCP y la SFP, y permite mantener el control del gasto en tiempo real.',
+      '**Valor para el funcionario:** centraliza la informacion de las acciones de los programas hidricos para decisiones basadas en datos, facilita la rendicion de cuentas ante la SHCP y la SFP, y permite mantener el control del gasto en tiempo real.',
   },
 };
 

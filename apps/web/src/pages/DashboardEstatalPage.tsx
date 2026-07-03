@@ -157,12 +157,12 @@ export default function DashboardPage() {
   }));
 
   const kpiCards = [
-    { label: `Total de ${entity.pluralCap}`, value: totalObras.toString(), sub: 'Registradas en el sistema', icon: Building2, color: brand.colors.primary, trend: null, onClick: () => navigate('/obras') },
-    { label: 'Inversión Autorizada', value: formatCurrencyM(montoAutorizado), sub: 'Presupuesto total', icon: DollarSign, color: brand.colors.accent, trend: null, onClick: () => navigate('/obras') },
-    { label: `${entity.pluralCap} en Ejecución`, value: obrasEjecucion.toString(), sub: `${Math.round((obrasEjecucion/totalObras)*100)}% del total`, icon: Activity, color: '#38A169', trend: null, onClick: () => navigate('/obras?estatus=en_ejecucion') },
-    { label: `${entity.pluralCap} con Retraso`, value: obrasRetraso.toString(), sub: `${Math.round((obrasRetraso/totalObras)*100)}% del total`, icon: AlertTriangle, color: '#DC2626', trend: null, onClick: () => navigate('/obras?estatus=en_ejecucion_retraso') },
-    { label: 'Avance Físico Prom.', value: formatPercentage(avanceFisicoPromedio), sub: `Meta: 65%`, icon: TrendingUp, color: '#3182CE', trend: avanceFisicoPromedio, onClick: () => navigate('/obras') },
-    { label: 'Monto Ejercido', value: formatCurrencyM(montoEjercido), sub: `${Math.round((montoEjercido/montoAutorizado)*100)}% autorizado`, icon: CreditCard, color: brand.colors.secondary, trend: (montoEjercido/montoAutorizado)*100, onClick: () => navigate('/obras') },
+    { label: `Total de ${entity.pluralCap}`, value: totalObras.toString(), sub: 'Registradas en el sistema', icon: Building2, color: brand.colors.primary, trend: null, onClick: () => navigate('/acciones') },
+    { label: 'Inversión Autorizada', value: formatCurrencyM(montoAutorizado), sub: 'Presupuesto total', icon: DollarSign, color: brand.colors.accent, trend: null, onClick: () => navigate('/acciones') },
+    { label: `${entity.pluralCap} en Ejecución`, value: obrasEjecucion.toString(), sub: `${Math.round((obrasEjecucion/totalObras)*100)}% del total`, icon: Activity, color: '#38A169', trend: null, onClick: () => navigate('/acciones?estatus=en_ejecucion') },
+    { label: `${entity.pluralCap} con Retraso`, value: obrasRetraso.toString(), sub: `${Math.round((obrasRetraso/totalObras)*100)}% del total`, icon: AlertTriangle, color: '#DC2626', trend: null, onClick: () => navigate('/acciones?estatus=en_ejecucion_retraso') },
+    { label: 'Avance Físico Prom.', value: formatPercentage(avanceFisicoPromedio), sub: `Meta: 65%`, icon: TrendingUp, color: '#3182CE', trend: avanceFisicoPromedio, onClick: () => navigate('/acciones') },
+    { label: 'Monto Ejercido', value: formatCurrencyM(montoEjercido), sub: `${Math.round((montoEjercido/montoAutorizado)*100)}% autorizado`, icon: CreditCard, color: brand.colors.secondary, trend: (montoEjercido/montoAutorizado)*100, onClick: () => navigate('/acciones') },
   ];
 
   return (

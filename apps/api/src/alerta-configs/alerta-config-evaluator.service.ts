@@ -146,7 +146,7 @@ export class AlertaConfigEvaluatorService {
       municipio: obra.municipio.nombre,
       municipioId: obra.municipioId,
       titulo: `Sin actualizaciones: ${obra.folio}`,
-      descripcion: `La obra lleva ${days} dias sin actualizaciones (umbral: ${umbral} dias).`,
+      descripcion: `La accion lleva ${days} dias sin actualizaciones (umbral: ${umbral} dias).`,
     };
   }
 
@@ -223,7 +223,7 @@ export class AlertaConfigEvaluatorService {
         municipio: obra.municipio.nombre,
         municipioId: obra.municipioId,
         titulo: `Sin estimaciones: ${obra.folio}`,
-        descripcion: 'La obra no tiene estimaciones registradas.',
+        descripcion: 'La accion no tiene estimaciones registradas.',
       };
     }
 
@@ -306,7 +306,7 @@ export class AlertaConfigEvaluatorService {
       municipio: obra.municipio.nombre,
       municipioId: obra.municipioId,
       titulo: `Plazo contratacion vencido: ${obra.folio}`,
-      descripcion: `Obra sin contrato despues del ultimo dia habil de agosto ${year} (Art. 5 U074).`,
+      descripcion: `Accion sin contrato despues del ultimo dia habil de agosto ${year} (Art. 5 U074).`,
     };
   }
 
@@ -327,7 +327,7 @@ export class AlertaConfigEvaluatorService {
       municipio: obra.municipio.nombre,
       municipioId: obra.municipioId,
       titulo: `Plazo conclusion vencido: ${obra.folio}`,
-      descripcion: `Obra no concluida al 31 de diciembre ${year} (Art. 5 U074).`,
+      descripcion: `Accion no concluida al 31 de diciembre ${year} (Art. 5 U074).`,
     };
   }
 

@@ -105,7 +105,7 @@ export default function BandejaAccionesPage() {
               <div>
                 <h1 className="text-xl font-bold text-brand-primary">Bandeja de Acciones</h1>
                 <p className="mt-1 text-sm text-gray-500">
-                  Todo lo que requiere tu atención sobre las obras registradas
+                  Todo lo que requiere tu atención sobre las acciones registradas
                 </p>
               </div>
             </div>
@@ -137,7 +137,7 @@ export default function BandejaAccionesPage() {
                   id="bandeja-search"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  placeholder="Buscar por folio, obra, municipio o título..."
+                  placeholder="Buscar por folio, acción, municipio o título..."
                   className="h-10 pl-9 text-sm"
                 />
               </div>

@@ -176,7 +176,7 @@ export class AlertaConfigsService {
       if (dto.obra_id) {
         const obra = await this.scope.getObraOrThrow(dto.obra_id, user);
         if (obra.municipioId !== user.municipioId) {
-          throw new ForbiddenException('Obra not in your municipio');
+          throw new ForbiddenException('Accion not in your municipio');
         }
       }
       if (!dto.municipio_id && !dto.obra_id && dto.programa_filtro) {
@@ -343,7 +343,7 @@ export class AlertaConfigsService {
         destinatarioPayload.push({
           nombre: dest.nombre,
           telefono: dest.telefono,
-          mensaje: `[ARKON Demo] Regla "${config.nombre}" activa. No hay obras que cumplan el criterio en este momento.`,
+          mensaje: `[ARKON Demo] Regla "${config.nombre}" activa. No hay acciones que cumplan el criterio en este momento.`,
         });
       }
     }

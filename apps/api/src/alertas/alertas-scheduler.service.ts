@@ -52,7 +52,7 @@ export class AlertasSchedulerService {
             municipio: obra.municipio.nombre,
             municipioId: obra.municipioId,
             titulo: `Plazo contratacion: ${obra.folio}`,
-            descripcion: 'Obra PROAGUA sin contrato despues del plazo de agosto.',
+            descripcion: 'Accion PROAGUA sin contrato despues del plazo de agosto.',
             tipo: 'plazo_contratacion',
             severidad: 'alta',
           });

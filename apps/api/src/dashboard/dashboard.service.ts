@@ -229,7 +229,7 @@ export class DashboardService {
         { key: 'value', header: 'Valor' },
       ]),
       '',
-      '# Obras por estatus',
+      '# Acciones por estatus',
       toCsv(
         porEstatus.map((r) => ({ estatus: r.estatus, count: r.count })),
         [
@@ -238,7 +238,7 @@ export class DashboardService {
         ],
       ),
       '',
-      '# Obras por programa',
+      '# Acciones por programa',
       toCsv(
         porPrograma.map((r) => ({ programa: r.programa, count: r.count })),
         [

@@ -36,6 +36,7 @@ export interface MenuItem {
   path: string;
   label: string;
   icon: string;
+  section?: string;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -109,17 +110,30 @@ export function AppProvider({ children }: { children: ReactNode }) {
     const { role } = user;
     const brand = getBrand();
     const isConagua = brand.tenantId === 'conagua';
-    const { entity } = brand;
+    const { entity, obraEntity } = brand;
+    const trabajoSection = 'Trabajo';
+    const portafolioSection = 'Portafolio';
     const proaguaItems: MenuItem[] = isConagua
       ? [
-          { path: '/anexos', label: 'Anexos XII/XIII', icon: 'FileStack' },
-          { path: '/cierres-ejercicio', label: 'Cierre ejercicio', icon: 'Landmark' },
-          { path: '/proagua/import', label: 'Importar PROAGUA', icon: 'Upload' },
+          { path: '/anexos', label: 'Anexos XII/XIII', icon: 'FileStack', section: 'Programas' },
+          { path: '/cierres-ejercicio', label: 'Cierre ejercicio', icon: 'Landmark', section: 'Programas' },
+          { path: '/proagua/import', label: 'Importar PROAGUA', icon: 'Upload', section: 'Programas' },
         ]
       : [];
     const solicitudesItem: MenuItem | null = isConagua
-      ? { path: '/solicitudes', label: 'Solicitudes', icon: 'FileText' }
+      ? { path: '/solicitudes', label: 'Solicitudes', icon: 'FileText', section: 'Programas' }
       : null;
+
+    const portafolioItems: MenuItem[] = [
+      { path: '/programas', label: 'Programas', icon: 'Layers', section: portafolioSection },
+      { path: '/obras', label: obraEntity.pluralCap, icon: 'Building2', section: portafolioSection },
+      { path: '/acciones', label: entity.pluralCap, icon: 'HardHat', section: portafolioSection },
+    ];
+
+    const trabajoItems: MenuItem[] = [
+      { path: '/bandeja', label: 'Bandeja de Acciones', icon: 'Inbox', section: trabajoSection },
+      { path: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard', section: trabajoSection },
+    ];
 
     if (role === 'estatal') {
       const munPath = selectedMunicipio
@@ -129,48 +143,58 @@ export function AppProvider({ children }: { children: ReactNode }) {
         ? `/contratistas/${selectedContratista}`
         : '/contratistas';
       return [
-        { path: '/bandeja', label: 'Bandeja de Acciones', icon: 'Inbox' },
-        { path: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
-        { path: '/acciones', label: entity.pluralCap, icon: 'HardHat' },
+        ...trabajoItems,
+        ...portafolioItems,
         ...(solicitudesItem ? [solicitudesItem] : []),
         ...proaguaItems,
-        { path: munPath, label: 'Municipios', icon: 'MapPin' },
-        { path: conPath, label: 'Contratistas', icon: 'Users' },
-        { path: '/admin/usuarios', label: 'Usuarios', icon: 'Shield' },
-        { path: '/alertas', label: 'Alertas', icon: 'Bell' },
-        { path: '/configurador-alertas', label: 'Configurador de Alertas', icon: 'BellRing' },
+        { path: munPath, label: 'Municipios', icon: 'MapPin', section: 'Gestión' },
+        { path: conPath, label: 'Contratistas', icon: 'Users', section: 'Gestión' },
+        { path: '/admin/usuarios', label: 'Usuarios', icon: 'Shield', section: 'Gestión' },
+        { path: '/alertas', label: 'Alertas', icon: 'Bell', section: 'Gestión' },
+        { path: '/configurador-alertas', label: 'Configurador de Alertas', icon: 'BellRing', section: 'Gestión' },
       ];
     }
 
     if (role === 'municipal') {
       return [
-        { path: '/bandeja', label: 'Bandeja de Acciones', icon: 'Inbox' },
-        { path: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
-        { path: '/acciones', label: entity.pluralCap, icon: 'HardHat' },
+        ...trabajoItems,
+        ...portafolioItems,
         ...(solicitudesItem ? [solicitudesItem] : []),
-        { path: '/anexos', label: 'Anexos XII/XIII', icon: 'FileStack' },
-        { path: '/cierres-ejercicio', label: 'Cierre ejercicio', icon: 'Landmark' },
+        { path: '/anexos', label: 'Anexos XII/XIII', icon: 'FileStack', section: 'Programas' },
+        { path: '/cierres-ejercicio', label: 'Cierre ejercicio', icon: 'Landmark', section: 'Programas' },
         {
           path: `/municipios/${user.municipioId ?? selectedMunicipio}`,
           label: 'Mi Municipio',
           icon: 'MapPin',
+          section: 'Gestión',
         },
-        { path: '/contratistas', label: 'Contratistas', icon: 'Users' },
-        { path: '/alertas', label: 'Alertas', icon: 'Bell' },
-        { path: '/configurador-alertas', label: 'Configurador de Alertas', icon: 'Settings' },
+        { path: '/contratistas', label: 'Contratistas', icon: 'Users', section: 'Gestión' },
+        { path: '/alertas', label: 'Alertas', icon: 'Bell', section: 'Gestión' },
+        { path: '/configurador-alertas', label: 'Configurador de Alertas', icon: 'Settings', section: 'Gestión' },
       ];
     }
 
     return [
-      { path: '/bandeja', label: 'Bandeja de Acciones', icon: 'Inbox' },
-      { path: '/dashboard', label: 'Dashboard', icon: 'LayoutDashboard' },
-      { path: '/acciones', label: `Mis ${entity.pluralCap}`, icon: 'HardHat' },
+      ...trabajoItems,
+      {
+        path: '/acciones',
+        label: `Mis ${entity.pluralCap}`,
+        icon: 'HardHat',
+        section: portafolioSection,
+      },
+      {
+        path: '/obras',
+        label: `Mis ${obraEntity.pluralCap}`,
+        icon: 'Building2',
+        section: portafolioSection,
+      },
       {
         path: `/contratistas/${user.contratistaId ?? selectedContratista}`,
         label: 'Mi Empresa',
-        icon: 'Building2',
+        icon: 'Users',
+        section: 'Gestión',
       },
-      { path: '/alertas', label: 'Alertas', icon: 'Bell' },
+      { path: '/alertas', label: 'Alertas', icon: 'Bell', section: 'Gestión' },
     ];
   };
 

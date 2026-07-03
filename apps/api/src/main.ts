@@ -20,7 +20,7 @@ async function bootstrap() {
 
   const config = new DocumentBuilder()
     .setTitle('ARKON API')
-    .setDescription('Sistema Integral de Gestion de Obras Publicas')
+    .setDescription('Sistema Integral de Gestion de Acciones de Programa')
     .setVersion('1.0')
     .addBearerAuth()
     .build();

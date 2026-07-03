@@ -393,7 +393,7 @@ export function proaguaComplianceCalendar(ejercicio: number): ComplianceItem[] {
     });
   };
   add('AVANCE_MENSUAL', 'Avance fisico-financiero (primeros 5 dias habiles del mes)', new Date(now.getFullYear(), now.getMonth(), 5), 'alta');
-  add('CONCLUSION_OBRAS', 'Conclusion de obras', new Date(ejercicio, 11, 31), 'critica');
+  add('CONCLUSION_OBRAS', 'Conclusion de acciones', new Date(ejercicio, 11, 31), 'critica');
   add('CIERRE_EJERCICIO', 'Cierre de ejercicio fiscal', new Date(ejercicio + 1, 0, 31), 'alta');
   add('REINTEGRO_TESOFE', 'Reintegro recursos no devengados (15 dias naturales)', new Date(ejercicio + 1, 0, 15), 'critica');
   add('INFORME_TRIMESTRAL', `Informe trimestral Q${Math.ceil((now.getMonth() + 1) / 3)}`, new Date(ejercicio, Math.ceil((now.getMonth() + 1) / 3) * 3 - 1, 15), 'media');

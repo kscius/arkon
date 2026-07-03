@@ -23,6 +23,8 @@ import { MetricsModule } from './metrics/metrics.module';
 import { MunicipiosModule } from './municipios/municipios.module';
 import { ObservacionesModule } from './observaciones/observaciones.module';
 import { ObrasModule } from './obras/obras.module';
+import { ObrasFisicasModule } from './obras-fisicas/obras-fisicas.module';
+import { ProgramasModule } from './programas/programas.module';
 import { OrganismosOperadoresModule } from './organismos-operadores/organismos-operadores.module';
 import { ProaguaExportModule } from './proagua-export/proagua-export.module';
 import { ProaguaImportModule } from './proagua-import/proagua-import.module';
@@ -46,6 +48,8 @@ import { UsersModule } from './users/users.module';
     OrganismosOperadoresModule,
     AccionesProgramaModule,
     ObrasModule,
+    ObrasFisicasModule,
+    ProgramasModule,
     AvancesModule,
     AvancesTrimestralesModule,
     CofinanciamientosModule,

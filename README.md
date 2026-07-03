@@ -4,7 +4,7 @@ Sistema Integral de Gestión de Obras Públicas — monorepo MVP (React + NestJS
 
 ## Version CONAGUA (rama `conagua`)
 
-White-label para la **Comisión Nacional del Agua** ([gob.mx/conagua](https://www.gob.mx/conagua)): logo institucional, paleta azul CONAGUA, textos del asistente y usuarios demo `@conagua.gob.mx`.
+White-label para la **Comisión Nacional del Agua** ([gob.mx/conagua](https://www.gob.mx/conagua)): seguimiento de **acciones** de los programas del sector hídrico (PROAGUA, PEAS, PRODDER), con logo institucional, paleta azul CONAGUA, terminologia visible Acción/Acciones, textos del asistente y usuarios demo `@conagua.gob.mx`.
 
 Configure en `.env`:
 

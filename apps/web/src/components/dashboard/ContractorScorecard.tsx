@@ -31,7 +31,7 @@ export function ContractorScorecard({ rows }: ContractorScorecardProps) {
               <tr className="text-left text-xs text-gray-500 border-b">
                 <th className="pb-2">Contratista</th>
                 <th className="pb-2">Score</th>
-                <th className="pb-2">Obras</th>
+                <th className="pb-2">Acciones</th>
                 <th className="pb-2">Avance</th>
                 <th className="pb-2">Alertas</th>
               </tr>

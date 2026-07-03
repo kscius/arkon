@@ -3,6 +3,7 @@ import {
   EstatusAvance,
   EstatusEstimacion,
   EstatusAccion,
+  EstatusFisicoObra,
   EstadoDocumento,
   EstatusObservacion,
   PrismaClient,
@@ -370,6 +371,15 @@ const PROAGUA_ALERTA_CONFIGS = [
   },
 ] as const;
 
+function mapEstatusFisico(estatus: string): EstatusFisicoObra {
+  if (estatus === 'concluida') return EstatusFisicoObra.concluida;
+  if (['en_ejecucion_a_tiempo', 'en_ejecucion_retraso', 'en_riesgo'].includes(estatus)) {
+    return EstatusFisicoObra.en_construccion;
+  }
+  if (estatus === 'suspendida') return EstatusFisicoObra.fuera_servicio;
+  return EstatusFisicoObra.planificada;
+}
+
 async function main() {
   const tenant = demoTenant();
   const programasCanonicos = programasCanonicosForTenant();
@@ -388,6 +398,7 @@ async function main() {
     prisma.cofinanciamiento.deleteMany(),
     prisma.solicitudPrograma.deleteMany(),
     prisma.accion.deleteMany(),
+    prisma.obra.deleteMany(),
     prisma.cierreEjercicio.deleteMany(),
     prisma.anexoTecnico.deleteMany(),
     prisma.anexoEjecucion.deleteMany(),
@@ -651,13 +662,33 @@ async function main() {
     return municipios[fallbackIndex % municipios.length].id;
   };
 
-  const obras = await Promise.all(
-    obrasData.map((o, i) => {
+  const acciones = await Promise.all(
+    obrasData.map(async (o, i) => {
       const organismoOperadorId = conagua
         ? resolveOrganismoOperadorId(organismos, o.contratista_nombre)
         : null;
       const organismo = organismos.find((org) => org.id === organismoOperadorId);
       const entidadFederativaId = organismo?.entidadId ?? null;
+      const municipioId = resolveMunicipioId(o, i);
+
+      const obraFisica = await prisma.obra.create({
+        data: {
+          clave: `OBRA-${o.folio}`,
+          nombre: o.nombre,
+          descripcion: o.descripcion,
+          tipoObra: o.tipo_obra as TipoAccion,
+          localidad: o.localidad,
+          tipoLocalidad: o.tipo_localidad,
+          latitud: o.latitud,
+          longitud: o.longitud,
+          poblacionBeneficiada: o.poblacion_beneficiada,
+          evidenciaFotografica: [],
+          estatusFisico: mapEstatusFisico(o.estatus),
+          municipioId,
+          entidadFederativaId,
+          organismoOperadorId,
+        },
+      });
 
       return prisma.accion.create({
         data: {
@@ -685,7 +716,8 @@ async function main() {
           latitud: o.latitud,
           longitud: o.longitud,
           evidenciaFotografica: [],
-          municipioId: resolveMunicipioId(o, i),
+          municipioId,
+          obraFisicaId: obraFisica.id,
           contratistaId: resolveContratistaId(contratistas, o.contratista_nombre, i),
           ...(conagua
             ? {
@@ -701,11 +733,11 @@ async function main() {
       });
     }),
   );
-  console.log(`  Seeded ${obras.length} obras`);
+  console.log(`  Seeded ${acciones.length} acciones (+ ${acciones.length} obras fisicas)`);
 
   if (conagua) {
     let cofinCount = 0;
-    for (const obra of obras) {
+    for (const obra of acciones) {
       const monto = Number(obra.montoAutorizado);
       const mitad = monto / 2;
       await prisma.cofinanciamiento.createMany({
@@ -731,7 +763,7 @@ async function main() {
     console.log(`  Seeded ${cofinCount} cofinanciamiento records`);
 
     let trimestralCount = 0;
-    for (const obra of obras) {
+    for (const obra of acciones) {
       if (!EXECUTION_ESTATUS.has(obra.estatus)) continue;
       const ejercicio = Number(obra.folio.match(/\d{4}/)?.[0] ?? 2024);
       const avanceFin = Number(obra.montoEjercido);
@@ -779,7 +811,7 @@ async function main() {
     const guanajuatoEntidad = entidades.find((e) => e.clave === '11');
     const japamiOrg = organismos.find((o) => o.siglas === 'JAPAMI');
     const simapagOrg = organismos.find((o) => o.siglas === 'SIMAPAG');
-    const obrasGto2026 = obras.filter((o) =>
+    const obrasGto2026 = acciones.filter((o) =>
       ['PEAS-2026-001', 'PEAS-2026-005'].includes(o.folio),
     );
 
@@ -866,7 +898,7 @@ async function main() {
 
     const durangoEntidad = entidades.find((e) => e.clave === '10');
     const cadOrg = organismos.find((o) => o.siglas === 'CAD');
-    const obrasDgoProagua = obras.filter((o) =>
+    const obrasDgoProagua = acciones.filter((o) =>
       ['PROAGUA-2023-001', 'PROAGUA-2024-001'].includes(o.folio),
     );
 
@@ -929,8 +961,8 @@ async function main() {
     }
 
     let proaguaEnriched = 0;
-    for (let i = 0; i < obras.length; i++) {
-      const obra = obras[i];
+    for (let i = 0; i < acciones.length; i++) {
+      const obra = acciones[i];
       if (!obra.cua) continue;
       const coberturaBase = 38 + (i % 22);
       await prisma.accion.update({
@@ -964,7 +996,7 @@ async function main() {
     const entMor = entidadByClave.get('17');
     const muniLeon = municipioByName.get('León');
     const muniCuernavaca = municipioByName.get('Cuernavaca');
-    const obraProagua2025 = obras.find((o) => o.folio === 'PROAGUA-2025-001');
+    const obraProagua2025 = acciones.find((o) => o.folio === 'PROAGUA-2025-001');
 
     const solicitudesSeed: Array<{
       programa: string;
@@ -1051,7 +1083,7 @@ async function main() {
   }
 
   let avanceCount = 0;
-  for (const obra of obras) {
+  for (const obra of acciones) {
     let avanceReal = 0;
     for (let i = 0; i < 8; i++) {
       const programado = Math.min((i + 1) * 12.5, 100);
@@ -1078,7 +1110,7 @@ async function main() {
   console.log(`  Seeded ${avanceCount} avance records`);
 
   let estimacionCount = 0;
-  for (const obra of obras) {
+  for (const obra of acciones) {
     const avanceFin = Number(obra.avanceFinanciero);
     if (avanceFin <= 0) continue;
     const numEst = Math.max(1, Math.floor(avanceFin / 25));
@@ -1111,7 +1143,7 @@ async function main() {
   console.log(`  Seeded ${estimacionCount} estimacion records`);
 
   let documentoCount = 0;
-  for (const obra of obras) {
+  for (const obra of acciones) {
     for (let j = 0; j < DOC_CATEGORIAS.length; j++) {
       const estatus = DOC_ESTATUS[j % DOC_ESTATUS.length];
       await prisma.documento.create({
@@ -1138,9 +1170,9 @@ async function main() {
     EstatusObservacion.atendida,
   ];
   let observacionCount = 0;
-  for (let i = 0; i < obras.length; i++) {
+  for (let i = 0; i < acciones.length; i++) {
     if (i % 3 !== 0) continue;
-    const obra = obras[i];
+    const obra = acciones[i];
     for (let j = 0; j < 2; j++) {
       await prisma.observacion.create({
         data: {

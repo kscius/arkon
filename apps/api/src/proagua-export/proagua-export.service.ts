@@ -24,7 +24,7 @@ export class ProaguaExportService {
     ws.addRow(['INFORME TRIMESTRAL DE AVANCES - ANEXO XVIII']);
     ws.addRow(['CUA', obra.cua ?? '']);
     ws.addRow(['Folio', obra.folio]);
-    ws.addRow(['Nombre de la obra', obra.nombre]);
+    ws.addRow(['Nombre de la accion', obra.nombre]);
     ws.addRow(['Programa', obra.programa]);
     ws.addRow([]);
 
@@ -75,7 +75,7 @@ export class ProaguaExportService {
         cofinanciamientos: true,
       },
     });
-    if (!obra) throw new NotFoundException('Obra not found');
+    if (!obra) throw new NotFoundException('Accion not found');
 
     const wb = new Workbook();
     const ws = wb.addWorksheet('Anexo IX');

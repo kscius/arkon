@@ -19,7 +19,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { CreateObraDto, UpdateObraDto } from './dto/obra.dto';
 import { ObrasService } from './obras.service';
 
-@ApiTags('Obras')
+@ApiTags('Acciones')
 @ApiBearerAuth()
 @Controller('acciones')
 export class ObrasController {
@@ -45,7 +45,7 @@ export class ObrasController {
       .exportCsv(user, { estatus, programa, municipio_id, contratista_id, search })
       .then((csv) => {
         res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-        res.setHeader('Content-Disposition', 'attachment; filename="obras-export.csv"');
+        res.setHeader('Content-Disposition', 'attachment; filename="acciones-export.csv"');
         res.send(csv);
       });
   }

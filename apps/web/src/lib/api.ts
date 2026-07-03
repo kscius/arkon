@@ -22,6 +22,9 @@ import {
   mapEstimacion,
   mapMunicipio,
   mapObra,
+  mapObraFisica,
+  mapAccionSummary,
+  mapProgramaOverview,
   mapObservacion,
   mapOrganismoOperador,
   mapSolicitudPrograma,
@@ -45,6 +48,9 @@ import type {
   EntidadFederativa,
   MunicipioData,
   Accion,
+  AccionSummary,
+  ObraFisica,
+  ProgramaOverview,
   OrganismoOperador,
   ProaguaImportResult,
   Severidad,
@@ -82,6 +88,42 @@ export async function fetchObras(): Promise<Accion[]> {
 export async function fetchObra(id: string): Promise<Accion> {
   const row = await apiFetch<Record<string, unknown>>(`/acciones/${id}`);
   return mapObra(row);
+}
+
+export async function fetchProgramas(): Promise<ProgramaOverview[]> {
+  const rows = await apiFetch<Record<string, unknown>[]>('/programas');
+  return rows.map(mapProgramaOverview);
+}
+
+export async function fetchProgramaAcciones(programaId: string): Promise<AccionSummary[]> {
+  const rows = await apiFetch<Record<string, unknown>[]>(`/programas/${programaId}/acciones`);
+  return rows.map(mapAccionSummary);
+}
+
+export interface ObrasFisicasFilters {
+  estatus_fisico?: string;
+  municipio_id?: string;
+  search?: string;
+}
+
+export async function fetchObrasFisicas(filters?: ObrasFisicasFilters): Promise<ObraFisica[]> {
+  const qs = new URLSearchParams();
+  if (filters?.estatus_fisico) qs.set('estatus_fisico', filters.estatus_fisico);
+  if (filters?.municipio_id) qs.set('municipio_id', filters.municipio_id);
+  if (filters?.search) qs.set('search', filters.search);
+  const query = qs.toString() ? `?${qs}` : '';
+  const rows = await apiFetch<Record<string, unknown>[]>(`/obras${query}`);
+  return rows.map(mapObraFisica);
+}
+
+export async function fetchObraFisica(id: string): Promise<ObraFisica> {
+  const row = await apiFetch<Record<string, unknown>>(`/obras/${id}`);
+  return mapObraFisica(row);
+}
+
+export async function fetchObraFisicaAcciones(id: string): Promise<AccionSummary[]> {
+  const rows = await apiFetch<Record<string, unknown>[]>(`/obras/${id}/acciones`);
+  return rows.map(mapAccionSummary);
 }
 
 export interface CreateObraInput {

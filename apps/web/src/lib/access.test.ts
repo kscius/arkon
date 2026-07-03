@@ -34,6 +34,15 @@ describe('canAccessRoute', () => {
     expect(canAccessRoute('municipal', '/admin/usuarios', true)).toBe(false);
   });
 
+  it('allows programas and obras físicas for all authenticated roles', () => {
+    for (const role of ['estatal', 'municipal', 'contratista'] as const) {
+      expect(canAccessRoute(role, '/programas', true)).toBe(true);
+      expect(canAccessRoute(role, '/programas/PROAGUA', true)).toBe(true);
+      expect(canAccessRoute(role, '/obras', true)).toBe(true);
+      expect(canAccessRoute(role, '/obras/abc', true)).toBe(true);
+    }
+  });
+
   it('restricts contratista to dashboard and contractor panel routes', () => {
     expect(canAccessRoute('contratista', '/dashboard', true)).toBe(true);
     expect(canAccessRoute('contratista', '/acciones', true)).toBe(true);

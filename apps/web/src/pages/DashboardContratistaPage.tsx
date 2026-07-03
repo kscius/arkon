@@ -256,7 +256,7 @@ export default function DashboardContratistaPage() {
                 <p className="text-2xl font-bold text-brand-primary">{Math.round(miScore.score)}</p>
               </div>
               <div className="text-sm text-gray-600">
-                {miScore.obras_count} obras · avance {miScore.avance_promedio}% · {miScore.alertas_activas} alertas
+                {miScore.obras_count} acciones · avance {miScore.avance_promedio}% · {miScore.alertas_activas} alertas
               </div>
             </CardContent>
           </Card>

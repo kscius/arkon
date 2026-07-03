@@ -10,9 +10,11 @@ import {
   Municipio,
   Observacion,
   Accion,
+  Obra,
   Usuario,
 } from '@prisma/client';
 import { getApiBrand, type TenantId } from '../common/brand';
+import { resolveAccionGeoCoords } from '../common/geo';
 import { ScopeService } from '../common/scope.service';
 import { PrismaService } from '../prisma/prisma.service';
 
@@ -23,7 +25,7 @@ const SUGGESTIONS_BY_TENANT: Record<TenantId, string[]> = {
     'Alertas criticas sin atender en saneamiento',
     'Inversion por programa y macromedicion',
     'Estimaciones y documentos pendientes de validar',
-    'Obras PROAGUA en riesgo con enlaces',
+    'Acciones PROAGUA en riesgo con enlaces',
   ],
 };
 
@@ -36,6 +38,7 @@ type ChatHistoryMessage = { role: 'user' | 'assistant'; content: string };
 type ObraWithRelations = Accion & {
   municipio: Municipio;
   contratista: Contratista | null;
+  obraFisica: Obra | null;
 };
 
 type AlertaWithObra = Alerta & {
@@ -89,8 +92,13 @@ export class ChatService {
     const cont = o.contratista
       ? `contratista=${o.contratista.nombre}(id=${o.contratista.id})`
       : 'contratista=(sin asignar)';
+    const geo = resolveAccionGeoCoords(o);
+    const geoPart = geo ? ` | geo=${geo.latitud},${geo.longitud}` : '';
+    const obraFisPart = o.obraFisica
+      ? ` | obra_fisica=${o.obraFisica.clave}(id=${o.obraFisica.id})`
+      : '';
     return (
-      `id=${o.id} | folio=${o.folio} | nombre=${o.nombre} | ${mun} | ${cont} | ` +
+      `id=${o.id} | folio=${o.folio} | nombre=${o.nombre} | ${mun} | ${cont}${obraFisPart}${geoPart} | ` +
       `estatus=${o.estatus} | avFis=${Number(o.avanceFisicoReal).toFixed(1)}%/prog=${Number(o.avanceFisicoProgramado).toFixed(1)}%` +
       `(desfase=${lag.toFixed(1)}pp) | avFin=${Number(o.avanceFinanciero).toFixed(1)}% | ` +
       `montoEj=${this.formatMoney(Number(o.montoEjercido))}/cont=${this.formatMoney(Number(o.montoContratado))}` +
@@ -152,7 +160,7 @@ export class ChatService {
       this.prisma.accion.findMany({
         where: obraWhere,
         orderBy: { avanceFisicoReal: 'asc' },
-        include: { municipio: true, contratista: true },
+        include: { municipio: true, contratista: true, obraFisica: true },
       }),
       this.prisma.alerta.findMany({
         where: alertaWhere,
@@ -414,7 +422,7 @@ export class ChatService {
     const montoTotal = obras.reduce((s, o) => s + Number(o.montoAutorizado), 0);
 
     const lower = message.toLowerCase();
-    const folioMatch = message.match(/(?:obra|proyecto)\s+([A-Z0-9\-]+)/i);
+    const folioMatch = message.match(/(?:accion|acci\u00f3n|obra|proyecto)\s+([A-Z0-9\-]+)/i);
     if (folioMatch) {
       const folio = folioMatch[1];
       const obra = obras.find((o) => o.folio.toLowerCase().includes(folio.toLowerCase()));
@@ -428,7 +436,7 @@ export class ChatService {
       }
       return (
         `No encontre una ${term.singular} con folio similar a '${folio}'. ` +
-        'Verifica que el folio este completo (ej. "MUN-2024-001") o escribe "obra [FOLIO]" con el folio exacto.'
+        'Verifica que el folio este completo (ej. "MUN-2024-001") o escribe "accion [FOLIO]" con el folio exacto.'
       );
     }
 
@@ -441,14 +449,20 @@ export class ChatService {
 
     if (['hola', 'buenos dias', 'buenas tardes', 'buenas noches', 'saludos'].some((k) => lower.includes(k))) {
       return (
-        `Hola, soy **${brand.assistantName}**, tu asistente para la gestion de ${term.plural} publicas. ` +
+        `Hola, soy **${brand.assistantName}**, tu asistente para el seguimiento de las ${term.plural} de los programas hidricos. ` +
         `El portafolio en tu alcance tiene **${totalObras} ${term.plural}**: avance fisico promedio **${avgFisico.toFixed(1)}%**, ` +
         `**${obrasRetraso} con retraso** y **${obrasRiesgo} en riesgo**. ` +
         'Puedo ayudarte con avances, alertas, contratos, presupuestos y analisis de riesgos. En que puedo ayudarte?'
       );
     }
 
-    if (lower.includes('total') || lower.includes('cuantas obras') || lower.includes('cuantas obra')) {
+    if (
+      lower.includes('total') ||
+      lower.includes('cuantas acciones') ||
+      lower.includes('cuantas accion') ||
+      lower.includes('cuantas obras') ||
+      lower.includes('cuantas obra')
+    ) {
       return `El sistema registra **${totalObras} ${term.plural}** en tu alcance.`;
     }
 

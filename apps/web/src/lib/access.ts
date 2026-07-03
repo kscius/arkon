@@ -16,6 +16,8 @@ export function canAccessRoute(
     return false;
   }
   if (route === '/acciones' || route.startsWith('/acciones/')) return true;
+  if (route === '/programas' || route.startsWith('/programas/')) return true;
+  if (route === '/obras' || route.startsWith('/obras/')) return true;
   if (route === '/bandeja') return true;
   if (route === '/solicitudes') {
     return role === 'estatal' || role === 'municipal';
@@ -35,6 +37,10 @@ export function canAccessRoute(
       route === '/bandeja' ||
       route === '/acciones' ||
       route.startsWith('/acciones/') ||
+      route === '/programas' ||
+      route.startsWith('/programas/') ||
+      route === '/obras' ||
+      route.startsWith('/obras/') ||
       route === '/solicitudes' ||
       route === '/municipios' ||
       route.startsWith('/municipios/') ||
@@ -49,6 +55,10 @@ export function canAccessRoute(
       route === '/bandeja' ||
       route === '/acciones' ||
       route.startsWith('/acciones/') ||
+      route === '/programas' ||
+      route.startsWith('/programas/') ||
+      route === '/obras' ||
+      route.startsWith('/obras/') ||
       route === '/contratistas' ||
       route.startsWith('/contratistas/')
     );

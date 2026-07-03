@@ -31,7 +31,7 @@ export class ProaguaImportService {
   ) {
     if (user.rol === Rol.contratista) throw new ForbiddenException();
     const rows = Array.isArray(payload) ? payload : payload.obras;
-    if (!rows?.length) throw new BadRequestException('No obras to import');
+    if (!rows?.length) throw new BadRequestException('No acciones to import');
 
     const results: Array<{ cua: string; action: 'created' | 'updated'; id: string }> = [];
 
@@ -85,7 +85,7 @@ export class ProaguaImportService {
       } else {
         if (!data.nombre || !data.localidad || !data.municipioId) {
           throw new BadRequestException(
-            `New obra with CUA ${cua} requires nombre, localidad and municipio_id`,
+            `New accion with CUA ${cua} requires nombre, localidad and municipio_id`,
           );
         }
         const folio =

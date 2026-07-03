@@ -20,6 +20,10 @@ import SolicitudesPage from '@/pages/SolicitudesPage';
 import AnexosPage from '@/pages/AnexosPage';
 import CierresEjercicioPage from '@/pages/CierresEjercicioPage';
 import ProaguaImportPage from '@/pages/ProaguaImportPage';
+import ProgramasPage from '@/pages/ProgramasPage';
+import ProgramaDetailPage from '@/pages/ProgramaDetailPage';
+import ObrasFisicasPage from '@/pages/ObrasFisicasPage';
+import ObraFisicaDetailPage from '@/pages/ObraFisicaDetailPage';
 import { ContratistasRedirect, MunicipiosRedirect } from '@/components/CatalogRedirect';
 
 const { Routes, Route, Navigate, useLocation } = ReactRouter;
@@ -93,6 +97,46 @@ function AppRoutes() {
           <ProtectedRoute>
             <AppLayout>
               <DashboardRouter />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/programas"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <ProgramasPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/programas/:programaId"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <ProgramaDetailPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/obras"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <ObrasFisicasPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/obras/:obraId"
+        element={
+          <ProtectedRoute>
+            <AppLayout>
+              <ObraFisicaDetailPage />
             </AppLayout>
           </ProtectedRoute>
         }

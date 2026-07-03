@@ -1,4 +1,4 @@
-﻿import { useParams, useSearchParams } from 'react-router-dom';
+﻿import { useParams, useSearchParams, Link } from 'react-router-dom';
 import { useCallback, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { PageState } from '@/components/PageState';
@@ -37,7 +37,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { Activity, DollarSign, Folder, MessageSquare, AlertCircle, FileText, Image, Droplets } from 'lucide-react';
+import { Activity, DollarSign, Folder, MessageSquare, AlertCircle, FileText, Image, Droplets, Building2, ArrowRight } from 'lucide-react';
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts';
@@ -52,7 +52,7 @@ const DOC_CATEGORY_LABELS: Record<DocCategoria, string> = {
 
 export default function ObraDetailPage() {
   const brand = getBrand();
-  const { entity } = brand;
+  const { entity, obraEntity } = brand;
   const isConagua = brand.tenantId === 'conagua';
   const { obraId } = useParams<{ obraId: string }>();
   const { user } = useApp();
@@ -273,6 +273,27 @@ export default function ObraDetailPage() {
             </div>
             <p className="text-sm text-gray-500">{obra.municipio} — {obra.localidad}</p>
             <p className="text-xs text-gray-400 mt-1">Folio: {obra.folio}</p>
+            {(obra.obraFisica || obra.obraFisicaId) && (
+              <div className="mt-3 p-3 rounded-lg border border-brand-primary/15 bg-brand-surface">
+                <p className="text-[10px] uppercase tracking-wide text-gray-500 mb-1">
+                  {obraEntity.singularCap} física vinculada
+                </p>
+                <Link
+                  to={`/obras/${obra.obraFisica?.id ?? obra.obraFisicaId}`}
+                  className="inline-flex items-center gap-2 text-sm font-medium text-brand-primary hover:underline"
+                >
+                  <Building2 className="w-4 h-4 shrink-0" />
+                  <span>
+                    {obra.obraFisica?.nombre ?? obraEntity.singularCap}
+                    {obra.obraFisica?.clave ? ` (${obra.obraFisica.clave})` : ''}
+                  </span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+                {obra.obraFisica?.municipioNombre && (
+                  <p className="text-xs text-gray-500 mt-1">{obra.obraFisica.municipioNombre}</p>
+                )}
+              </div>
+            )}
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {canManageObra && user && (

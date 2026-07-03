@@ -52,6 +52,7 @@ export class CreateObraDto {
   @ApiPropertyOptional() @IsOptional() @IsNumber() pob_afromexicano?: number;
   @ApiPropertyOptional() @IsOptional() @IsUUID() entidad_federativa_id?: string;
   @ApiPropertyOptional() @IsOptional() @IsUUID() organismo_operador_id?: string;
+  @ApiPropertyOptional() @IsOptional() @IsUUID() obra_fisica_id?: string;
   @ApiPropertyOptional() @IsOptional() @IsUUID() anexo_tecnico_id?: string;
 }
 

@@ -11,6 +11,10 @@ import type {
   Estimacion,
   MunicipioData,
   Accion,
+  AccionSummary,
+  ObraFisica,
+  ObraFisicaLinked,
+  ProgramaOverview,
   Observacion,
   OrganismoOperador,
   SolicitudPrograma,
@@ -128,6 +132,127 @@ export function mapObra(raw: Record<string, unknown>): Accion {
     accionProgramaId: raw.accion_programa_id != null ? String(raw.accion_programa_id) : null,
     accionProgramaClave: raw.accion_programa_clave != null ? String(raw.accion_programa_clave) : null,
     anexoTecnicoId: raw.anexo_tecnico_id != null ? String(raw.anexo_tecnico_id) : null,
+    obraFisicaId: raw.obra_fisica_id != null ? String(raw.obra_fisica_id) : null,
+    obraFisica: mapObraFisicaLinked(raw.obra_fisica),
+  };
+}
+
+export function mapObraFisicaLinked(raw: unknown): ObraFisicaLinked | null {
+  if (!raw || typeof raw !== 'object') return null;
+  const o = raw as Record<string, unknown>;
+  if (!o.id) return null;
+  return {
+    id: String(o.id),
+    clave: String(o.clave ?? ''),
+    nombre: String(o.nombre ?? ''),
+    estatusFisico: o.estatus_fisico != null ? String(o.estatus_fisico) : undefined,
+    municipioNombre:
+      o.municipio_nombre != null
+        ? String(o.municipio_nombre)
+        : o.municipioNombre != null
+          ? String(o.municipioNombre)
+          : undefined,
+    latitud: o.latitud != null ? Number(o.latitud) : null,
+    longitud: o.longitud != null ? Number(o.longitud) : null,
+  };
+}
+
+export function mapAccionSummary(raw: Record<string, unknown>): AccionSummary {
+  return {
+    id: String(raw.id),
+    folio: String(raw.folio ?? ''),
+    nombre: String(raw.nombre ?? ''),
+    programa: raw.programa != null ? String(raw.programa) : undefined,
+    cua: raw.cua != null ? String(raw.cua) : null,
+    estatus: String(raw.estatus) as AccionSummary['estatus'],
+    municipio: raw.municipio != null ? String(raw.municipio) : undefined,
+    contratista:
+      raw.contratista != null
+        ? String(raw.contratista)
+        : raw.contratista_nombre != null
+          ? String(raw.contratista_nombre)
+          : undefined,
+    contratistaNombre:
+      raw.contratista_nombre != null
+        ? String(raw.contratista_nombre)
+        : raw.contratista != null
+          ? String(raw.contratista)
+          : undefined,
+    montoAutorizado: Number(raw.monto_autorizado ?? 0),
+    montoEjercido: Number(raw.monto_ejercido ?? 0),
+    avanceFisicoReal: Number(raw.avance_fisico_real ?? 0),
+    avanceFinanciero: Number(raw.avance_financiero ?? 0),
+    obraFisicaId: raw.obra_fisica_id != null ? String(raw.obra_fisica_id) : null,
+    obraFisicaNombre: raw.obra_fisica_nombre != null ? String(raw.obra_fisica_nombre) : null,
+    obraFisicaClave: raw.obra_fisica_clave != null ? String(raw.obra_fisica_clave) : null,
+    riesgoNivel: raw.riesgo_nivel != null ? String(raw.riesgo_nivel) : null,
+  };
+}
+
+export function mapProgramaOverview(raw: Record<string, unknown>): ProgramaOverview {
+  return {
+    id: String(raw.id),
+    nombre: String(raw.nombre ?? ''),
+    nombreCorto: String(raw.nombre_corto ?? raw.nombreCorto ?? raw.id ?? ''),
+    descripcion: raw.descripcion != null ? String(raw.descripcion) : undefined,
+    dependencia: raw.dependencia != null ? String(raw.dependencia) : undefined,
+    accionesCount: Number(raw.acciones_count ?? 0),
+    obrasCount: Number(raw.obras_count ?? 0),
+    montoAutorizado: Number(raw.monto_autorizado ?? 0),
+    montoEjercido: Number(raw.monto_ejercido ?? 0),
+    avanceFisicoPromedio: Number(raw.avance_fisico_promedio ?? 0),
+    accionesEnEjecucion: Number(raw.acciones_en_ejecucion ?? 0),
+    accionesConRetraso: Number(raw.acciones_con_retraso ?? 0),
+  };
+}
+
+export function mapObraFisica(raw: Record<string, unknown>): ObraFisica {
+  const accionesRaw = raw.acciones;
+  const acciones = Array.isArray(accionesRaw)
+    ? accionesRaw.map((a) => mapAccionSummary(a as Record<string, unknown>))
+    : undefined;
+  const programasRaw = raw.programas;
+  const programas = Array.isArray(programasRaw)
+    ? programasRaw.map((p) => String(p))
+    : [];
+
+  return {
+    id: String(raw.id),
+    clave: String(raw.clave ?? ''),
+    nombre: String(raw.nombre ?? ''),
+    descripcion: raw.descripcion != null ? String(raw.descripcion) : undefined,
+    tipoObra: String(raw.tipo_obra ?? ''),
+    localidad: String(raw.localidad ?? ''),
+    tipoLocalidad: raw.tipo_localidad != null ? String(raw.tipo_localidad) : null,
+    latitud: raw.latitud != null ? Number(raw.latitud) : null,
+    longitud: raw.longitud != null ? Number(raw.longitud) : null,
+    poblacionBeneficiada:
+      raw.poblacion_beneficiada != null ? Number(raw.poblacion_beneficiada) : undefined,
+    coberturaApAntes: raw.cobertura_ap_antes != null ? Number(raw.cobertura_ap_antes) : null,
+    coberturaApMeta: raw.cobertura_ap_meta != null ? Number(raw.cobertura_ap_meta) : null,
+    coberturaTarAntes: raw.cobertura_tar_antes != null ? Number(raw.cobertura_tar_antes) : null,
+    coberturaTarMeta: raw.cobertura_tar_meta != null ? Number(raw.cobertura_tar_meta) : null,
+    caudalLps: raw.caudal_lps != null ? Number(raw.caudal_lps) : null,
+    pobIncorporar: raw.pob_incorporar != null ? Number(raw.pob_incorporar) : null,
+    pobMejorar: raw.pob_mejorar != null ? Number(raw.pob_mejorar) : null,
+    estatusFisico: String(raw.estatus_fisico ?? 'activa'),
+    municipioId: raw.municipio_id != null ? String(raw.municipio_id) : undefined,
+    municipio: String(raw.municipio_nombre ?? raw.municipio ?? ''),
+    entidadFederativaId:
+      raw.entidad_federativa_id != null ? String(raw.entidad_federativa_id) : null,
+    entidadFederativaNombre:
+      raw.entidad_federativa_nombre != null ? String(raw.entidad_federativa_nombre) : undefined,
+    organismoOperadorId:
+      raw.organismo_operador_id != null ? String(raw.organismo_operador_id) : null,
+    organismoOperadorNombre:
+      raw.organismo_operador_nombre != null ? String(raw.organismo_operador_nombre) : undefined,
+    accionesCount: Number(raw.acciones_count ?? acciones?.length ?? 0),
+    montoAutorizadoTotal: Number(raw.monto_autorizado_total ?? 0),
+    montoEjercidoTotal: Number(raw.monto_ejercido_total ?? 0),
+    avanceFisicoPromedio: Number(raw.avance_fisico_promedio ?? 0),
+    programas,
+    createdAt: raw.created_at != null ? String(raw.created_at) : undefined,
+    acciones,
   };
 }
 
@@ -323,8 +448,23 @@ export function hasValidGeoCoords(latitud: number, longitud: number): boolean {
   return Math.abs(latitud) <= 90 && Math.abs(longitud) <= 180;
 }
 
-export function obraHasGeo(obra: Pick<Accion, 'latitud' | 'longitud'>): boolean {
-  return hasValidGeoCoords(obra.latitud, obra.longitud);
+export function obraHasGeo(
+  obra: Pick<Accion, 'latitud' | 'longitud'> & { obraFisica?: ObraFisicaLinked | null },
+): boolean {
+  return resolveAccionGeo(obra) !== null;
+}
+
+export function resolveAccionGeo(
+  obra: Pick<Accion, 'latitud' | 'longitud'> & { obraFisica?: ObraFisicaLinked | null },
+): { latitud: number; longitud: number } | null {
+  const of = obra.obraFisica;
+  if (of?.latitud != null && of?.longitud != null && hasValidGeoCoords(of.latitud, of.longitud)) {
+    return { latitud: of.latitud, longitud: of.longitud };
+  }
+  if (hasValidGeoCoords(obra.latitud, obra.longitud)) {
+    return { latitud: obra.latitud, longitud: obra.longitud };
+  }
+  return null;
 }
 
 export function mapTopContratista(raw: Record<string, unknown>): TopContratistaChartRow {

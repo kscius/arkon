@@ -73,6 +73,16 @@ export interface ObraProaguaFields {
   anexoTecnicoId?: string | null;
 }
 
+export interface ObraFisicaLinked {
+  id: string;
+  clave: string;
+  nombre: string;
+  estatusFisico?: string;
+  municipioNombre?: string;
+  latitud?: number | null;
+  longitud?: number | null;
+}
+
 export interface Accion extends ObraProaguaFields {
   id: string;
   folio: string;
@@ -104,6 +114,77 @@ export interface Accion extends ObraProaguaFields {
   latitud: number;
   longitud: number;
   evidenciaFotografica: string[];
+  obraFisicaId?: string | null;
+  obraFisica?: ObraFisicaLinked | null;
+}
+
+export interface ObraFisica {
+  id: string;
+  clave: string;
+  nombre: string;
+  descripcion?: string;
+  tipoObra: string;
+  localidad: string;
+  tipoLocalidad?: string | null;
+  latitud: number | null;
+  longitud: number | null;
+  poblacionBeneficiada?: number;
+  coberturaApAntes?: number | null;
+  coberturaApMeta?: number | null;
+  coberturaTarAntes?: number | null;
+  coberturaTarMeta?: number | null;
+  caudalLps?: number | null;
+  pobIncorporar?: number | null;
+  pobMejorar?: number | null;
+  estatusFisico: string;
+  municipioId?: string;
+  municipio: string;
+  entidadFederativaId?: string | null;
+  entidadFederativaNombre?: string;
+  organismoOperadorId?: string | null;
+  organismoOperadorNombre?: string;
+  accionesCount: number;
+  montoAutorizadoTotal: number;
+  montoEjercidoTotal: number;
+  avanceFisicoPromedio: number;
+  programas: string[];
+  createdAt?: string;
+  acciones?: AccionSummary[];
+}
+
+export interface ProgramaOverview {
+  id: string;
+  nombre: string;
+  nombreCorto: string;
+  descripcion?: string;
+  dependencia?: string;
+  accionesCount: number;
+  obrasCount: number;
+  montoAutorizado: number;
+  montoEjercido: number;
+  avanceFisicoPromedio: number;
+  accionesEnEjecucion: number;
+  accionesConRetraso: number;
+}
+
+export interface AccionSummary {
+  id: string;
+  folio: string;
+  nombre: string;
+  programa?: string;
+  cua?: string | null;
+  estatus: ObraStatus;
+  municipio?: string;
+  contratista?: string;
+  contratistaNombre?: string;
+  montoAutorizado: number;
+  montoEjercido: number;
+  avanceFisicoReal: number;
+  avanceFinanciero: number;
+  obraFisicaId?: string | null;
+  obraFisicaNombre?: string | null;
+  obraFisicaClave?: string | null;
+  riesgoNivel?: string | null;
 }
 
 export type CofinanciamientoFuente = 'federal' | 'estatal' | 'municipal' | 'organismo_operador';

@@ -65,16 +65,16 @@ describe('ARKON API (e2e)', () => {
     }
   });
 
-  it('GET /obras is scoped by role', async () => {
+  it('GET /acciones is scoped by role', async () => {
     if (skipE2e) return;
     const estatalToken = await login(app, 'estatal@arkon.gob.mx');
     const municipalToken = await login(app, 'municipal.centro@arkon.gob.mx');
     const estatal = await request(app.getHttpServer())
-      .get('/api/obras')
+      .get('/api/acciones')
       .set('Authorization', `Bearer ${estatalToken}`)
       .expect(200);
     const municipal = await request(app.getHttpServer())
-      .get('/api/obras')
+      .get('/api/acciones')
       .set('Authorization', `Bearer ${municipalToken}`)
       .expect(200);
     expect(Array.isArray(estatal.body)).toBe(true);
@@ -88,7 +88,7 @@ describe('ARKON API (e2e)', () => {
     const contratistaToken = await login(app, 'cce@arkon.gob.mx');
     const municipalToken = await login(app, 'municipal.centro@arkon.gob.mx');
     const obrasRes = await request(app.getHttpServer())
-      .get('/api/obras')
+      .get('/api/acciones')
       .set('Authorization', `Bearer ${contratistaToken}`)
       .expect(200);
     const obraId = obrasRes.body[0]?.id;
@@ -122,7 +122,7 @@ describe('ARKON API (e2e)', () => {
     const municipalToken = await login(app, 'municipal.centro@arkon.gob.mx');
     const estatalToken = await login(app, 'estatal@arkon.gob.mx');
     const obrasRes = await request(app.getHttpServer())
-      .get('/api/obras')
+      .get('/api/acciones')
       .set('Authorization', `Bearer ${municipalToken}`)
       .expect(200);
     const obraId = obrasRes.body[0]?.id;

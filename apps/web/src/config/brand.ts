@@ -3,12 +3,14 @@ export type TenantId = 'conagua';
 /**
  * Terminology for the core tracked entity. CONAGUA (PROAGUA) manages each
  * record as an "acción" (1 acción = 1 CUA). These labels drive all
- * user-visible copy.
+ * user-visible copy. El sistema se enfoca en las acciones de los programas
+ * que lleva la dependencia; la obra física sigue existiendo como objeto de
+ * cada acción, pero deja de ser el marco principal del producto.
  */
 export type EntityTerms = {
   /** lowercase singular, mid-sentence (e.g. "nueva acción"). */
   singular: string;
-  /** lowercase plural, mid-sentence (e.g. "obras en riesgo"). */
+  /** lowercase plural, mid-sentence (e.g. "acciones en riesgo"). */
   plural: string;
   /** Capitalized singular, start-of-phrase/label (e.g. "Detalle de Acción"). */
   singularCap: string;
@@ -23,13 +25,15 @@ export type BrandConfig = {
   institutionName: string;
   tagline: string;
   loginSubtitle: string;
-  /** Terminology for the core tracked entity (obra vs acción). */
+  /** Terminology for the core tracked entity (acción). */
   entity: EntityTerms;
+  /** Terminology for the physical obra entity. */
+  obraEntity: EntityTerms;
   assistantName: string;
   assistantGreeting: string;
-  /** Program codes for obra forms and filters (tenant-specific). */
+  /** Program codes for acción forms and filters (tenant-specific). */
   programas?: string[];
-  /** Executing agencies for obra forms (tenant-specific). */
+  /** Executing agencies for acción forms (tenant-specific). */
   dependencias?: string[];
   /** Suggested prompts shown on the assistant page. */
   assistantSuggestions?: string[];
@@ -57,9 +61,15 @@ const CONAGUA_BRAND: BrandConfig = {
   productName: 'CONAGUA',
   productShortName: 'CONAGUA',
   institutionName: 'Comisión Nacional del Agua',
-  tagline: 'Seguimiento y control de obras del sector hídrico',
+  tagline: 'Seguimiento de acciones de los programas del sector hídrico',
   loginSubtitle: 'Comisión Nacional del Agua',
   entity: {
+    singular: 'acción',
+    plural: 'acciones',
+    singularCap: 'Acción',
+    pluralCap: 'Acciones',
+  },
+  obraEntity: {
     singular: 'obra',
     plural: 'obras',
     singularCap: 'Obra',
@@ -67,7 +77,7 @@ const CONAGUA_BRAND: BrandConfig = {
   },
   assistantName: 'Asistente CONAGUA',
   assistantGreeting:
-    'Buen día. Soy el Asistente CONAGUA. Accedo al portafolio hídrico completo: obras PROAGUA, PEAS, PRODDER, PTAR, avances, alertas, estimaciones y documentos.\n\nAnalizo desviaciones físico-financieras, inversión por programa, alertas críticas y te comparto enlaces directos a cada obra.\n\nMantengo el hilo de nuestra conversación. ¿Cómo puedo ayudarte hoy?',
+    'Buen día. Soy el Asistente CONAGUA. Accedo al portafolio hídrico completo: acciones de los programas PROAGUA, PEAS, PRODDER y PTAR, con sus avances, alertas, estimaciones y documentos.\n\nAnalizo desviaciones físico-financieras, inversión por programa, alertas críticas y te comparto enlaces directos a cada acción.\n\nMantengo el hilo de nuestra conversación. ¿Cómo puedo ayudarte hoy?',
   programas: ['PROAGUA', 'PEAS', 'PRODDER'],
   dependencias: ['CONAGUA'],
   assistantSuggestions: [
@@ -76,7 +86,7 @@ const CONAGUA_BRAND: BrandConfig = {
     'Alertas críticas sin atender en saneamiento',
     'Inversión por programa y macromedición',
     'Estimaciones y documentos pendientes de validar',
-    'Obras PROAGUA en riesgo con enlaces',
+    'Acciones PROAGUA en riesgo con enlaces',
   ],
   demoEmail: 'estatal@conagua.gob.mx',
   demoPasswordHint: 'Conagua2024!',
@@ -120,6 +130,10 @@ function withResolvedLogo(brand: BrandConfig): BrandConfig {
 
 export function getBrand(): BrandConfig {
   return withResolvedLogo(BRANDS[resolveTenantId()]);
+}
+
+export function getObraEntity(): EntityTerms {
+  return getBrand().obraEntity;
 }
 
 export function getBrandCssVars(brand: BrandConfig): Record<string, string> {
