@@ -55,9 +55,24 @@ ALTER TABLE "obras" ADD CONSTRAINT "obras_entidad_federativa_id_fkey"
 ALTER TABLE "obras" ADD CONSTRAINT "obras_organismo_operador_id_fkey"
   FOREIGN KEY ("organismo_operador_id") REFERENCES "organismos_operadores"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
-ALTER TABLE "acciones" ADD COLUMN "obra_fisica_id" UUID;
+ALTER TABLE "acciones" ADD COLUMN IF NOT EXISTS "obra_fisica_id" UUID;
 
-CREATE INDEX "acciones_obra_fisica_id_idx" ON "acciones"("obra_fisica_id");
+CREATE INDEX IF NOT EXISTS "acciones_obra_fisica_id_idx" ON "acciones"("obra_fisica_id");
+
+-- Sanitize orphaned FKs before backfill (common cause of failed deploy in prod)
+UPDATE "acciones" SET "entidad_federativa_id" = NULL
+WHERE "entidad_federativa_id" IS NOT NULL
+  AND NOT EXISTS (
+    SELECT 1 FROM "entidades_federativas" ef
+    WHERE ef."id" = "acciones"."entidad_federativa_id"
+  );
+
+UPDATE "acciones" SET "organismo_operador_id" = NULL
+WHERE "organismo_operador_id" IS NOT NULL
+  AND NOT EXISTS (
+    SELECT 1 FROM "organismos_operadores" oo
+    WHERE oo."id" = "acciones"."organismo_operador_id"
+  );
 
 -- Backfill: 1 physical obra per accion (clave = OBRA-{folio})
 INSERT INTO "obras" (
@@ -95,7 +110,7 @@ SELECT
   a."nombre",
   a."descripcion",
   a."tipo_obra",
-  a."localidad",
+  COALESCE(NULLIF(TRIM(a."localidad"), ''), 'Sin localidad'),
   a."tipo_localidad",
   a."latitud",
   a."longitud",
@@ -121,8 +136,9 @@ SELECT
   a."entidad_federativa_id",
   a."organismo_operador_id",
   a."created_at",
-  a."updated_at"
-FROM "acciones" a;
+  COALESCE(a."updated_at", a."created_at", CURRENT_TIMESTAMP)
+FROM "acciones" a
+WHERE EXISTS (SELECT 1 FROM "municipios" m WHERE m."id" = a."municipio_id");
 
 UPDATE "acciones" a
 SET "obra_fisica_id" = o."id"

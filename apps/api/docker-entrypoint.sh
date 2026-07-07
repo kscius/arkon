@@ -27,7 +27,13 @@ npx prisma generate
 
 echo "Applying database schema..."
 if [ -d "prisma/migrations" ] && [ -n "$(ls -A prisma/migrations 2>/dev/null)" ]; then
-  npx prisma migrate deploy
+  if ! npx prisma migrate deploy; then
+    echo "ERROR: prisma migrate deploy failed (P3009 = failed migration in DB)." >&2
+    echo "Recovery: run scripts/prisma-migrate-recovery.sh inside the API container." >&2
+    echo "Docs: https://pris.ly/d/migrate-resolve" >&2
+    npx prisma migrate status >&2 || true
+    exit 1
+  fi
 else
   echo "No Prisma migrations found; running prisma db push."
   npx prisma db push
