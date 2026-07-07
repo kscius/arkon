@@ -4,8 +4,8 @@ import { RankingContratistasChart } from '@/components/dashboard/RankingContrati
 import { PageState } from '@/components/PageState';
 import { useApp } from '@/context/AppContext';
 import { useAsyncData } from '@/hooks/use-async-data';
-import { fetchChartTopContratistas, fetchContratista, fetchContratistas, fetchObras } from '@/lib/api';
-import { formatCurrencyM, formatPercentage, getObraStatusColor, getObraStatusLabel, getProgramaName } from '@/lib/utils';
+import { fetchChartTopContratistas, fetchContratista, fetchContratistas, fetchAcciones } from '@/lib/api';
+import { formatCurrencyM, formatPercentage, getAccionStatusColor, getAccionStatusLabel, getProgramaName } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ComboBox } from '@/components/ui/combobox';
 import { Building2, DollarSign, TrendingUp, AlertTriangle } from 'lucide-react';
@@ -26,7 +26,7 @@ export default function ContratistaPanelPage() {
   }, [contratistaId, user?.contratistaId]);
 
   const loadBase = useCallback(async () => {
-    const [contratistas, obras] = await Promise.all([fetchContratistas(), fetchObras()]);
+    const [contratistas, obras] = await Promise.all([fetchContratistas(), fetchAcciones()]);
     const id = selectedId || contratistas[0]?.id;
     const contratista = id
       ? contratistas.find((c) => c.id === id) ?? (await fetchContratista(id))
@@ -215,8 +215,8 @@ export default function ContratistaPanelPage() {
                   <p className="text-xs font-semibold truncate">{obra.nombre}</p>
                   <p className="text-[10px] text-gray-500">{obra.folio} — {getProgramaName(obra.programa)}</p>
                 </div>
-                <span className="text-[10px] font-medium shrink-0" style={{ color: getObraStatusColor(obra.estatus) }}>
-                  {getObraStatusLabel(obra.estatus)}
+                <span className="text-[10px] font-medium shrink-0" style={{ color: getAccionStatusColor(obra.estatus) }}>
+                  {getAccionStatusLabel(obra.estatus)}
                 </span>
               </div>
             ))}

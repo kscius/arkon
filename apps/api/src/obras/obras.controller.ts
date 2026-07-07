@@ -17,6 +17,7 @@ import { CurrentUser } from '../auth/decorators/current-user.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { RolesGuard } from '../auth/guards/roles.guard';
 import { CreateObraDto, UpdateObraDto } from './dto/obra.dto';
+import { TransicionAccionDto } from './dto/transicion-accion.dto';
 import { ObrasService } from './obras.service';
 
 @ApiTags('Acciones')
@@ -60,6 +61,22 @@ export class ObrasController {
     @Query('search') search?: string,
   ) {
     return this.obras.findAll(user, { estatus, programa, municipio_id, contratista_id, search });
+  }
+
+  @Get(':id/historial')
+  getHistorial(@Param('id') id: string, @CurrentUser() user: Usuario) {
+    return this.obras.getHistorial(id, user);
+  }
+
+  @Post(':id/transicion')
+  @UseGuards(RolesGuard)
+  @Roles(Rol.estatal, Rol.municipal)
+  transicionar(
+    @Param('id') id: string,
+    @Body() dto: TransicionAccionDto,
+    @CurrentUser() user: Usuario,
+  ) {
+    return this.obras.transicionar(id, dto, user);
   }
 
   @Get(':id')

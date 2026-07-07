@@ -1,10 +1,12 @@
-import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { EstatusAccion, Prisma, Rol, Usuario } from '@prisma/client';
 import { rowsToCsv } from '../common/csv.util';
 import { buildFolio, nextFolioSequence } from '../common/folio.util';
 import { ScopeService } from '../common/scope.service';
 import { PrismaService } from '../prisma/prisma.service';
+import { destinosValidos, puedeTransicionar } from './accion-estado';
 import { CreateObraDto, UpdateObraDto } from './dto/obra.dto';
+import { TransicionAccionDto } from './dto/transicion-accion.dto';
 
 const OBRA_INCLUDE = {
   municipio: true,
@@ -244,6 +246,11 @@ export class ObrasService {
   }
 
   async update(id: string, dto: UpdateObraDto, user: Usuario) {
+    if (dto.estatus !== undefined) {
+      throw new BadRequestException(
+        'El cambio de estatus debe realizarse mediante POST /acciones/:id/transicion',
+      );
+    }
     await this.scope.getObraOrThrow(id, user);
     const obra = await this.prisma.accion.update({
       where: { id },
@@ -261,7 +268,6 @@ export class ObrasService {
         avanceFisicoProgramado: dto.avance_fisico_programado,
         avanceFisicoReal: dto.avance_fisico_real,
         avanceFinanciero: dto.avance_financiero,
-        estatus: dto.estatus,
         riesgo: dto.riesgo,
         contratistaId: dto.contratista_id,
         ...this.proaguaFields(dto),
@@ -269,6 +275,74 @@ export class ObrasService {
       include: OBRA_INCLUDE,
     });
     return this.mapObra(obra);
+  }
+
+  private mapHistorial(
+    row: Prisma.AccionEstadoHistorialGetPayload<object>,
+  ) {
+    return {
+      id: row.id,
+      accion_id: row.accionId,
+      estatus_anterior: row.estatusAnterior,
+      estatus_nuevo: row.estatusNuevo,
+      motivo: row.motivo,
+      usuario_id: row.usuarioId,
+      usuario_nombre: row.usuarioNombre,
+      created_at: row.createdAt,
+    };
+  }
+
+  async transicionar(id: string, dto: TransicionAccionDto, user: Usuario) {
+    const accion = await this.scope.getObraOrThrow(id, user);
+    const estatusActual = accion.estatus;
+    const estatusNuevo = dto.estatus;
+
+    if (estatusActual === estatusNuevo) {
+      throw new BadRequestException(
+        `La acción ya se encuentra en estatus "${estatusActual}"`,
+      );
+    }
+
+    if (!puedeTransicionar(estatusActual, estatusNuevo)) {
+      const validos = destinosValidos(estatusActual);
+      throw new BadRequestException(
+        `Transición inválida de "${estatusActual}" a "${estatusNuevo}". ` +
+          `Destinos válidos: ${validos.length ? validos.join(', ') : '(ninguno — estado terminal)'}`,
+      );
+    }
+
+    const [obra, historial] = await this.prisma.$transaction(async (tx) => {
+      const updated = await tx.accion.update({
+        where: { id },
+        data: { estatus: estatusNuevo },
+        include: OBRA_INCLUDE,
+      });
+      const hist = await tx.accionEstadoHistorial.create({
+        data: {
+          accionId: id,
+          estatusAnterior: estatusActual,
+          estatusNuevo,
+          motivo: dto.motivo,
+          usuarioId: user.id,
+          usuarioNombre: user.fullName,
+        },
+      });
+      return [updated, hist] as const;
+    });
+
+    return {
+      accion: this.mapObra(obra),
+      historial: this.mapHistorial(historial),
+    };
+  }
+
+  async getHistorial(id: string, user: Usuario) {
+    await this.scope.getObraOrThrow(id, user);
+    const rows = await this.prisma.accionEstadoHistorial.findMany({
+      where: { accionId: id },
+      orderBy: { createdAt: 'desc' },
+    });
+    return rows.map((r) => this.mapHistorial(r));
   }
 
   async remove(id: string, user: Usuario) {

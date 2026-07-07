@@ -7,8 +7,8 @@ import type { MunicipioData, Accion } from '@/types';
 import {
   formatCurrencyM,
   formatPercentage,
-  getObraStatusColor,
-  getObraStatusLabel,
+  getAccionStatusColor,
+  getAccionStatusLabel,
 } from '@/lib/utils';
 import { MapPin } from 'lucide-react';
 import { getBrand } from '@/config/brand';
@@ -112,9 +112,9 @@ export function MapaTerritorial({ municipios, obras }: MapaTerritorialProps) {
             <span key={estatus} className="inline-flex items-center gap-1">
               <span
                 className="w-2.5 h-2.5 rounded-full"
-                style={{ backgroundColor: getObraStatusColor(estatus) }}
+                style={{ backgroundColor: getAccionStatusColor(estatus) }}
               />
-              {getObraStatusLabel(estatus)}
+              {getAccionStatusLabel(estatus)}
             </span>
           ))}
         </span>
@@ -144,7 +144,7 @@ export function MapaTerritorial({ municipios, obras }: MapaTerritorialProps) {
               pathOptions={{
                 color: '#fff',
                 weight: 2,
-                fillColor: getObraStatusColor(obra.estatus),
+                fillColor: getAccionStatusColor(obra.estatus),
                 fillOpacity: 0.9,
               }}
               eventHandlers={{
@@ -158,9 +158,9 @@ export function MapaTerritorial({ municipios, obras }: MapaTerritorialProps) {
                   <p>
                     <span
                       className="font-medium"
-                      style={{ color: getObraStatusColor(obra.estatus) }}
+                      style={{ color: getAccionStatusColor(obra.estatus) }}
                     >
-                      {getObraStatusLabel(obra.estatus)}
+                      {getAccionStatusLabel(obra.estatus)}
                     </span>
                   </p>
                   <p>Avance físico: {formatPercentage(obra.avanceFisicoReal)}</p>

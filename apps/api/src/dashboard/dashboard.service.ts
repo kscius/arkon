@@ -12,9 +12,20 @@ import {
 import { toCsv } from '../common/csv.util';
 import { comparePeriodo } from '../common/periodo.util';
 import { ScopeService } from '../common/scope.service';
+import { validatePortfolioIdp } from '../metrics/idp-validator';
 import { PrismaService } from '../prisma/prisma.service';
 
-export type PendienteTipo = 'avance' | 'estimacion' | 'documento' | 'observacion' | 'alerta' | 'solicitud';
+export type PendienteTipo =
+  | 'avance'
+  | 'estimacion'
+  | 'documento'
+  | 'observacion'
+  | 'alerta'
+  | 'solicitud'
+  | 'idp'
+  | 'cierre'
+  | 'avance_trimestral'
+  | 'recomendacion';
 
 export interface PendienteItem {
   id: string;
@@ -29,6 +40,8 @@ export interface PendienteItem {
   municipio: string | null;
   fecha: string | null;
   enlace: string;
+  /** Verbos accionables in-place según rol (validar, observar, aprobar, etc.). */
+  acciones_disponibles?: string[];
 }
 
 /**
@@ -40,28 +53,44 @@ const PENDIENTE_MATRIX: Record<
   Rol,
   {
     avance: EstatusAvance[];
+    avance_trimestral: EstatusAvance[];
     estimacion: EstatusEstimacion[];
     documento: EstadoDocumento[];
     observacion: EstatusObservacion[];
     solicitud: string[];
+    /** Discrepancias IDP: estatal y municipal revisan integridad documental. */
+    idp: boolean;
+    /** Cierres de ejercicio: solo estatal gestiona el cierre fiscal. */
+    cierre: boolean;
+    /** Recomendaciones IA: solo estatal aprueba sugerencias del motor. */
+    recomendacion: boolean;
   }
 > = {
   estatal: {
     avance: [],
+    avance_trimestral: [],
     estimacion: [EstatusEstimacion.validada_municipio, EstatusEstimacion.en_revision_estatal],
     documento: [],
     observacion: [EstatusObservacion.abierta],
     solicitud: ['presentada', 'en_revision'],
+    idp: true,
+    cierre: true,
+    recomendacion: true,
   },
   municipal: {
     avance: [EstatusAvance.pendiente, EstatusAvance.en_revision],
+    avance_trimestral: [EstatusAvance.pendiente, EstatusAvance.en_revision],
     estimacion: [EstatusEstimacion.presentada, EstatusEstimacion.en_revision_municipal],
     documento: [EstadoDocumento.en_revision],
     observacion: [EstatusObservacion.abierta, EstatusObservacion.en_atencion],
     solicitud: ['presentada', 'en_revision'],
+    idp: true,
+    cierre: false,
+    recomendacion: false,
   },
   contratista: {
     avance: [EstatusAvance.observado],
+    avance_trimestral: [EstatusAvance.observado],
     estimacion: [
       EstatusEstimacion.observada_municipio,
       EstatusEstimacion.observada_estado,
@@ -70,8 +99,13 @@ const PENDIENTE_MATRIX: Record<
     documento: [EstadoDocumento.no_cargado, EstadoDocumento.observado],
     observacion: [EstatusObservacion.abierta, EstatusObservacion.en_atencion],
     solicitud: [],
+    idp: false,
+    cierre: false,
+    recomendacion: false,
   },
 };
+
+const CIERRE_ESTADOS_CERRADOS = ['cerrado', 'concluido'];
 
 const SEVERIDAD_ALTA = new Set([
   'observado',
@@ -372,6 +406,10 @@ export class DashboardService {
       observaciones: 0,
       alertas: 0,
       solicitudes: 0,
+      idp: 0,
+      cierres: 0,
+      avances_trimestrales: 0,
+      recomendaciones: 0,
     };
 
     if (cfg.avance.length) {
@@ -392,7 +430,50 @@ export class DashboardService {
             ? 'Avance observado por corregir'
             : 'Avance por validar';
         items.push(
-          this.buildPendiente('avance', r.id, titulo, `Periodo ${r.periodo}`, r.estatus, r.accion, 'avance', r.createdAt),
+          this.buildPendiente(
+            'avance',
+            r.id,
+            titulo,
+            `Periodo ${r.periodo}`,
+            r.estatus,
+            r.accion,
+            'avance',
+            r.createdAt,
+            user.rol,
+          ),
+        );
+      }
+    }
+
+    if (cfg.avance_trimestral.length) {
+      const where: Prisma.AvanceTrimestralWhereInput = {
+        estatus: { in: cfg.avance_trimestral },
+        accion: accionWhere,
+      };
+      totales.avances_trimestrales = await this.prisma.avanceTrimestral.count({ where });
+      const rows = await this.prisma.avanceTrimestral.findMany({
+        where,
+        take: ITEM_LIMIT,
+        orderBy: { createdAt: 'desc' },
+        include: { accion: { select: accionSelect } },
+      });
+      for (const r of rows) {
+        const titulo =
+          r.estatus === EstatusAvance.observado
+            ? 'Avance trimestral observado por corregir'
+            : 'Avance trimestral por validar';
+        items.push(
+          this.buildPendiente(
+            'avance_trimestral',
+            r.id,
+            titulo,
+            `T${r.trimestre} · Ejercicio ${r.ejercicioFiscal}`,
+            r.estatus,
+            r.accion,
+            'proagua',
+            r.createdAt,
+            user.rol,
+          ),
         );
       }
     }
@@ -420,6 +501,7 @@ export class DashboardService {
             r.accion,
             'estimaciones',
             r.createdAt,
+            user.rol,
           ),
         );
       }
@@ -445,7 +527,7 @@ export class DashboardService {
               ? 'Documento observado'
               : 'Documento por revisar';
         items.push(
-          this.buildPendiente('documento', r.id, titulo, r.nombre, r.estatus, r.accion, 'expediente', r.createdAt),
+          this.buildPendiente('documento', r.id, titulo, r.nombre, r.estatus, r.accion, 'expediente', r.createdAt, user.rol),
         );
       }
     }
@@ -468,7 +550,7 @@ export class DashboardService {
             ? 'Observación en atención'
             : 'Observación por atender';
         items.push(
-          this.buildPendiente('observacion', r.id, titulo, r.descripcion, r.estatus, r.accion, 'observaciones', r.createdAt),
+          this.buildPendiente('observacion', r.id, titulo, r.descripcion, r.estatus, r.accion, 'observaciones', r.createdAt, user.rol),
         );
       }
     }
@@ -506,6 +588,7 @@ export class DashboardService {
           municipio: r.accion?.municipio?.nombre ?? r.municipio ?? null,
           fecha: r.fechaGeneracion ?? r.createdAt.toISOString(),
           enlace: '/alertas',
+          acciones_disponibles: this.accionesDisponibles('alerta', user.rol),
         });
       }
     }
@@ -536,6 +619,120 @@ export class DashboardService {
           municipio: r.municipio?.nombre ?? null,
           fecha: r.createdAt.toISOString(),
           enlace: '/solicitudes',
+          acciones_disponibles: this.accionesDisponibles('solicitud', user.rol),
+        });
+      }
+    }
+
+    if (cfg.idp) {
+      const acciones = await this.prisma.accion.findMany({
+        where: accionWhere,
+        select: {
+          id: true,
+          folio: true,
+          nombre: true,
+          montoContratado: true,
+          montoAutorizado: true,
+          createdAt: true,
+          municipio: { select: { nombre: true } },
+          documentos: { select: { categoria: true, estatus: true, fechaCarga: true, nombre: true } },
+          estimaciones: { select: { montoEstimado: true, estatus: true } },
+        },
+      });
+      const idpReport = validatePortfolioIdp(
+        acciones.map((a) => ({
+          accion: a,
+          documentos: a.documentos,
+          estimaciones: a.estimaciones,
+        })),
+      );
+      const conDiscrepancias = idpReport.acciones.filter((r) => r.discrepancias.length > 0);
+      totales.idp = conDiscrepancias.length;
+      const accionById = new Map(acciones.map((a) => [a.id, a]));
+      for (const report of conDiscrepancias.slice(0, ITEM_LIMIT)) {
+        const accion = accionById.get(report.accion_id);
+        const tieneAlta = report.discrepancias.some((d) => d.severidad === 'alta');
+        const tieneMedia = report.discrepancias.some((d) => d.severidad === 'media');
+        const severidad: PendienteItem['severidad'] = tieneAlta ? 'alta' : tieneMedia ? 'media' : 'baja';
+        items.push({
+          id: report.accion_id,
+          tipo: 'idp',
+          titulo: 'Discrepancias IDP detectadas',
+          descripcion: `${report.discrepancias.length} discrepancia(s) · completitud ${report.completitud_pct}%`,
+          estatus: severidad,
+          severidad,
+          accion_id: report.accion_id,
+          accion_folio: report.folio,
+          accion_nombre: report.nombre,
+          municipio: accion?.municipio?.nombre ?? null,
+          fecha: accion?.createdAt.toISOString() ?? null,
+          enlace: `/acciones/${report.accion_id}?tab=expediente`,
+          acciones_disponibles: this.accionesDisponibles('idp', user.rol),
+        });
+      }
+    }
+
+    if (cfg.cierre) {
+      const where: Prisma.CierreEjercicioWhereInput = {
+        estatus: { notIn: CIERRE_ESTADOS_CERRADOS },
+      };
+      totales.cierres = await this.prisma.cierreEjercicio.count({ where });
+      const rows = await this.prisma.cierreEjercicio.findMany({
+        where,
+        take: ITEM_LIMIT,
+        orderBy: [{ ejercicioFiscal: 'desc' }, { createdAt: 'desc' }],
+        include: { anexoEjecucion: { select: { numero: true } } },
+      });
+      const ejercicioActual = new Date().getFullYear();
+      for (const r of rows) {
+        const vencido = r.ejercicioFiscal < ejercicioActual;
+        items.push({
+          id: r.id,
+          tipo: 'cierre',
+          titulo: 'Cierre de ejercicio pendiente',
+          descripcion: `${r.tipoApoyo} · Ejercicio ${r.ejercicioFiscal}${r.anexoEjecucion ? ` · Anexo ${r.anexoEjecucion.numero}` : ''}`,
+          estatus: r.estatus,
+          severidad: vencido ? 'alta' : 'media',
+          accion_id: null,
+          accion_folio: null,
+          accion_nombre: null,
+          municipio: null,
+          fecha: r.createdAt.toISOString(),
+          enlace: '/cierres-ejercicio',
+          acciones_disponibles: this.accionesDisponibles('cierre', user.rol),
+        });
+      }
+    }
+
+    if (cfg.recomendacion) {
+      const where: Prisma.RecomendacionWhereInput = {
+        estatus: 'pendiente',
+        accion: accionWhere,
+      };
+      totales.recomendaciones = await this.prisma.recomendacion.count({ where });
+      const rows = await this.prisma.recomendacion.findMany({
+        where,
+        take: ITEM_LIMIT,
+        orderBy: [{ prioridad: 'asc' }, { createdAt: 'desc' }],
+        include: { accion: { select: accionSelect } },
+      });
+      for (const r of rows) {
+        const severidad: PendienteItem['severidad'] =
+          r.prioridad === 'alta' ? 'alta' : r.prioridad === 'baja' ? 'baja' : 'media';
+        items.push({
+          id: r.id,
+          tipo: 'recomendacion',
+          titulo: r.titulo,
+          descripcion: r.descripcion,
+          estatus: r.estatus,
+          severidad,
+          accion_id: r.accion?.id ?? null,
+          accion_folio: r.accion?.folio ?? null,
+          accion_nombre: r.accion?.nombre ?? null,
+          municipio: r.accion?.municipio?.nombre ?? null,
+          fecha: r.createdAt.toISOString(),
+          enlace: '/bandeja',
+          acciones_disponibles: this.accionesDisponibles('recomendacion', user.rol),
         });
       }
     }
@@ -554,7 +751,11 @@ export class DashboardService {
       totales.documentos +
       totales.observaciones +
       totales.alertas +
-      totales.solicitudes;
+      totales.solicitudes +
+      totales.idp +
+      totales.cierres +
+      totales.avances_trimestrales +
+      totales.recomendaciones;
 
     return { total, totales, items };
   }
@@ -584,6 +785,43 @@ export class DashboardService {
     return 'Estimación por validar (municipal)';
   }
 
+  /**
+   * Verbos in-place por tipo y rol (PENDIENTE_MATRIX define visibilidad).
+   * avance/trimestral municipal: validar|observar; estimacion estatal: autorizar|observar;
+   * estimacion municipal: validar|observar; documento municipal: validar|observar;
+   * observacion: atender|cerrar; alerta: atender; solicitud: aprobar|rechazar;
+   * recomendacion estatal: aprobar; idp estatal/municipal: revisar; cierre: sin acciones in-place.
+   */
+  private accionesDisponibles(tipo: PendienteTipo, rol: Rol): string[] {
+    switch (tipo) {
+      case 'avance':
+      case 'avance_trimestral':
+        return rol === Rol.municipal ? ['validar', 'observar'] : [];
+      case 'estimacion':
+        if (rol === Rol.estatal) return ['autorizar', 'observar'];
+        if (rol === Rol.municipal) return ['validar', 'observar'];
+        return [];
+      case 'documento':
+        return rol === Rol.municipal ? ['validar', 'observar'] : [];
+      case 'observacion':
+        if (rol === Rol.estatal || rol === Rol.municipal) return ['atender', 'cerrar'];
+        if (rol === Rol.contratista) return ['atender'];
+        return [];
+      case 'alerta':
+        return ['atender'];
+      case 'solicitud':
+        return rol === Rol.estatal || rol === Rol.municipal ? ['aprobar', 'rechazar'] : [];
+      case 'recomendacion':
+        return rol === Rol.estatal ? ['aprobar'] : [];
+      case 'idp':
+        return rol === Rol.estatal || rol === Rol.municipal ? ['revisar'] : [];
+      case 'cierre':
+        return [];
+      default:
+        return [];
+    }
+  }
+
   private buildPendiente(
     tipo: PendienteTipo,
     id: string,
@@ -593,7 +831,9 @@ export class DashboardService {
     accion: { id: string; folio: string; nombre: string; municipio: { nombre: string } | null } | null,
     tab: string,
     fecha: Date,
+    rol: Rol,
   ): PendienteItem {
+    const acciones = this.accionesDisponibles(tipo, rol);
     return {
       id,
       tipo,
@@ -607,6 +847,7 @@ export class DashboardService {
       municipio: accion?.municipio?.nombre ?? null,
       fecha: fecha.toISOString(),
       enlace: accion?.id ? `/acciones/${accion.id}?tab=${tab}` : '/acciones',
+      ...(acciones.length > 0 ? { acciones_disponibles: acciones } : {}),
     };
   }
 }

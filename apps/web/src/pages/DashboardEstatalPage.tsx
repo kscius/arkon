@@ -11,7 +11,7 @@ import { EvmSummaryChart } from '@/components/dashboard/EvmSummaryChart';
 import { ContractorScorecard } from '@/components/dashboard/ContractorScorecard';
 import { RankingContratistasChart } from '@/components/dashboard/RankingContratistasChart';
 import { useApp } from '@/context/AppContext';
-import { ObraFormModal } from '@/components/ObraFormModal';
+import { AccionFormModal } from '@/components/AccionFormModal';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
 import { useAsyncData } from '@/hooks/use-async-data';
@@ -24,7 +24,7 @@ import {
   fetchChartTopContratistas,
   fetchDashboardKpis,
   fetchMunicipios,
-  fetchObras,
+  fetchAcciones,
   fetchAttentionToday,
   fetchDataQuality,
   fetchEvmPortfolio,
@@ -34,13 +34,13 @@ import {
 } from '@/lib/api';
 import { mapProgramaChartFromApi } from '@/lib/programa-chart';
 import { normalizeName } from '@/lib/api-mappers';
-import { formatCurrencyM, formatPercentage, getObraStatusColor, getObraStatusLabel, getSeverityColor, getSeverityLabel, getProgramaColor, getProgramaName } from '@/lib/utils';
+import { formatCurrencyM, formatPercentage, getAccionStatusColor, getAccionStatusLabel, getProgramaColor, getProgramaName } from '@/lib/utils';
 import { getBrand } from '@/config/brand';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
   Building2, DollarSign, Activity, AlertTriangle, TrendingUp, CreditCard,
-  ArrowRight, AlertCircle
+  ArrowRight,
 } from 'lucide-react';
 import {
   BarChart, Bar, Line, LineChart, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
@@ -61,7 +61,7 @@ export default function DashboardPage() {
   const load = useCallback(async () => {
     const [obras, municipios, alertas, kpis, topMunicipios, avanceTimeline, chartPrograma, obrasPorEstatus, topContratistas] =
       await Promise.all([
-        fetchObras(),
+        fetchAcciones(),
         fetchMunicipios(),
         fetchAlertas(),
         fetchDashboardKpis(),
@@ -129,10 +129,10 @@ export default function DashboardPage() {
   const estatusChartData = obrasPorEstatus
     .filter((row) => row.estatus && (row.count ?? 0) > 0)
     .map((row) => ({
-      name: getObraStatusLabel(row.estatus!),
+      name: getAccionStatusLabel(row.estatus!),
       estatus: row.estatus!,
       count: row.count ?? 0,
-      fill: getObraStatusColor(row.estatus!),
+      fill: getAccionStatusColor(row.estatus!),
     }));
   const totalObras = kpis.total_obras || obras.length || 1;
   const obrasEjecucion = kpis.obras_en_ejecucion;
@@ -157,12 +157,12 @@ export default function DashboardPage() {
   }));
 
   const kpiCards = [
-    { label: `Total de ${entity.pluralCap}`, value: totalObras.toString(), sub: 'Registradas en el sistema', icon: Building2, color: brand.colors.primary, trend: null, onClick: () => navigate('/acciones') },
-    { label: 'Inversión Autorizada', value: formatCurrencyM(montoAutorizado), sub: 'Presupuesto total', icon: DollarSign, color: brand.colors.accent, trend: null, onClick: () => navigate('/acciones') },
-    { label: `${entity.pluralCap} en Ejecución`, value: obrasEjecucion.toString(), sub: `${Math.round((obrasEjecucion/totalObras)*100)}% del total`, icon: Activity, color: '#38A169', trend: null, onClick: () => navigate('/acciones?estatus=en_ejecucion') },
+    { label: `Total de ${entity.pluralCap}`, value: totalObras.toString(), sub: 'Registradas en el sistema', icon: Building2, color: brand.colors.primary, trend: null, onClick: () => navigate('/acciones?vista=todas') },
+    { label: 'Inversión Autorizada', value: formatCurrencyM(montoAutorizado), sub: 'Presupuesto total', icon: DollarSign, color: brand.colors.accent, trend: null, onClick: () => navigate('/acciones?vista=todas') },
+    { label: `${entity.pluralCap} en Ejecución`, value: obrasEjecucion.toString(), sub: `${Math.round((obrasEjecucion/totalObras)*100)}% del total`, icon: Activity, color: '#38A169', trend: null, onClick: () => navigate('/acciones?vista=todas&estatus=en_ejecucion_a_tiempo') },
     { label: `${entity.pluralCap} con Retraso`, value: obrasRetraso.toString(), sub: `${Math.round((obrasRetraso/totalObras)*100)}% del total`, icon: AlertTriangle, color: '#DC2626', trend: null, onClick: () => navigate('/acciones?estatus=en_ejecucion_retraso') },
-    { label: 'Avance Físico Prom.', value: formatPercentage(avanceFisicoPromedio), sub: `Meta: 65%`, icon: TrendingUp, color: '#3182CE', trend: avanceFisicoPromedio, onClick: () => navigate('/acciones') },
-    { label: 'Monto Ejercido', value: formatCurrencyM(montoEjercido), sub: `${Math.round((montoEjercido/montoAutorizado)*100)}% autorizado`, icon: CreditCard, color: brand.colors.secondary, trend: (montoEjercido/montoAutorizado)*100, onClick: () => navigate('/acciones') },
+    { label: 'Avance Físico Prom.', value: formatPercentage(avanceFisicoPromedio), sub: `Meta: 65%`, icon: TrendingUp, color: '#3182CE', trend: avanceFisicoPromedio, onClick: () => navigate('/acciones?vista=todas') },
+    { label: 'Monto Ejercido', value: formatCurrencyM(montoEjercido), sub: `${Math.round((montoEjercido/montoAutorizado)*100)}% autorizado`, icon: CreditCard, color: brand.colors.secondary, trend: (montoEjercido/montoAutorizado)*100, onClick: () => navigate('/acciones?vista=todas') },
   ];
 
   return (
@@ -426,49 +426,36 @@ export default function DashboardPage() {
           </Card>
         </motion.div>
 
-        {/* Alertas Prioritarias */}
+        {/* Alertas: ver bandeja unificada */}
         <motion.div variants={item} className="lg:col-span-3">
           <Card>
             <CardHeader className="pb-2">
               <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-semibold text-gray-900">Alertas Prioritarias</CardTitle>
+                <CardTitle className="text-base font-semibold text-gray-900">Alertas y acciones pendientes</CardTitle>
                 <div className="flex items-center gap-2">
                   {alertasCriticas > 0 && <Badge className="bg-red-500 text-[10px]">{alertasCriticas} críticas</Badge>}
                   {alertasAltas > 0 && <Badge className="bg-orange-500 text-[10px]">{alertasAltas} altas</Badge>}
                   <button
                     type="button"
-                    onClick={() => navigate('/alertas')}
-                    aria-label="Ver todas las alertas"
+                    onClick={() => navigate('/bandeja')}
+                    aria-label="Ir a la bandeja de acciones"
                     className="text-[11px] text-brand-primary-light hover:underline font-medium flex items-center gap-1 min-h-9 px-1 rounded-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary/30"
                   >
-                    Ver todas <ArrowRight className="w-3 h-3" />
+                    Ir a bandeja <ArrowRight className="w-3 h-3" />
                   </button>
                 </div>
               </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-3 max-h-[310px] overflow-y-auto">
-                {alertas.filter(a => !a.atendida).slice(0, 8).map((alerta) => (
-                  <div key={alerta.id} className="flex gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50 transition-colors">
-                    <div className="w-1 rounded-full flex-shrink-0" style={{ backgroundColor: getSeverityColor(alerta.severidad) }} />
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-start gap-2">
-                        <AlertCircle className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" style={{ color: getSeverityColor(alerta.severidad) }} />
-                        <div className="min-w-0">
-                          <p className="text-xs font-medium text-gray-900 truncate">{alerta.titulo}</p>
-                          <p className="text-[11px] text-gray-500 mt-0.5">{alerta.municipio} — {alerta.descripcion.substring(0, 60)}...</p>
-                          <div className="flex items-center gap-2 mt-1.5">
-                            <span className="text-[10px] px-1.5 py-0.5 rounded font-medium" style={{ backgroundColor: getSeverityColor(alerta.severidad) + '15', color: getSeverityColor(alerta.severidad) }}>
-                              {getSeverityLabel(alerta.severidad)}
-                            </span>
-                            <span className="text-[10px] text-gray-400">{alerta.fechaGeneracion}</span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <p className="text-sm text-gray-600">
+                Las alertas y el resto de pendientes (validaciones, estimaciones, IDP, cierres, recomendaciones)
+                se gestionan desde la bandeja unificada arriba en este dashboard.
+              </p>
+              {alertas.filter((a) => !a.atendida).length > 0 && (
+                <p className="mt-2 text-xs text-gray-500">
+                  {alertas.filter((a) => !a.atendida).length} alerta(s) sin atender — use la bandeja para atenderlas in-place.
+                </p>
+              )}
             </CardContent>
           </Card>
         </motion.div>
@@ -590,9 +577,9 @@ export default function DashboardPage() {
                         <td className="py-2 px-2 text-center">
                           <span
                             className="px-2 py-0.5 rounded-full text-[10px] font-medium text-white"
-                            style={{ backgroundColor: getObraStatusColor(obra.estatus) }}
+                            style={{ backgroundColor: getAccionStatusColor(obra.estatus) }}
                           >
-                            {getObraStatusLabel(obra.estatus)}
+                            {getAccionStatusLabel(obra.estatus)}
                           </span>
                         </td>
                       </tr>
@@ -621,7 +608,7 @@ export default function DashboardPage() {
       </motion.div>
     </motion.div>
     {user && (
-      <ObraFormModal
+      <AccionFormModal
         open={obraModalOpen}
         onOpenChange={setObraModalOpen}
         user={user}

@@ -54,7 +54,7 @@ export function mapUser(raw: {
   };
 }
 
-export function mapObra(raw: Record<string, unknown>): Accion {
+export function mapAccion(raw: Record<string, unknown>): Accion {
   let evidenciaFotografica: string[] = [];
   const evidencia = raw.evidencia_fotografica;
   if (typeof evidencia === 'string') {

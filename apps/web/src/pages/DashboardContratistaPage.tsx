@@ -4,12 +4,12 @@ import { motion } from 'framer-motion';
 import { PageState } from '@/components/PageState';
 import { useApp } from '@/context/AppContext';
 import { useAsyncData } from '@/hooks/use-async-data';
-import { createAvance, fetchAlertas, fetchAvancesByObra, fetchEstimacionesByObra, fetchObras, fetchAttentionToday, fetchEvmPortfolio, fetchContractorScores } from '@/lib/api';
+import { createAvance, fetchAvancesByObra, fetchEstimacionesByObra, fetchAcciones, fetchAttentionToday, fetchEvmPortfolio, fetchContractorScores } from '@/lib/api';
 import { AttentionTodayPanel } from '@/components/dashboard/AttentionTodayPanel';
 import { EvmSummaryChart } from '@/components/dashboard/EvmSummaryChart';
 import { ApiError } from '@/lib/api-client';
 import { toast } from 'sonner';
-import { formatCurrencyM, formatPercentage, getObraStatusColor, getObraStatusLabel, getProgramaColor, getProgramaName, getSeverityColor, getSeverityLabel } from '@/lib/utils';
+import { formatCurrencyM, formatPercentage, getAccionStatusColor, getAccionStatusLabel, getProgramaColor, getProgramaName } from '@/lib/utils';
 import { getBrand } from '@/config/brand';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -27,13 +27,10 @@ export default function DashboardContratistaPage() {
   const contratistaId = user?.contratistaId ?? '';
 
   const load = useCallback(async () => {
-    const [obras, alertas] = await Promise.all([fetchObras(), fetchAlertas()]);
+    const obras = await fetchAcciones();
     const misObras = contratistaId
       ? obras.filter((o) => o.contratistaId === contratistaId)
       : obras;
-    const misAlertas = alertas.filter(
-      (a) => misObras.some((o) => o.id === a.obraId) && !a.atendida,
-    );
 
     const avancesPorObra = await Promise.all(
       misObras.map(async (obra) => ({
@@ -57,7 +54,7 @@ export default function DashboardContratistaPage() {
       ? contractorScores.find((c) => c.contratista_id === contratistaId)
       : contractorScores[0];
 
-    return { misObras, misAlertas, avancesPorObra, estimacionesPorObra, attention, evm, miScore };
+    return { misObras, avancesPorObra, estimacionesPorObra, attention, evm, miScore };
   }, [contratistaId]);
 
   const { data, loading, error, reload } = useAsyncData(load, [load]);
@@ -199,7 +196,7 @@ export default function DashboardContratistaPage() {
     return <PageState loading={loading} error={error} onRetry={reload}><span /></PageState>;
   }
 
-  const { misObras, misAlertas, attention, evm, miScore } = data;
+  const { misObras, attention, evm, miScore } = data;
 
   const totalObras = misObras.length;
   const obrasEjecucion = misObras.filter(o => o.estatus === 'en_ejecucion_a_tiempo' || o.estatus === 'en_ejecucion_retraso').length;
@@ -297,7 +294,7 @@ export default function DashboardContratistaPage() {
                         <div className="flex items-center gap-2 flex-wrap">
                           <h3 className="text-sm font-semibold text-gray-900">{obra.nombre}</h3>
                           <Badge style={{ backgroundColor: getProgramaColor(obra.programa), color: 'white' }} className="text-[9px]">{getProgramaName(obra.programa)}</Badge>
-                          <Badge style={{ backgroundColor: getObraStatusColor(obra.estatus), color: 'white' }} className="text-[9px]">{getObraStatusLabel(obra.estatus)}</Badge>
+                          <Badge style={{ backgroundColor: getAccionStatusColor(obra.estatus), color: 'white' }} className="text-[9px]">{getAccionStatusLabel(obra.estatus)}</Badge>
                         </div>
                         <p className="text-[11px] text-gray-500 mt-1">{obra.municipio} | {obra.localidad} | {formatCurrencyM(obra.montoAutorizado)}</p>
                         <p className="text-[10px] text-gray-400 mt-0.5">Folio: {obra.folio}</p>
@@ -481,30 +478,6 @@ export default function DashboardContratistaPage() {
         </TabsContent>
       </Tabs>
 
-      {/* Alertas del contratista */}
-      {misAlertas.length > 0 && (
-        <motion.div variants={item}>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-yellow-600" /> Alertas sobre sus {entity.pluralCap}</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {misAlertas.slice(0, 5).map((alerta) => (
-                  <div key={alerta.id} className="flex gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50">
-                    <div className="w-1 rounded-full flex-shrink-0" style={{ backgroundColor: getSeverityColor(alerta.severidad) }} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-gray-900">{alerta.titulo}</p>
-                      <p className="text-[10px] text-gray-500">{alerta.descripcion.substring(0, 100)}...</p>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{ backgroundColor: getSeverityColor(alerta.severidad) + '15', color: getSeverityColor(alerta.severidad) }}>{getSeverityLabel(alerta.severidad)}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
     </motion.div>
     </PageState>
   );

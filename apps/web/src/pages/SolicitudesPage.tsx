@@ -27,7 +27,7 @@ import { useApp } from '@/context/AppContext';
 import { useAsyncData } from '@/hooks/use-async-data';
 import {
   deleteSolicitud,
-  fetchObras,
+  fetchAcciones,
   fetchSolicitudes,
   presentarSolicitud,
   transitionSolicitud,
@@ -100,7 +100,7 @@ export default function SolicitudesPage() {
     setObraPickerId(sol.obraResultanteId ?? '');
     setLoadingObras(true);
     try {
-      const obras = await fetchObras();
+      const obras = await fetchAcciones();
       const filtered = obras.filter(
         (o) =>
           o.programa === sol.programa &&

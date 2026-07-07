@@ -25,7 +25,10 @@ export class CreateObraDto {
   @ApiPropertyOptional() @IsOptional() @IsNumber() avance_fisico_programado?: number;
   @ApiPropertyOptional() @IsOptional() @IsNumber() avance_fisico_real?: number;
   @ApiPropertyOptional() @IsOptional() @IsNumber() avance_financiero?: number;
-  @ApiPropertyOptional({ enum: EstatusAccion }) @IsOptional() @IsEnum(EstatusAccion) estatus?: EstatusAccion;
+  @ApiPropertyOptional({ enum: EstatusAccion, description: 'Solo en creación; cambios posteriores vía POST /acciones/:id/transicion' })
+  @IsOptional()
+  @IsEnum(EstatusAccion)
+  estatus?: EstatusAccion;
   @ApiPropertyOptional() @IsOptional() @IsString() riesgo?: string;
   @ApiPropertyOptional() @IsOptional() @IsNumber() latitud?: number;
   @ApiPropertyOptional() @IsOptional() @IsNumber() longitud?: number;

@@ -7,7 +7,7 @@ import {
   deleteAlertaConfig,
   fetchAlertaConfigs,
   fetchMunicipios,
-  fetchObras,
+  fetchAcciones,
   fetchUsers,
   simularAlertaConfig,
   toggleAlertaConfig,
@@ -120,7 +120,7 @@ export default function ConfiguradorAlertasPage() {
       fetchAlertaConfigs(),
       fetchUsers(),
       fetchMunicipios(),
-      fetchObras(),
+      fetchAcciones(),
     ]);
     return { configs, users, municipios, obras };
   }, []);

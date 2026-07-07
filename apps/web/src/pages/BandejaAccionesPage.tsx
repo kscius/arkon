@@ -15,7 +15,6 @@ import { useAsyncData } from '@/hooks/use-async-data';
 import { fetchPendientes } from '@/lib/api';
 import type { PendienteItem, PendienteTipo } from '@/lib/api';
 import { SUMMARY_ORDER, TIPO_META } from '@/lib/pendientes-meta';
-import { RecommendationsPanel } from '@/components/dashboard/RecommendationsPanel';
 
 type TabValue = 'todas' | PendienteTipo;
 
@@ -45,9 +44,11 @@ function filterItems(
 function PendienteList({
   items,
   onResolve,
+  onResolved,
 }: {
   items: PendienteItem[];
   onResolve: (enlace: string) => void;
+  onResolved: () => void;
 }) {
   if (items.length === 0) {
     return (
@@ -63,7 +64,13 @@ function PendienteList({
   return (
     <ul className="divide-y divide-gray-100 rounded-lg border border-gray-200 bg-white">
       {items.map((item, index) => (
-        <PendienteRow key={`${item.tipo}-${item.id}`} item={item} index={index} onResolve={onResolve} />
+        <PendienteRow
+          key={`${item.tipo}-${item.id}`}
+          item={item}
+          index={index}
+          onResolve={onResolve}
+          onResolved={onResolved}
+        />
       ))}
     </ul>
   );
@@ -180,14 +187,13 @@ export default function BandejaAccionesPage() {
                     <PendienteList
                       items={filterItems(data.items, tab, searchTerm)}
                       onResolve={handleResolve}
+                      onResolved={reload}
                     />
                   </TabsContent>
                 ))}
               </Tabs>
             </>
           )}
-
-          <RecommendationsPanel />
         </div>
       )}
     </PageState>

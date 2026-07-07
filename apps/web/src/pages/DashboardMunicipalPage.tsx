@@ -17,14 +17,14 @@ import {
   fetchContratistas,
   fetchEstimacionesByObra,
   fetchMunicipio,
-  fetchObras,
+  fetchAcciones,
   fetchAttentionToday,
   fetchEvmPortfolio,
   fetchDataQuality,
   validateAvance,
   validateEstimacion,
 } from '@/lib/api';
-import { ObraFormModal } from '@/components/ObraFormModal';
+import { AccionFormModal } from '@/components/AccionFormModal';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -38,7 +38,7 @@ import { ApiError } from '@/lib/api-client';
 import { toast } from 'sonner';
 import type { AvanceMensual, Accion } from '@/types';
 import { normalizeName } from '@/lib/api-mappers';
-import { formatCurrencyM, formatPercentage, getObraStatusColor, getObraStatusLabel, getSeverityColor, getSeverityLabel, getProgramaColor, getProgramaName } from '@/lib/utils';
+import { formatCurrencyM, formatPercentage, getAccionStatusColor, getAccionStatusLabel, getProgramaColor, getProgramaName } from '@/lib/utils';
 import { getBrand } from '@/config/brand';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -56,7 +56,7 @@ export default function DashboardMunicipalPage() {
 
   const load = useCallback(async () => {
     const [obras, contratistas, alertas, municipio] = await Promise.all([
-      fetchObras(),
+      fetchAcciones(),
       fetchContratistas(),
       fetchAlertas(),
       municipioId ? fetchMunicipio(municipioId) : Promise.resolve(null),
@@ -344,7 +344,7 @@ export default function DashboardMunicipalPage() {
                             <span className="text-[10px]">{obra.avanceFisicoReal}%</span>
                           </div>
                         </td>
-                        <td className="py-2 px-2 text-center"><span className="px-2 py-0.5 rounded-full text-[10px] font-medium text-white" style={{ backgroundColor: getObraStatusColor(obra.estatus) }}>{getObraStatusLabel(obra.estatus)}</span></td>
+                        <td className="py-2 px-2 text-center"><span className="px-2 py-0.5 rounded-full text-[10px] font-medium text-white" style={{ backgroundColor: getAccionStatusColor(obra.estatus) }}>{getAccionStatusLabel(obra.estatus)}</span></td>
                         <td className="py-2 px-2 text-center">
                           <span className="text-brand-primary-light text-[10px] font-medium">Ver</span>
                         </td>
@@ -517,30 +517,6 @@ export default function DashboardMunicipalPage() {
 
       </Tabs>
 
-      {/* Alertas del municipio */}
-      {alertasPendientes.length > 0 && (
-        <motion.div variants={item}>
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-yellow-600" /> Alertas de su Municipio</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                {alertasPendientes.slice(0, 5).map((alerta) => (
-                  <div key={alerta.id} className="flex gap-3 p-3 rounded-lg border border-gray-100 hover:bg-gray-50">
-                    <div className="w-1 rounded-full flex-shrink-0" style={{ backgroundColor: getSeverityColor(alerta.severidad) }} />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs font-medium text-gray-900">{alerta.titulo}</p>
-                      <p className="text-[10px] text-gray-500">{alerta.descripcion.substring(0, 80)}...</p>
-                      <span className="text-[10px] px-1.5 py-0.5 rounded-full font-medium" style={{ backgroundColor: getSeverityColor(alerta.severidad) + '15', color: getSeverityColor(alerta.severidad) }}>{getSeverityLabel(alerta.severidad)}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        </motion.div>
-      )}
     </motion.div>
 
     <Dialog open={contratistaDialogOpen} onOpenChange={setContratistaDialogOpen}>
@@ -592,7 +568,7 @@ export default function DashboardMunicipalPage() {
       </DialogContent>
     </Dialog>
     {user && (
-      <ObraFormModal
+      <AccionFormModal
         open={obraModalOpen}
         onOpenChange={setObraModalOpen}
         user={user}

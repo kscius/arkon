@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Button } from '@/components/ui/button';
-import { downloadDashboardSummaryExport, downloadObrasExport } from '@/lib/api';
+import { downloadDashboardSummaryExport, downloadAccionesExport } from '@/lib/api';
 import { ApiError } from '@/lib/api-client';
 import { Download, FileSpreadsheet } from 'lucide-react';
 import { toast } from 'sonner';
@@ -17,7 +17,7 @@ export function DashboardExportActions({ className }: DashboardExportActionsProp
   const handleObrasCsv = async () => {
     setBusy('csv');
     try {
-      await downloadObrasExport('csv');
+      await downloadAccionesExport('csv');
       toast.success(`Listado de ${entity.plural} descargado`);
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : `No se pudo exportar ${entity.plural}`;

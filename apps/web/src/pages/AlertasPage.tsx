@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { PageState } from '@/components/PageState';
 import { useApp } from '@/context/AppContext';
 import { useAsyncData } from '@/hooks/use-async-data';
-import { atenderAlerta, fetchAlertas, fetchObras } from '@/lib/api';
+import { atenderAlerta, fetchAlertas, fetchAcciones } from '@/lib/api';
 import { ApiError } from '@/lib/api-client';
 import { toast } from 'sonner';
 import { formatDate, getAlertaTipoColor, getAlertaTipoLabel, getSeverityColor, getSeverityLabel } from '@/lib/utils';
@@ -37,7 +37,7 @@ export default function AlertasPage() {
   const [atenderError, setAtenderError] = useState<string | null>(null);
 
   const load = useCallback(
-    () => Promise.all([fetchAlertas(), fetchObras()]),
+    () => Promise.all([fetchAlertas(), fetchAcciones()]),
     [],
   );
 

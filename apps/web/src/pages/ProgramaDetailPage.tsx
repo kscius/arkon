@@ -6,8 +6,8 @@ import { fetchProgramaAcciones, fetchProgramas } from '@/lib/api';
 import {
   formatCurrencyM,
   formatPercentage,
-  getObraStatusColor,
-  getObraStatusLabel,
+  getAccionStatusColor,
+  getAccionStatusLabel,
   getProgramaColor,
   getProgramaName,
 } from '@/lib/utils';
@@ -138,9 +138,9 @@ export default function ProgramaDetailPage() {
                         <td className="py-2 px-2 text-center">
                           <span
                             className="px-2 py-0.5 rounded-full text-[10px] font-medium text-white"
-                            style={{ backgroundColor: getObraStatusColor(accion.estatus) }}
+                            style={{ backgroundColor: getAccionStatusColor(accion.estatus) }}
                           >
-                            {getObraStatusLabel(accion.estatus)}
+                            {getAccionStatusLabel(accion.estatus)}
                           </span>
                         </td>
                       </tr>

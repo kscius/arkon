@@ -79,6 +79,7 @@ export function PendingActionsInbox() {
                     item={item}
                     index={index}
                     onResolve={handleResolve}
+                    onResolved={reload}
                   />
                 ))}
               </ul>

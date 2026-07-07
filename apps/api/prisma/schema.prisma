@@ -354,6 +354,7 @@ model Accion {
   documentChunks       DocumentChunk[]
   recomendaciones      Recomendacion[]
   activosHidraulicos   ActivoHidraulico[]
+  historialEstados     AccionEstadoHistorial[]
 
   @@index([municipioId])
   @@index([contratistaId])
@@ -732,6 +733,23 @@ model ActivoHidraulico {
 
   @@index([accionId])
   @@map("activos_hidraulicos")
+}
+
+model AccionEstadoHistorial {
+  id              String         @id @default(uuid()) @db.Uuid
+  accionId        String         @map("accion_id") @db.Uuid
+  estatusAnterior EstatusAccion? @map("estatus_anterior")
+  estatusNuevo    EstatusAccion  @map("estatus_nuevo")
+  motivo          String?
+  usuarioId       String?        @map("usuario_id") @db.Uuid
+  usuarioNombre   String?        @map("usuario_nombre")
+  createdAt       DateTime       @default(now()) @map("created_at")
+
+  accion Accion @relation(fields: [accionId], references: [id], onDelete: Cascade)
+
+  @@index([accionId])
+  @@index([accionId, createdAt])
+  @@map("accion_estado_historial")
 }
 
 model IaAuditLog {

@@ -12,10 +12,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { createObra, fetchContratistas, fetchMunicipios, updateObra, type CreateObraInput } from '@/lib/api';
+import { createAccion, fetchContratistas, fetchMunicipios, updateAccion, type CreateObraInput } from '@/lib/api';
 import { ApiError } from '@/lib/api-client';
 import { getBrand } from '@/config/brand';
-import { getProgramaName, getTipoObraLabel } from '@/lib/utils';
+import { getProgramaName, getTipoAccionLabel } from '@/lib/utils';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { OrganismoOperadorSelect } from '@/components/proagua/OrganismoOperadorSelect';
 import type { Accion, User } from '@/types';
@@ -100,11 +100,11 @@ function toDateInputValue(value?: string): string {
   return value.slice(0, 10);
 }
 
-interface ObraFormModalProps {
+interface AccionFormModalProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   user: User;
-  obra?: Accion | null;
+  accion?: Accion | null;
   onSuccess: () => void;
 }
 
@@ -113,14 +113,14 @@ function resolveDependenciaOptions(catalog: string[], current?: string): string[
   return [current, ...catalog];
 }
 
-export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: ObraFormModalProps) {
+export function AccionFormModal({ open, onOpenChange, user, accion, onSuccess }: AccionFormModalProps) {
   const brand = getBrand();
   const { entity } = brand;
   const isConagua = brand.tenantId === 'conagua';
   const programas = brand.programas ?? DEFAULT_PROGRAMAS;
   const dependenciasCatalog = brand.dependencias ?? DEFAULT_DEPENDENCIAS;
   const defaultDependencia = dependenciasCatalog[0] ?? '';
-  const isEdit = Boolean(obra);
+  const isEdit = Boolean(accion);
   const isEstatal = user.role === 'estatal';
   const forcedMunicipioId = user.role === 'municipal' ? user.municipioId : undefined;
 
@@ -179,43 +179,43 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
 
   useEffect(() => {
     if (!open) return;
-    if (obra) {
+    if (accion) {
       form.reset({
-        nombre: obra.nombre,
-        localidad: obra.localidad,
-        programa: obra.programa,
-        dependencia: obra.dependencia,
-        tipo_obra: (TIPOS_OBRA.includes(obra.tipoObra as (typeof TIPOS_OBRA)[number])
-          ? obra.tipoObra
+        nombre: accion.nombre,
+        localidad: accion.localidad,
+        programa: accion.programa,
+        dependencia: accion.dependencia,
+        tipo_obra: (TIPOS_OBRA.includes(accion.tipoObra as (typeof TIPOS_OBRA)[number])
+          ? accion.tipoObra
           : 'pavimentacion_urbana') as FormValues['tipo_obra'],
-        monto_autorizado: obra.montoAutorizado,
-        municipio_id: obra.municipioId ?? forcedMunicipioId ?? '',
-        contratista_id: obra.contratistaId || '',
-        estatus: (ESTATUS_OBRA.includes(obra.estatus as (typeof ESTATUS_OBRA)[number])
-          ? obra.estatus
+        monto_autorizado: accion.montoAutorizado,
+        municipio_id: accion.municipioId ?? forcedMunicipioId ?? '',
+        contratista_id: accion.contratistaId || '',
+        estatus: (ESTATUS_OBRA.includes(accion.estatus as (typeof ESTATUS_OBRA)[number])
+          ? accion.estatus
           : 'en_ejecucion_a_tiempo') as FormValues['estatus'],
-        fecha_inicio: toDateInputValue(obra.fechaInicio),
-        fecha_termino_programada: toDateInputValue(obra.fechaTerminoProgramada),
-        plazo_ejecucion: obra.plazoEjecucion > 0 ? obra.plazoEjecucion : undefined,
-        cua: obra.cua ?? '',
-        id_sisba: obra.idSisba ?? '',
-        num_contrato: obra.numContrato ?? '',
-        compras_mx_folio: obra.comprasMxFolio ?? '',
-        tipo_adjudicacion: obra.tipoAdjudicacion ?? '',
-        fecha_fallo: toDateInputValue(obra.fechaFallo ?? undefined),
-        subcomponente: obra.subcomponente ?? '',
-        organismo_operador_id: obra.organismoOperadorId ?? '',
-        tipo_localidad: obra.tipoLocalidad ?? '',
-        cobertura_ap_antes: obra.coberturaApAntes ?? undefined,
-        cobertura_ap_meta: obra.coberturaApMeta ?? undefined,
-        cobertura_tar_antes: obra.coberturaTarAntes ?? undefined,
-        cobertura_tar_meta: obra.coberturaTarMeta ?? undefined,
-        caudal_lps: obra.caudalLps ?? undefined,
-        pob_incorporar: obra.pobIncorporar ?? undefined,
-        pob_mejorar: obra.pobMejorar ?? undefined,
-        pob_mujeres: obra.pobMujeres ?? undefined,
-        pob_indigena: obra.pobIndigena ?? undefined,
-        pob_afromexicano: obra.pobAfromexicano ?? undefined,
+        fecha_inicio: toDateInputValue(accion.fechaInicio),
+        fecha_termino_programada: toDateInputValue(accion.fechaTerminoProgramada),
+        plazo_ejecucion: accion.plazoEjecucion > 0 ? accion.plazoEjecucion : undefined,
+        cua: accion.cua ?? '',
+        id_sisba: accion.idSisba ?? '',
+        num_contrato: accion.numContrato ?? '',
+        compras_mx_folio: accion.comprasMxFolio ?? '',
+        tipo_adjudicacion: accion.tipoAdjudicacion ?? '',
+        fecha_fallo: toDateInputValue(accion.fechaFallo ?? undefined),
+        subcomponente: accion.subcomponente ?? '',
+        organismo_operador_id: accion.organismoOperadorId ?? '',
+        tipo_localidad: accion.tipoLocalidad ?? '',
+        cobertura_ap_antes: accion.coberturaApAntes ?? undefined,
+        cobertura_ap_meta: accion.coberturaApMeta ?? undefined,
+        cobertura_tar_antes: accion.coberturaTarAntes ?? undefined,
+        cobertura_tar_meta: accion.coberturaTarMeta ?? undefined,
+        caudal_lps: accion.caudalLps ?? undefined,
+        pob_incorporar: accion.pobIncorporar ?? undefined,
+        pob_mejorar: accion.pobMejorar ?? undefined,
+        pob_mujeres: accion.pobMujeres ?? undefined,
+        pob_indigena: accion.pobIndigena ?? undefined,
+        pob_afromexicano: accion.pobAfromexicano ?? undefined,
       });
     } else {
       form.reset({
@@ -241,9 +241,9 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
         pob_mejorar: undefined,
       });
     }
-  }, [open, obra, forcedMunicipioId, form, programas, defaultDependencia]);
+  }, [open, accion, forcedMunicipioId, form, programas, defaultDependencia]);
 
-  const dependenciaOptions = resolveDependenciaOptions(dependenciasCatalog, obra?.dependencia);
+  const dependenciaOptions = resolveDependenciaOptions(dependenciasCatalog, accion?.dependencia);
 
   const showFieldError = (name: keyof FormValues): string | undefined => {
     const err = form.formState.errors[name];
@@ -304,11 +304,11 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
     }
 
     try {
-      if (isEdit && obra) {
-        await updateObra(obra.id, payload);
+      if (isEdit && accion) {
+        await updateAccion(accion.id, payload);
         toast.success(`${entity.singularCap} actualizada`);
       } else {
-        await createObra(payload);
+        await createAccion(payload);
         toast.success(`${entity.singularCap} registrada`);
       }
       onOpenChange(false);
@@ -340,7 +340,7 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
                 <ObraGeneralFields
                   form={form}
                   isEdit={isEdit}
-                  obra={obra}
+                  accion={accion}
                   programas={programas}
                   dependenciaOptions={dependenciaOptions}
                   isEstatal={isEstatal}
@@ -362,7 +362,7 @@ export function ObraFormModal({ open, onOpenChange, user, obra, onSuccess }: Obr
             <ObraGeneralFields
               form={form}
               isEdit={isEdit}
-              obra={obra}
+              accion={accion}
               programas={programas}
               dependenciaOptions={dependenciaOptions}
               isEstatal={isEstatal}
@@ -584,7 +584,7 @@ function ProaguaFields({
 function ObraGeneralFields({
   form,
   isEdit,
-  obra,
+  accion,
   programas,
   dependenciaOptions,
   isEstatal,
@@ -596,7 +596,7 @@ function ObraGeneralFields({
 }: {
   form: ReturnType<typeof useForm<FormValues>>;
   isEdit: boolean;
-  obra?: Accion | null;
+  accion?: Accion | null;
   programas: string[];
   dependenciaOptions: string[];
   isEstatal: boolean;
@@ -610,10 +610,10 @@ function ObraGeneralFields({
 
   return (
     <>
-      {isEdit && obra ? (
+      {isEdit && accion ? (
         <Field label="Folio">
           <p className="h-9 px-2 flex items-center text-xs text-gray-700 bg-gray-50 border border-gray-200 rounded-md">
-            {obra.folio}
+            {accion.folio}
           </p>
         </Field>
       ) : (
@@ -652,7 +652,7 @@ function ObraGeneralFields({
           <select {...form.register('tipo_obra')} className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white">
             {TIPOS_OBRA.map((t) => (
               <option key={t} value={t}>
-                {getTipoObraLabel(t)}
+                {getTipoAccionLabel(t)}
               </option>
             ))}
           </select>

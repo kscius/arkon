@@ -55,7 +55,7 @@ export function getProgressColor(value: number): string {
   return '#38A169';
 }
 
-export function getObraStatusColor(status: string): string {
+export function getAccionStatusColor(status: string): string {
   const colors: Record<string, string> = {
     'en_ejecucion_a_tiempo': '#38A169',
     'en_ejecucion_retraso': '#DD6B20',
@@ -72,7 +72,7 @@ export function getObraStatusColor(status: string): string {
   return colors[status] || '#718096';
 }
 
-export function getObraStatusLabel(status: string): string {
+export function getAccionStatusLabel(status: string): string {
   const labels: Record<string, string> = {
     'en_ejecucion_a_tiempo': 'En ejecución',
     'en_ejecucion_retraso': 'Con retraso',
@@ -197,7 +197,7 @@ export function getAlertaTipoColor(tipo: string): string {
   return colors[tipo] ?? '#718096';
 }
 
-export function getTipoObraLabel(tipo: string): string {
+export function getTipoAccionLabel(tipo: string): string {
   const labels: Record<string, string> = {
     'pavimentacion_urbana': 'Pavimentación',
     'infraestructura_educativa': 'Educación',
@@ -215,6 +215,13 @@ export function getTipoObraLabel(tipo: string): string {
   };
   return labels[tipo] || tipo;
 }
+
+/** @deprecated Alias for ObraFisica pages — use getAccionStatusColor */
+export const getObraStatusColor = getAccionStatusColor;
+/** @deprecated Alias for ObraFisica pages — use getAccionStatusLabel */
+export const getObraStatusLabel = getAccionStatusLabel;
+/** @deprecated Alias for ObraFisica pages — use getTipoAccionLabel */
+export const getTipoObraLabel = getTipoAccionLabel;
 
 import { getProgramaBrandColors } from '@/config/brand';
 

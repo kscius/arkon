@@ -21,7 +21,7 @@ import {
   mapEntidadFederativa,
   mapEstimacion,
   mapMunicipio,
-  mapObra,
+  mapAccion,
   mapObraFisica,
   mapAccionSummary,
   mapProgramaOverview,
@@ -80,14 +80,14 @@ export async function fetchMe(): Promise<User> {
   return mapUser(res);
 }
 
-export async function fetchObras(): Promise<Accion[]> {
+export async function fetchAcciones(): Promise<Accion[]> {
   const rows = await apiFetch<Record<string, unknown>[]>('/acciones');
-  return rows.map(mapObra);
+  return rows.map(mapAccion);
 }
 
-export async function fetchObra(id: string): Promise<Accion> {
+export async function fetchAccion(id: string): Promise<Accion> {
   const row = await apiFetch<Record<string, unknown>>(`/acciones/${id}`);
-  return mapObra(row);
+  return mapAccion(row);
 }
 
 export async function fetchProgramas(): Promise<ProgramaOverview[]> {
@@ -178,20 +178,20 @@ export interface CreateObraInput {
 
 export type UpdateObraInput = Partial<CreateObraInput>;
 
-export async function createObra(body: CreateObraInput): Promise<Accion> {
+export async function createAccion(body: CreateObraInput): Promise<Accion> {
   const row = await apiFetch<Record<string, unknown>>('/acciones', {
     method: 'POST',
     body: JSON.stringify(body),
   });
-  return mapObra(row);
+  return mapAccion(row);
 }
 
-export async function updateObra(id: string, body: UpdateObraInput): Promise<Accion> {
+export async function updateAccion(id: string, body: UpdateObraInput): Promise<Accion> {
   const row = await apiFetch<Record<string, unknown>>(`/acciones/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(body),
   });
-  return mapObra(row);
+  return mapAccion(row);
 }
 
 export interface CreateContratistaInput {
@@ -615,7 +615,7 @@ export async function fetchChartTopContratistas(programaId?: string): Promise<To
     );
     return rows.map(mapTopContratista);
   } catch {
-    const obras = await fetchObras();
+    const obras = await fetchAcciones();
     const filtered = programaId
       ? obras.filter((o) => o.programa === programaId)
       : obras;
@@ -646,7 +646,7 @@ export async function fetchChartTopContratistas(programaId?: string): Promise<To
   }
 }
 
-export async function downloadObrasExport(format: 'csv' = 'csv'): Promise<void> {
+export async function downloadAccionesExport(format: 'csv' = 'csv'): Promise<void> {
   const { blob, filename } = await apiFetchBlob(`/acciones/export?format=${format}`);
   triggerBlobDownload(blob, filename ?? `obras.${format}`);
 }
@@ -670,7 +670,11 @@ export type PendienteTipo =
   | 'documento'
   | 'observacion'
   | 'alerta'
-  | 'solicitud';
+  | 'solicitud'
+  | 'idp'
+  | 'cierre'
+  | 'avance_trimestral'
+  | 'recomendacion';
 
 export interface PendienteItem {
   id: string;
@@ -685,6 +689,7 @@ export interface PendienteItem {
   municipio: string | null;
   fecha: string | null;
   enlace: string;
+  accionesDisponibles: string[];
 }
 
 export interface PendientesTotales {
@@ -694,6 +699,21 @@ export interface PendientesTotales {
   observaciones: number;
   alertas: number;
   solicitudes: number;
+  idp: number;
+  cierres: number;
+  avances_trimestrales: number;
+  recomendaciones: number;
+}
+
+export interface AccionHistorialEntry {
+  id: string;
+  accionId: string;
+  estatusAnterior: string;
+  estatusNuevo: string;
+  motivo: string | null;
+  usuarioId: string;
+  usuarioNombre: string;
+  createdAt: string;
 }
 
 export interface PendientesResponse {
@@ -716,6 +736,10 @@ function normalizePendienteTitulo(titulo: string): string {
 
 function mapPendienteItem(row: Record<string, unknown>): PendienteItem {
   const titulo = String(row.titulo ?? '');
+  const rawAcciones = row.acciones_disponibles;
+  const accionesDisponibles = Array.isArray(rawAcciones)
+    ? rawAcciones.map((v) => String(v))
+    : [];
   return {
     id: String(row.id),
     tipo: String(row.tipo) as PendienteTipo,
@@ -729,6 +753,20 @@ function mapPendienteItem(row: Record<string, unknown>): PendienteItem {
     municipio: row.municipio != null ? String(row.municipio) : null,
     fecha: row.fecha != null ? String(row.fecha) : null,
     enlace: String(row.enlace ?? '/acciones'),
+    accionesDisponibles,
+  };
+}
+
+function mapAccionHistorialEntry(row: Record<string, unknown>): AccionHistorialEntry {
+  return {
+    id: String(row.id),
+    accionId: String(row.accion_id ?? row.accionId ?? ''),
+    estatusAnterior: String(row.estatus_anterior ?? row.estatusAnterior ?? ''),
+    estatusNuevo: String(row.estatus_nuevo ?? row.estatusNuevo ?? ''),
+    motivo: row.motivo != null ? String(row.motivo) : null,
+    usuarioId: String(row.usuario_id ?? row.usuarioId ?? ''),
+    usuarioNombre: String(row.usuario_nombre ?? row.usuarioNombre ?? ''),
+    createdAt: String(row.created_at ?? row.createdAt ?? ''),
   };
 }
 
@@ -747,9 +785,36 @@ export async function fetchPendientes(): Promise<PendientesResponse> {
       observaciones: Number(t.observaciones ?? 0),
       alertas: Number(t.alertas ?? 0),
       solicitudes: Number(t.solicitudes ?? 0),
+      idp: Number(t.idp ?? 0),
+      cierres: Number(t.cierres ?? 0),
+      avances_trimestrales: Number(t.avances_trimestrales ?? 0),
+      recomendaciones: Number(t.recomendaciones ?? 0),
     },
     items,
   };
+}
+
+export async function transicionAccion(
+  id: string,
+  estatus: string,
+  motivo?: string,
+): Promise<{ accion: Accion; historial: AccionHistorialEntry }> {
+  const res = await apiFetch<{
+    accion: Record<string, unknown>;
+    historial: Record<string, unknown>;
+  }>(`/acciones/${id}/transicion`, {
+    method: 'POST',
+    body: JSON.stringify({ estatus, motivo }),
+  });
+  return {
+    accion: mapAccion(res.accion),
+    historial: mapAccionHistorialEntry(res.historial),
+  };
+}
+
+export async function fetchAccionHistorial(id: string): Promise<AccionHistorialEntry[]> {
+  const rows = await apiFetch<Record<string, unknown>[]>(`/acciones/${id}/historial`);
+  return rows.map(mapAccionHistorialEntry);
 }
 
 export interface DashboardKpis {
@@ -783,7 +848,7 @@ export async function fetchDashboardKpis(): Promise<DashboardKpis> {
       alertas_total: Number(raw.alertas_total ?? 0),
     };
   } catch {
-    const obras = await fetchObras();
+    const obras = await fetchAcciones();
     const alertas = await fetchAlertas().catch(() => [] as Alerta[]);
     const total = obras.length || 1;
     return {

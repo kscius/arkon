@@ -4,8 +4,8 @@ import { motion } from 'framer-motion';
 import { PageState } from '@/components/PageState';
 import { useApp } from '@/context/AppContext';
 import { useAsyncData } from '@/hooks/use-async-data';
-import { fetchMunicipio, fetchMunicipios, fetchObras } from '@/lib/api';
-import { formatCurrencyM, formatPercentage, getObraStatusColor, getObraStatusLabel, getProgramaColor, getProgramaName } from '@/lib/utils';
+import { fetchMunicipio, fetchMunicipios, fetchAcciones } from '@/lib/api';
+import { formatCurrencyM, formatPercentage, getAccionStatusColor, getAccionStatusLabel, getProgramaColor, getProgramaName } from '@/lib/utils';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ComboBox } from '@/components/ui/combobox';
@@ -26,7 +26,7 @@ export default function MunicipioPanelPage() {
   }, [municipioId, user?.municipioId]);
 
   const load = useCallback(async () => {
-    const [municipios, obras] = await Promise.all([fetchMunicipios(), fetchObras()]);
+    const [municipios, obras] = await Promise.all([fetchMunicipios(), fetchAcciones()]);
     const id = selectedId || municipios[0]?.id;
     const municipio = id
       ? municipios.find((m) => m.id === id) ?? (await fetchMunicipio(id))
@@ -135,8 +135,8 @@ export default function MunicipioPanelPage() {
                     <span className="text-[10px] font-medium">{formatPercentage(obra.avanceFisicoReal)}</span>
                   </div>
                 </div>
-                <Badge style={{ backgroundColor: getObraStatusColor(obra.estatus) + '20', color: getObraStatusColor(obra.estatus) }} className="text-[10px]">
-                  {getObraStatusLabel(obra.estatus)}
+                <Badge style={{ backgroundColor: getAccionStatusColor(obra.estatus) + '20', color: getAccionStatusColor(obra.estatus) }} className="text-[10px]">
+                  {getAccionStatusLabel(obra.estatus)}
                 </Badge>
               </motion.div>
             ))}

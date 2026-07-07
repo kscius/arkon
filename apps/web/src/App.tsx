@@ -9,8 +9,8 @@ import { Spinner } from '@/components/ui/spinner';
 import LoginPage from '@/pages/LoginPage';
 import BandejaAccionesPage from '@/pages/BandejaAccionesPage';
 import DashboardRouter from '@/components/dashboard/DashboardRouter';
-import ObraDetailPage from '@/pages/ObraDetailPage';
-import ObrasPage from '@/pages/ObrasPage';
+import AccionDetailPage from '@/pages/AccionDetailPage';
+import AccionesPage from '@/pages/AccionesPage';
 import MunicipioPanelPage from '@/pages/MunicipioPanelPage';
 import ContratistaPanelPage from '@/pages/ContratistaPanelPage';
 import AlertasPage from '@/pages/AlertasPage';
@@ -146,17 +146,17 @@ function AppRoutes() {
         element={
           <ProtectedRoute>
             <AppLayout>
-              <ObrasPage />
+              <AccionesPage />
             </AppLayout>
           </ProtectedRoute>
         }
       />
       <Route
-        path="/acciones/:obraId"
+        path="/acciones/:accionId"
         element={
           <ProtectedRoute>
             <AppLayout>
-              <ObraDetailPage />
+              <AccionDetailPage />
             </AppLayout>
           </ProtectedRoute>
         }
