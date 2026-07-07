@@ -34,6 +34,9 @@ DROP INDEX IF EXISTS "acciones_obra_fisica_id_idx";
 ALTER TABLE IF EXISTS "acciones" DROP COLUMN IF EXISTS "obra_fisica_id";
 DROP TABLE IF EXISTS "obras";
 DROP TYPE IF EXISTS "EstatusFisicoObra";
+-- Drop partial indexes from a failed CREATE TABLE attempt
+DROP INDEX IF EXISTS "obras_clave_key";
+DROP INDEX IF EXISTS "obras_estatus_fisico_idx";
 SQL
 fi
 

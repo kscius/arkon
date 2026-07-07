@@ -1,6 +1,64 @@
 -- Split physical Obra from program Accion: new `obras` table + FK on acciones.
 -- Backfill: one physical obra per existing accion; wire keys (obra_id on child tables) unchanged.
 
+-- acciones was renamed from obras; legacy constraint/index names still use obras_* prefix.
+-- Rename them before creating the new physical obras table to avoid name collisions.
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'obras_pkey') THEN
+    ALTER TABLE "acciones" RENAME CONSTRAINT "obras_pkey" TO "acciones_pkey";
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'obras_municipio_id_fkey') THEN
+    ALTER TABLE "acciones" RENAME CONSTRAINT "obras_municipio_id_fkey" TO "acciones_municipio_id_fkey";
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'obras_contratista_id_fkey') THEN
+    ALTER TABLE "acciones" RENAME CONSTRAINT "obras_contratista_id_fkey" TO "acciones_contratista_id_fkey";
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'obras_entidad_federativa_id_fkey') THEN
+    ALTER TABLE "acciones" RENAME CONSTRAINT "obras_entidad_federativa_id_fkey" TO "acciones_entidad_federativa_id_fkey";
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'obras_organismo_operador_id_fkey') THEN
+    ALTER TABLE "acciones" RENAME CONSTRAINT "obras_organismo_operador_id_fkey" TO "acciones_organismo_operador_id_fkey";
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'obras_accion_programa_id_fkey') THEN
+    ALTER TABLE "acciones" RENAME CONSTRAINT "obras_accion_programa_id_fkey" TO "acciones_accion_programa_id_fkey";
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_constraint WHERE conname = 'obras_anexo_tecnico_id_fkey') THEN
+    ALTER TABLE "acciones" RENAME CONSTRAINT "obras_anexo_tecnico_id_fkey" TO "acciones_anexo_tecnico_id_fkey";
+  END IF;
+END $$;
+
+DO $$
+BEGIN
+  IF EXISTS (SELECT 1 FROM pg_class WHERE relname = 'obras_folio_key') THEN
+    ALTER INDEX "obras_folio_key" RENAME TO "acciones_folio_key";
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_class WHERE relname = 'obras_municipio_id_idx') THEN
+    ALTER INDEX "obras_municipio_id_idx" RENAME TO "acciones_municipio_id_idx";
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_class WHERE relname = 'obras_contratista_id_idx') THEN
+    ALTER INDEX "obras_contratista_id_idx" RENAME TO "acciones_contratista_id_idx";
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_class WHERE relname = 'obras_estatus_idx') THEN
+    ALTER INDEX "obras_estatus_idx" RENAME TO "acciones_estatus_idx";
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_class WHERE relname = 'obras_entidad_federativa_id_idx') THEN
+    ALTER INDEX "obras_entidad_federativa_id_idx" RENAME TO "acciones_entidad_federativa_id_idx";
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_class WHERE relname = 'obras_organismo_operador_id_idx') THEN
+    ALTER INDEX "obras_organismo_operador_id_idx" RENAME TO "acciones_organismo_operador_id_idx";
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_class WHERE relname = 'obras_accion_programa_id_idx') THEN
+    ALTER INDEX "obras_accion_programa_id_idx" RENAME TO "acciones_accion_programa_id_idx";
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_class WHERE relname = 'obras_anexo_tecnico_id_idx') THEN
+    ALTER INDEX "obras_anexo_tecnico_id_idx" RENAME TO "acciones_anexo_tecnico_id_idx";
+  END IF;
+  IF EXISTS (SELECT 1 FROM pg_class WHERE relname = 'obras_cua_idx') THEN
+    ALTER INDEX "obras_cua_idx" RENAME TO "acciones_cua_idx";
+  END IF;
+END $$;
+
 CREATE TYPE "EstatusFisicoObra" AS ENUM (
   'en_operacion',
   'en_construccion',
