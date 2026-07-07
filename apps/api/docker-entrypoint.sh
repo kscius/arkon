@@ -25,14 +25,34 @@ done
 echo "Generating Prisma Client..."
 npx prisma generate
 
+run_migrate_deploy() {
+  npx prisma migrate deploy
+}
+
+run_auto_recovery() {
+  if [ ! -f /app/scripts/prisma-migrate-recovery.sh ]; then
+    echo "Recovery script not found at /app/scripts/prisma-migrate-recovery.sh" >&2
+    return 1
+  fi
+  echo "Attempting automatic Prisma migration recovery (P3009)..."
+  sh /app/scripts/prisma-migrate-recovery.sh
+}
+
 echo "Applying database schema..."
 if [ -d "prisma/migrations" ] && [ -n "$(ls -A prisma/migrations 2>/dev/null)" ]; then
-  if ! npx prisma migrate deploy; then
-    echo "ERROR: prisma migrate deploy failed (P3009 = failed migration in DB)." >&2
-    echo "Recovery: run scripts/prisma-migrate-recovery.sh inside the API container." >&2
-    echo "Docs: https://pris.ly/d/migrate-resolve" >&2
-    npx prisma migrate status >&2 || true
-    exit 1
+  MIGRATE_AUTO_RECOVER="${MIGRATE_AUTO_RECOVER:-true}"
+  if ! run_migrate_deploy; then
+    if [ "$MIGRATE_AUTO_RECOVER" = "true" ]; then
+      if ! run_auto_recovery; then
+        echo "ERROR: migrate deploy and auto-recovery both failed." >&2
+        npx prisma migrate status >&2 || true
+        exit 1
+      fi
+    else
+      echo "ERROR: prisma migrate deploy failed. Set MIGRATE_AUTO_RECOVER=true or run recovery manually." >&2
+      npx prisma migrate status >&2 || true
+      exit 1
+    fi
   fi
 else
   echo "No Prisma migrations found; running prisma db push."
