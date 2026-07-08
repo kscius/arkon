@@ -22,7 +22,7 @@ import { HealthModule } from './health/health.module';
 import { MetricsModule } from './metrics/metrics.module';
 import { MunicipiosModule } from './municipios/municipios.module';
 import { ObservacionesModule } from './observaciones/observaciones.module';
-import { ObrasModule } from './obras/obras.module';
+import { AccionesModule } from './acciones/acciones.module';
 import { ObrasFisicasModule } from './obras-fisicas/obras-fisicas.module';
 import { ProgramasModule } from './programas/programas.module';
 import { OrganismosOperadoresModule } from './organismos-operadores/organismos-operadores.module';
@@ -47,7 +47,7 @@ import { UsersModule } from './users/users.module';
     EntidadesFederativasModule,
     OrganismosOperadoresModule,
     AccionesProgramaModule,
-    ObrasModule,
+    AccionesModule,
     ObrasFisicasModule,
     ProgramasModule,
     AvancesModule,

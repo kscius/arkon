@@ -2,7 +2,7 @@ import { ApiProperty, ApiPropertyOptional, PartialType } from '@nestjs/swagger';
 import { EstatusAccion, TipoAccion } from '@prisma/client';
 import { IsEnum, IsNumber, IsOptional, IsString, IsUUID } from 'class-validator';
 
-export class CreateObraDto {
+export class CreateAccionDto {
   @ApiPropertyOptional({ description: 'Se genera automáticamente si se omite' })
   @IsOptional()
   @IsString()
@@ -59,4 +59,4 @@ export class CreateObraDto {
   @ApiPropertyOptional() @IsOptional() @IsUUID() anexo_tecnico_id?: string;
 }
 
-export class UpdateObraDto extends PartialType(CreateObraDto) {}
+export class UpdateAccionDto extends PartialType(CreateAccionDto) {}

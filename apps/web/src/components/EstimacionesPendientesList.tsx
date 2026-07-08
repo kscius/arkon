@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { fetchEstimacionesByObra } from '@/lib/api';
+import { fetchEstimacionesByAccion } from '@/lib/api';
 import type { Estimacion, Accion } from '@/types';
 import { formatCurrency } from '@/lib/utils';
 
@@ -26,7 +26,7 @@ export function EstimacionesPendientesList({ obras, onValidate, busyId }: Estima
       try {
         const pending: PendingRow[] = [];
         for (const obra of obras) {
-          const estimaciones = await fetchEstimacionesByObra(obra.id);
+          const estimaciones = await fetchEstimacionesByAccion(obra.id);
           for (const estimacion of estimaciones) {
             if (PENDING_ESTATUS.has(estimacion.estatus)) {
               pending.push({ estimacion, obra });

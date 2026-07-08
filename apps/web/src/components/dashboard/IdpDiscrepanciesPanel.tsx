@@ -3,27 +3,27 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FileSearch, RefreshCw } from 'lucide-react';
-import { fetchIdpByObra, runIdpObra, type IdpAccionReport } from '@/lib/api';
+import { fetchIdpByAccion, runIdpAccion, type IdpAccionReport } from '@/lib/api';
 import { useAsyncData } from '@/hooks/use-async-data';
 import { toast } from 'sonner';
 
 interface IdpDiscrepanciesPanelProps {
-  obraId: string;
+  accionId: string;
 }
 
 const severityVariant = (s: string) =>
   s === 'alta' ? 'destructive' : s === 'media' ? 'secondary' : 'outline';
 
-export function IdpDiscrepanciesPanel({ obraId }: IdpDiscrepanciesPanelProps) {
+export function IdpDiscrepanciesPanel({ accionId }: IdpDiscrepanciesPanelProps) {
   const [running, setRunning] = useState(false);
 
-  const load = useCallback(() => fetchIdpByObra(obraId), [obraId]);
+  const load = useCallback(() => fetchIdpByAccion(accionId), [accionId]);
   const { data, loading, error, reload } = useAsyncData(load, [load]);
 
   const handleRun = async () => {
     setRunning(true);
     try {
-      await runIdpObra(obraId);
+      await runIdpAccion(accionId);
       toast.success('Validación IDP ejecutada');
       reload();
     } catch {

@@ -126,7 +126,7 @@ export async function fetchObraFisicaAcciones(id: string): Promise<AccionSummary
   return rows.map(mapAccionSummary);
 }
 
-export interface CreateObraInput {
+export interface CreateAccionInput {
   folio?: string;
   nombre: string;
   localidad: string;
@@ -176,9 +176,9 @@ export interface CreateObraInput {
   anexo_tecnico_id?: string;
 }
 
-export type UpdateObraInput = Partial<CreateObraInput>;
+export type UpdateAccionInput = Partial<CreateAccionInput>;
 
-export async function createAccion(body: CreateObraInput): Promise<Accion> {
+export async function createAccion(body: CreateAccionInput): Promise<Accion> {
   const row = await apiFetch<Record<string, unknown>>('/acciones', {
     method: 'POST',
     body: JSON.stringify(body),
@@ -186,7 +186,7 @@ export async function createAccion(body: CreateObraInput): Promise<Accion> {
   return mapAccion(row);
 }
 
-export async function updateAccion(id: string, body: UpdateObraInput): Promise<Accion> {
+export async function updateAccion(id: string, body: UpdateAccionInput): Promise<Accion> {
   const row = await apiFetch<Record<string, unknown>>(`/acciones/${id}`, {
     method: 'PATCH',
     body: JSON.stringify(body),
@@ -432,24 +432,24 @@ export async function fetchAlertas(params?: { atendida?: boolean; severidad?: st
   return rows.map(mapAlerta);
 }
 
-export async function fetchAvancesByObra(obraId: string) {
-  const rows = await apiFetch<Record<string, unknown>[]>(`/avances/accion/${obraId}`);
-  return rows.map((r) => mapAvance(r, obraId));
+export async function fetchAvancesByAccion(accionId: string) {
+  const rows = await apiFetch<Record<string, unknown>[]>(`/avances/accion/${accionId}`);
+  return rows.map((r) => mapAvance(r, accionId));
 }
 
-export async function fetchEstimacionesByObra(obraId: string) {
-  const rows = await apiFetch<Record<string, unknown>[]>(`/estimaciones/accion/${obraId}`);
-  return rows.map((r) => mapEstimacion(r, obraId));
+export async function fetchEstimacionesByAccion(accionId: string) {
+  const rows = await apiFetch<Record<string, unknown>[]>(`/estimaciones/accion/${accionId}`);
+  return rows.map((r) => mapEstimacion(r, accionId));
 }
 
-export async function fetchDocumentosByObra(obraId: string): Promise<Documento[]> {
-  const rows = await apiFetch<Record<string, unknown>[]>(`/documentos/accion/${obraId}`);
-  return rows.map((r) => mapDocumento(r, obraId));
+export async function fetchDocumentosByAccion(accionId: string): Promise<Documento[]> {
+  const rows = await apiFetch<Record<string, unknown>[]>(`/documentos/accion/${accionId}`);
+  return rows.map((r) => mapDocumento(r, accionId));
 }
 
-export async function fetchObservacionesByObra(obraId: string) {
-  const rows = await apiFetch<Record<string, unknown>[]>(`/observaciones/accion/${obraId}`);
-  return rows.map((r) => mapObservacion(r, obraId));
+export async function fetchObservacionesByAccion(accionId: string) {
+  const rows = await apiFetch<Record<string, unknown>[]>(`/observaciones/accion/${accionId}`);
+  return rows.map((r) => mapObservacion(r, accionId));
 }
 
 export async function askChat(
@@ -869,9 +869,9 @@ export async function fetchDashboardKpis(): Promise<DashboardKpis> {
 
 // --- PROAGUA / CONAGUA ---
 
-export async function fetchCofinanciamientosByObra(obraId: string): Promise<Cofinanciamiento[]> {
-  const rows = await apiFetch<Record<string, unknown>[]>(`/acciones/${obraId}/cofinanciamientos`);
-  return rows.map((r) => mapCofinanciamiento(r, obraId));
+export async function fetchCofinanciamientosByAccion(accionId: string): Promise<Cofinanciamiento[]> {
+  const rows = await apiFetch<Record<string, unknown>[]>(`/acciones/${accionId}/cofinanciamientos`);
+  return rows.map((r) => mapCofinanciamiento(r, accionId));
 }
 
 export async function createCofinanciamiento(
@@ -901,9 +901,9 @@ export async function deleteCofinanciamiento(id: string): Promise<void> {
   await apiFetch<void>(`/cofinanciamientos/${id}`, { method: 'DELETE' });
 }
 
-export async function fetchAvancesTrimestralesByObra(obraId: string): Promise<AvanceTrimestral[]> {
-  const rows = await apiFetch<Record<string, unknown>[]>(`/acciones/${obraId}/avances-trimestrales`);
-  return rows.map((r) => mapAvanceTrimestral(r, obraId));
+export async function fetchAvancesTrimestralesByAccion(accionId: string): Promise<AvanceTrimestral[]> {
+  const rows = await apiFetch<Record<string, unknown>[]>(`/acciones/${accionId}/avances-trimestrales`);
+  return rows.map((r) => mapAvanceTrimestral(r, accionId));
 }
 
 export async function fetchOrganismosOperadores(params?: {
@@ -1214,7 +1214,7 @@ export async function fetchEvmPortfolio(): Promise<EvmPortfolio> {
   return apiFetch<EvmPortfolio>('/metrics/evm');
 }
 
-export interface EvmByObra {
+export interface EvmByAccion {
   pv: number;
   ev: number;
   ac: number;
@@ -1232,8 +1232,8 @@ export interface EvmByObra {
   } | null;
 }
 
-export async function fetchEvmByObra(obraId: string): Promise<EvmByObra> {
-  return apiFetch<EvmByObra>(`/metrics/evm/${obraId}`);
+export async function fetchEvmByAccion(accionId: string): Promise<EvmByAccion> {
+  return apiFetch<EvmByAccion>(`/metrics/evm/${accionId}`);
 }
 
 export async function fetchGeoAggregates(): Promise<GeoAggregate[]> {
@@ -1329,12 +1329,12 @@ export async function searchDocumentsLexical(q: string, limit = 10): Promise<Doc
   );
 }
 
-export async function fetchIdpByObra(obraId: string): Promise<IdpAccionReport> {
-  return apiFetch<IdpAccionReport>(`/metrics/idp/${obraId}`);
+export async function fetchIdpByAccion(accionId: string): Promise<IdpAccionReport> {
+  return apiFetch<IdpAccionReport>(`/metrics/idp/${accionId}`);
 }
 
-export async function runIdpObra(obraId: string) {
-  return apiFetch(`/metrics/idp/${obraId}/run`, { method: 'POST' });
+export async function runIdpAccion(accionId: string) {
+  return apiFetch(`/metrics/idp/${accionId}/run`, { method: 'POST' });
 }
 
 export async function runIdpPortfolio() {

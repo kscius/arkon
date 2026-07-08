@@ -12,7 +12,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { createAccion, fetchContratistas, fetchMunicipios, updateAccion, type CreateObraInput } from '@/lib/api';
+import { createAccion, fetchContratistas, fetchMunicipios, updateAccion, type CreateAccionInput } from '@/lib/api';
 import { ApiError } from '@/lib/api-client';
 import { getBrand } from '@/config/brand';
 import { getProgramaName, getTipoAccionLabel } from '@/lib/utils';
@@ -262,7 +262,7 @@ export function AccionFormModal({ open, onOpenChange, user, accion, onSuccess }:
 
   const onSubmit = form.handleSubmit(async (values) => {
     const municipioId = forcedMunicipioId ?? values.municipio_id;
-    const payload: CreateObraInput = {
+    const payload: CreateAccionInput = {
       nombre: values.nombre.trim(),
       localidad: values.localidad.trim(),
       programa: values.programa,

@@ -85,6 +85,33 @@ Detalle de implementacion en front:
 - Bandeja de acciones como landing; Dashboard como segundo ítem en **Trabajo**.
 - Modelo `Accion` como unidad de seguimiento operativo; `Obra` como capa física vinculada.
 
+## Modelo operativo de Acciones (estado, historial, pendientes)
+
+La rama trata la **Acción** como entidad de dominio de primera clase, con ciclo de vida validado y una bandeja unificada de trabajo pendiente.
+
+### Consistencia de nomenclatura (backend)
+
+El módulo NestJS que sirve `/acciones` se llama **`AccionesModule`** (`AccionesController` + `AccionesService`, carpeta `apps/api/src/acciones/`, DTOs `CreateAccionDto`/`UpdateAccionDto`). El módulo físico **`ObrasFisicasModule`** (`apps/api/src/obras-fisicas/`, ruta `/obras`) es independiente y sigue representando la **obra física**. En web, las funciones cliente usan el sufijo `…ByAccion` (`fetchEvmByAccion`, `fetchIdpByAccion`, `fetchAvancesTrimestralesByAccion`, etc.) y los props de componentes usan `accionId`.
+
+### Máquina de estados y transiciones
+
+- Enum `EstatusAccion` con transiciones válidas declaradas (`apps/api/src/acciones/accion-estado.ts`, réplica en web `apps/web/src/lib/accion-estado.ts`).
+- **`POST /acciones/:id/transicion`** (`TransicionAccionDto`: `estatus`, `motivo?`) aplica una transición validada de forma **transaccional** y registra historial. Rechaza transiciones inválidas.
+- **`PATCH /acciones/:id`** ya **no** permite cambiar `estatus` directamente (responde `400`); el cambio de estatus se hace solo por el endpoint de transición.
+- **`GET /acciones/:id/historial`** devuelve el historial de cambios de estado.
+- Tabla **`accion_estado_historial`** (`estatus_anterior`, `estatus_nuevo`, `motivo`, `usuario_id`, `usuario_nombre`, `created_at`) — migración `20260707120000_accion_estado_historial`. En web: botón **Cambiar estatus** y pestaña **Historial** en el detalle de acción.
+
+### Bandeja de pendientes ampliada
+
+`GET /dashboard/pendientes` se amplió más allá de alertas/estimaciones para consolidar todas las fuentes de trabajo pendiente en un solo modelo, respetando el rol del usuario:
+
+- discrepancias **IDP** (integridad de datos), **cierres** de ejercicio fiscal, validación de **avances trimestrales**, **recomendaciones** de IA, además de las alertas/estimaciones previas.
+- cada pendiente puede incluir `acciones_disponibles` para resolverlo **in-place** (atender, aprobar, validar, rechazar) desde la fila sin navegar.
+
+### Nota sobre `obras_count`
+
+El campo JSON `obras_count` **se conserva a propósito**: en `programas.service.ts` coexiste con `acciones_count` y cuenta **obras físicas distintas** (`obra_ids.size`), semánticamente diferente del número de acciones. Renombrarlo conflictuaría con la entidad física; las etiquetas visibles del UI ya muestran "Acciones" donde corresponde.
+
 ## Variables de entorno
 
 | Variable | Capa | Valor en esta rama |

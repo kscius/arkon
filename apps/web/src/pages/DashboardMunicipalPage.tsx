@@ -13,9 +13,9 @@ import {
   createContratista,
   createEstimacion,
   fetchAlertas,
-  fetchAvancesByObra,
+  fetchAvancesByAccion,
   fetchContratistas,
-  fetchEstimacionesByObra,
+  fetchEstimacionesByAccion,
   fetchMunicipio,
   fetchAcciones,
   fetchAttentionToday,
@@ -74,7 +74,7 @@ export default function DashboardMunicipalPage() {
 
     const pendingAvances: { avance: AvanceMensual; obra: Accion }[] = [];
     for (const obra of munObras) {
-      const avances = await fetchAvancesByObra(obra.id);
+      const avances = await fetchAvancesByAccion(obra.id);
       for (const avance of avances) {
         if (avance.estatus === 'pendiente' || avance.estatus === 'en_revision') {
           pendingAvances.push({ avance, obra });
@@ -138,7 +138,7 @@ export default function DashboardMunicipalPage() {
     setActionError(null);
     try {
       const monto = Number(estMonto);
-      const existing = await fetchEstimacionesByObra(estObraId);
+      const existing = await fetchEstimacionesByAccion(estObraId);
       const acumulado = existing.reduce((s, x) => s + x.montoEstimado, 0) + monto;
       const pct = obra.montoContratado > 0 ? (acumulado / obra.montoContratado) * 100 : 0;
       await createEstimacion(estObraId, {

@@ -10,12 +10,12 @@ import {
   createObservacion,
   downloadDocumentoFile,
   fetchAccionHistorial,
-  fetchAvancesByObra,
-  fetchDocumentosByObra,
-  fetchEstimacionesByObra,
+  fetchAvancesByAccion,
+  fetchDocumentosByAccion,
+  fetchEstimacionesByAccion,
   fetchAccion,
-  fetchObservacionesByObra,
-  fetchEvmByObra,
+  fetchObservacionesByAccion,
+  fetchEvmByAccion,
   transicionAccion,
   updateDocumentoEstatus,
   updateObservacionEstatus,
@@ -55,10 +55,10 @@ import {
 } from 'recharts';
 
 const DOC_CATEGORY_LABELS: Record<DocCategoria, string> = {
-  administrativa: 'Documentaciùn Administrativa',
-  tecnica: 'Documentaciùn Tùcnica',
-  ejecucion: 'Documentaciùn de Ejecuciùn',
-  cierre: 'Documentaciùn de Cierre',
+  administrativa: 'Documentaci?n Administrativa',
+  tecnica: 'Documentaci?n T?cnica',
+  ejecucion: 'Documentaci?n de Ejecuci?n',
+  cierre: 'Documentaci?n de Cierre',
   programa: 'Entregables del Programa',
 };
 
@@ -102,16 +102,16 @@ export default function AccionDetailPage() {
     if (!accionId) throw new Error(`${entity.singularCap} no especificada`);
     if (!isValidUuid(accionId)) {
       throw new Error(
-        `Identificador de ${entity.singular} no vùlido. Abra la ${entity.singular} desde el catùlogo o use el enlace con UUID.`,
+        `Identificador de ${entity.singular} no v?lido. Abra la ${entity.singular} desde el cat?logo o use el enlace con UUID.`,
       );
     }
     const accion = await fetchAccion(accionId);
     const [obraAvances, obraEstimaciones, obraObservaciones, documentos, evm] = await Promise.all([
-      fetchAvancesByObra(accionId),
-      fetchEstimacionesByObra(accionId),
-      fetchObservacionesByObra(accionId).catch(() => []),
-      fetchDocumentosByObra(accionId).catch(() => [] as Documento[]),
-      fetchEvmByObra(accionId).catch(() => null),
+      fetchAvancesByAccion(accionId),
+      fetchEstimacionesByAccion(accionId),
+      fetchObservacionesByAccion(accionId).catch(() => []),
+      fetchDocumentosByAccion(accionId).catch(() => [] as Documento[]),
+      fetchEvmByAccion(accionId).catch(() => null),
     ]);
     return { accion, obraAvances, obraEstimaciones, obraObservaciones, documentos, evm };
   }, [accionId, entity]);
@@ -149,7 +149,7 @@ export default function AccionDetailPage() {
   const handleCreateObservacion = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!accionId || !obsDescripcion.trim()) {
-      setActionError('Indique la descripciùn de la observaciùn.');
+      setActionError('Indique la descripci?n de la observaci?n.');
       return;
     }
     setObsSubmitting(true);
@@ -163,7 +163,7 @@ export default function AccionDetailPage() {
         responsable: obsResponsable || data?.accion.contratista,
       });
       setObsDescripcion('');
-      toast.success('Observaciùn registrada');
+      toast.success('Observaci?n registrada');
       reload();
     } catch (err) {
       const msg = err instanceof ApiError ? err.message : 'Error al crear observacion';
@@ -182,7 +182,7 @@ export default function AccionDetailPage() {
       toast.success(aprobar ? 'Estimacion autorizada' : 'Estimacion observada');
       reload();
     } catch (err) {
-      const msg = err instanceof ApiError ? err.message : 'Error en validaciùn estatal';
+      const msg = err instanceof ApiError ? err.message : 'Error en validaci?n estatal';
       setActionError(msg);
       toast.error(msg);
     } finally {
@@ -330,12 +330,12 @@ export default function AccionDetailPage() {
                 {getProgramaName(accion.programa)}
               </Badge>
             </div>
-            <p className="text-sm text-gray-500">{accion.municipio} ù {accion.localidad}</p>
+            <p className="text-sm text-gray-500">{accion.municipio} ? {accion.localidad}</p>
             <p className="text-xs text-gray-400 mt-1">Folio: {accion.folio}</p>
             {(accion.obraFisica || accion.obraFisicaId) && (
               <div className="mt-3 p-3 rounded-lg border border-brand-primary/15 bg-brand-surface">
                 <p className="text-[10px] uppercase tracking-wide text-gray-500 mb-1">
-                  {obraEntity.singularCap} fùsica vinculada
+                  {obraEntity.singularCap} f?sica vinculada
                 </p>
                 <Link
                   to={`/obras/${accion.obraFisica?.id ?? accion.obraFisicaId}`}
@@ -406,7 +406,7 @@ export default function AccionDetailPage() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mt-4">
           <div>
             <div className="flex justify-between text-xs mb-1">
-              <span className="text-gray-500">Avance Fùsico</span>
+              <span className="text-gray-500">Avance F?sico</span>
               <span className="font-semibold text-gray-900">{formatPercentage(accion.avanceFisicoReal)}</span>
             </div>
             <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
@@ -437,7 +437,7 @@ export default function AccionDetailPage() {
       {evm && evm.curva_s.length > 0 && (
         <Card>
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold text-gray-900">EVM ù Curva S y desempeùo</CardTitle>
+            <CardTitle className="text-sm font-semibold text-gray-900">EVM ? Curva S y desempe?o</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4 text-xs">
@@ -450,7 +450,7 @@ export default function AccionDetailPage() {
                 <div key={m.label} className="p-2 rounded border bg-gray-50">
                   <div className="text-gray-500">{m.label}</div>
                   <div className="font-bold text-gray-900">
-                    {m.value != null ? m.value.toFixed(2) : 'ù'}
+                    {m.value != null ? m.value.toFixed(2) : '?'}
                   </div>
                 </div>
               ))}
@@ -478,9 +478,9 @@ export default function AccionDetailPage() {
         </Card>
       )}
 
-      {/* Ficha Tùcnica */}
+      {/* Ficha T?cnica */}
       <Card>
-        <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold text-gray-900">Ficha Tùcnica</CardTitle></CardHeader>
+        <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold text-gray-900">Ficha T?cnica</CardTitle></CardHeader>
         <CardContent>
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-x-6 gap-y-3">
             {[
@@ -492,7 +492,7 @@ export default function AccionDetailPage() {
               { label: 'POBLACION BENEFICIADA', value: `${formatCount(accion.poblacionBeneficiada)} habitantes` },
               { label: 'FECHA DE INICIO', value: formatDate(accion.fechaInicio) },
               { label: 'FECHA TERMINO', value: formatDate(accion.fechaTerminoProgramada) },
-              { label: 'PLAZO', value: `${accion.plazoEjecucion} dùas` },
+              { label: 'PLAZO', value: `${accion.plazoEjecucion} d?as` },
               { label: `Tipo de ${entity.singular}`.toUpperCase(), value: getTipoAccionLabel(accion.tipoObra.toLowerCase()) },
               { label: 'DEPENDENCIA', value: accion.dependencia },
               { label: 'PROGRAMA', value: getProgramaName(accion.programa) },
@@ -517,7 +517,7 @@ export default function AccionDetailPage() {
         }}
       >
         <TabsList className="bg-white border border-gray-200 p-1 h-auto flex flex-wrap">
-          <TabsTrigger value="avance" className="text-xs gap-1.5 data-[state=active]:bg-brand-primary data-[state=active]:text-white"><Activity className="w-3.5 h-3.5" /> Avance Fùsico</TabsTrigger>
+          <TabsTrigger value="avance" className="text-xs gap-1.5 data-[state=active]:bg-brand-primary data-[state=active]:text-white"><Activity className="w-3.5 h-3.5" /> Avance F?sico</TabsTrigger>
           <TabsTrigger value="estimaciones" className="text-xs gap-1.5 data-[state=active]:bg-brand-primary data-[state=active]:text-white"><DollarSign className="w-3.5 h-3.5" /> Estimaciones</TabsTrigger>
           <TabsTrigger value="expediente" className="text-xs gap-1.5 data-[state=active]:bg-brand-primary data-[state=active]:text-white"><Folder className="w-3.5 h-3.5" /> Expediente</TabsTrigger>
           <TabsTrigger value="observaciones" className="text-xs gap-1.5 data-[state=active]:bg-brand-primary data-[state=active]:text-white"><MessageSquare className="w-3.5 h-3.5" /> Observaciones {obraObservaciones.length > 0 && <span className="ml-1 bg-red-500 text-white rounded-full px-1 text-[9px]">{obraObservaciones.length}</span>}</TabsTrigger>
@@ -572,7 +572,7 @@ export default function AccionDetailPage() {
                             <td className="py-2 px-2 font-medium">{a.periodo}</td>
                             <td className="py-2 px-2 text-center">{a.programado}%</td>
                             <td className="py-2 px-2 text-center">{a.reportado}%</td>
-                            <td className="py-2 px-2 text-center">{a.validado ? `${a.validado}%` : 'ù'}</td>
+                            <td className="py-2 px-2 text-center">{a.validado ? `${a.validado}%` : '?'}</td>
                             <td className="py-2 px-2 text-center">
                               <span className={a.variacion < 0 ? 'text-red-500' : a.variacion > 0 ? 'text-green-600' : 'text-gray-400'}>
                                 {a.variacion > 0 ? '+' : ''}{a.variacion}%
@@ -624,7 +624,7 @@ export default function AccionDetailPage() {
                         <th className="text-right py-2 px-2 font-medium text-gray-500">Acumulado</th>
                         <th className="text-center py-2 px-2 font-medium text-gray-500">% Financiero</th>
                         <th className="text-center py-2 px-2 font-medium text-gray-500">Estatus</th>
-                        <th className="text-center py-2 px-2 font-medium text-gray-500">Validaciùn</th>
+                        <th className="text-center py-2 px-2 font-medium text-gray-500">Validaci?n</th>
                       </tr></thead>
                       <tbody>
                         {obraEstimaciones.map((e) => (
@@ -679,8 +679,8 @@ export default function AccionDetailPage() {
                 <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg flex items-start gap-2">
                   <AlertCircle className="w-4 h-4 text-yellow-600 flex-shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-xs font-medium text-yellow-800">Alerta: Desviaciùn Fùsico-Financiera</p>
-                    <p className="text-[11px] text-yellow-700">El avance financiero ({formatPercentage(accion.avanceFinanciero)}) supera el fùsico ({formatPercentage(accion.avanceFisicoReal)}) por {(accion.avanceFinanciero - accion.avanceFisicoReal).toFixed(1)} puntos.</p>
+                    <p className="text-xs font-medium text-yellow-800">Alerta: Desviaci?n F?sico-Financiera</p>
+                    <p className="text-[11px] text-yellow-700">El avance financiero ({formatPercentage(accion.avanceFinanciero)}) supera el f?sico ({formatPercentage(accion.avanceFisicoReal)}) por {(accion.avanceFinanciero - accion.avanceFisicoReal).toFixed(1)} puntos.</p>
                   </div>
                 </div>
               )}
@@ -690,7 +690,7 @@ export default function AccionDetailPage() {
           {/* Expediente Tab */}
           <TabsContent value="expediente" className="mt-4">
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="space-y-4">
-              {accionId && <IdpDiscrepanciesPanel obraId={accionId} />}
+              {accionId && <IdpDiscrepanciesPanel accionId={accionId} />}
               <DocumentLexicalSearch />
               <Card>
                 <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">{`Expediente Digital de ${entity.singularCap}`}</CardTitle></CardHeader>
@@ -812,7 +812,7 @@ export default function AccionDetailPage() {
           <TabsContent value="observaciones" className="mt-4">
             <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }}>
               <Card className="mb-4">
-                <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Emitir Nueva Observaciùn</CardTitle></CardHeader>
+                <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Emitir Nueva Observaci?n</CardTitle></CardHeader>
                 <CardContent>
                   <form onSubmit={handleCreateObservacion} className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                     <div>
@@ -822,7 +822,7 @@ export default function AccionDetailPage() {
                         onChange={(e) => setObsTipo(e.target.value)}
                         className="w-full h-9 px-2 text-xs border border-gray-200 rounded-md bg-white"
                       >
-                        <option value="tecnica">Tùcnica</option>
+                        <option value="tecnica">T?cnica</option>
                         <option value="administrativa">Administrativa</option>
                         <option value="financiera">Financiera</option>
                         <option value="documental">Documental</option>
@@ -842,7 +842,7 @@ export default function AccionDetailPage() {
                       </select>
                     </div>
                     <div className="lg:col-span-2">
-                      <label className="text-[10px] text-gray-500 uppercase mb-1 block">Descripciùn</label>
+                      <label className="text-[10px] text-gray-500 uppercase mb-1 block">Descripci?n</label>
                       <textarea
                         required
                         value={obsDescripcion}
@@ -870,7 +870,7 @@ export default function AccionDetailPage() {
                         disabled={obsSubmitting}
                         className="bg-brand-primary text-white px-4 py-2 rounded-md text-xs font-medium hover:bg-brand-primary-light transition-colors disabled:opacity-60"
                       >
-                        {obsSubmitting ? 'Enviando...' : 'Emitir Observaciùn'}
+                        {obsSubmitting ? 'Enviando...' : 'Emitir Observaci?n'}
                       </button>
                     </div>
                   </form>
@@ -893,7 +893,7 @@ export default function AccionDetailPage() {
                           <div className="flex items-center gap-4 mt-2 text-[10px] text-gray-500 flex-wrap">
                             <span>Responsable: <span className="font-medium text-gray-700">{obs.responsable}</span></span>
                             <span className="px-2 py-0.5 rounded-full font-medium" style={{ backgroundColor: obs.estatus === 'abierta' ? '#DC262615' : obs.estatus === 'en_atencion' ? '#D69E2E15' : obs.estatus === 'atendida' ? '#38A16915' : '#A0AEC015', color: obs.estatus === 'abierta' ? '#DC2626' : obs.estatus === 'en_atencion' ? '#D69E2E' : obs.estatus === 'atendida' ? '#38A169' : '#A0AEC0' }}>
-                              {obs.estatus === 'abierta' ? 'Abierta' : obs.estatus === 'en_atencion' ? 'En atenciùn' : obs.estatus === 'atendida' ? 'Atendida' : 'Cerrada'}
+                              {obs.estatus === 'abierta' ? 'Abierta' : obs.estatus === 'en_atencion' ? 'En atenci?n' : obs.estatus === 'atendida' ? 'Atendida' : 'Cerrada'}
                             </span>
                             {canManageObsEstatus && obs.estatus !== 'cerrada' && (
                               <select
@@ -904,7 +904,7 @@ export default function AccionDetailPage() {
                                 onClick={(e) => e.stopPropagation()}
                               >
                                 <option value="abierta">Abierta</option>
-                                <option value="en_atencion">En atenciùn</option>
+                                <option value="en_atencion">En atenci?n</option>
                                 <option value="atendida">Atendida</option>
                                 <option value="cerrada">Cerrada</option>
                               </select>
@@ -920,7 +920,7 @@ export default function AccionDetailPage() {
                               }
                               className="mt-2 text-[10px] text-brand-primary-light hover:underline"
                             >
-                              Marcar en atenciùn
+                              Marcar en atenci?n
                             </button>
                           )}
                           {obs.respuestas.length > 0 && (
@@ -973,7 +973,7 @@ export default function AccionDetailPage() {
                             </div>
                             <p className="mt-1 text-xs text-gray-600">
                               {h.usuarioNombre || 'Usuario'}
-                              {h.motivo ? ` ù ${h.motivo}` : ''}
+                              {h.motivo ? ` ? ${h.motivo}` : ''}
                             </p>
                           </li>
                         ))}
@@ -988,9 +988,9 @@ export default function AccionDetailPage() {
           {isConagua && accionId && (
             <TabsContent value="proagua" className="mt-4">
               <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ duration: 0.2 }} className="space-y-4">
-                <CofinanciamientoTable obraId={accionId} />
+                <CofinanciamientoTable accionId={accionId} />
                 <AvanceTrimestralPanel
-                  obraId={accionId}
+                  accionId={accionId}
                   ejercicioFiscal={parseEjercicioFromFolio(accion.folio)}
                 />
               </motion.div>
@@ -1002,7 +1002,7 @@ export default function AccionDetailPage() {
       <Dialog open={transicionOpen} onOpenChange={(open) => !transicionBusy && setTransicionOpen(open)}>
         <DialogContent className="sm:max-w-md">
           <DialogHeader>
-            <DialogTitle>Cambiar estatus de la acciùn</DialogTitle>
+            <DialogTitle>Cambiar estatus de la acci?n</DialogTitle>
           </DialogHeader>
           <div className="space-y-3">
             <p className="text-sm text-gray-600">

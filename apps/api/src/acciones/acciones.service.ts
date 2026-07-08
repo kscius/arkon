@@ -5,7 +5,7 @@ import { buildFolio, nextFolioSequence } from '../common/folio.util';
 import { ScopeService } from '../common/scope.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { destinosValidos, puedeTransicionar } from './accion-estado';
-import { CreateObraDto, UpdateObraDto } from './dto/obra.dto';
+import { CreateAccionDto, UpdateAccionDto } from './dto/accion.dto';
 import { TransicionAccionDto } from './dto/transicion-accion.dto';
 
 const OBRA_INCLUDE = {
@@ -21,7 +21,7 @@ const OBRA_INCLUDE = {
 type ObraPayload = Prisma.AccionGetPayload<{ include: typeof OBRA_INCLUDE }>;
 
 @Injectable()
-export class ObrasService {
+export class AccionesService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly scope: ScopeService,
@@ -115,7 +115,7 @@ export class ObrasService {
     };
   }
 
-  private proaguaFields(dto: CreateObraDto | UpdateObraDto) {
+  private proaguaFields(dto: CreateAccionDto | UpdateAccionDto) {
     return {
       ...(dto.cua !== undefined && { cua: dto.cua }),
       ...(dto.id_sisba !== undefined && { idSisba: dto.id_sisba }),
@@ -185,7 +185,7 @@ export class ObrasService {
     return this.mapObra(obra);
   }
 
-  private async resolveFolioForCreate(dto: CreateObraDto): Promise<string> {
+  private async resolveFolioForCreate(dto: CreateAccionDto): Promise<string> {
     const trimmed = dto.folio?.trim();
     if (trimmed) return trimmed;
 
@@ -204,7 +204,7 @@ export class ObrasService {
     return buildFolio(dto.programa, year, sequence);
   }
 
-  async create(dto: CreateObraDto, user: Usuario) {
+  async create(dto: CreateAccionDto, user: Usuario) {
     if (user.rol === Rol.contratista) {
       throw new ForbiddenException('Contratistas cannot create acciones');
     }
@@ -245,7 +245,7 @@ export class ObrasService {
     return this.mapObra(obra);
   }
 
-  async update(id: string, dto: UpdateObraDto, user: Usuario) {
+  async update(id: string, dto: UpdateAccionDto, user: Usuario) {
     if (dto.estatus !== undefined) {
       throw new BadRequestException(
         'El cambio de estatus debe realizarse mediante POST /acciones/:id/transicion',

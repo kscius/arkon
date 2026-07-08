@@ -16,7 +16,7 @@ import { useAsyncData } from '@/hooks/use-async-data';
 import {
   createAvanceTrimestral,
   downloadProaguaExport,
-  fetchAvancesTrimestralesByObra,
+  fetchAvancesTrimestralesByAccion,
   updateAvanceTrimestral,
 } from '@/lib/api';
 import { canCaptureTrimestral, canValidateTrimestral } from '@/lib/proagua-access';
@@ -34,11 +34,11 @@ const ESTATUS_STYLES: Record<string, { bg: string; color: string; label: string 
 };
 
 interface AvanceTrimestralPanelProps {
-  obraId: string;
+  accionId: string;
   ejercicioFiscal?: number;
 }
 
-export function AvanceTrimestralPanel({ obraId, ejercicioFiscal }: AvanceTrimestralPanelProps) {
+export function AvanceTrimestralPanel({ accionId, ejercicioFiscal }: AvanceTrimestralPanelProps) {
   const { user } = useApp();
   const [exporting, setExporting] = useState(false);
   const [formOpen, setFormOpen] = useState(false);
@@ -58,7 +58,7 @@ export function AvanceTrimestralPanel({ obraId, ejercicioFiscal }: AvanceTrimest
   const handleExport = async () => {
     setExporting(true);
     try {
-      await downloadProaguaExport('anexo-xviii', obraId);
+      await downloadProaguaExport('anexo-xviii', accionId);
       toast.success('Anexo XVIII descargado');
     } catch {
       toast.error('No se pudo exportar el informe trimestral');
@@ -68,7 +68,7 @@ export function AvanceTrimestralPanel({ obraId, ejercicioFiscal }: AvanceTrimest
   };
 
   const load = useCallback(async () => {
-    const rows = await fetchAvancesTrimestralesByObra(obraId);
+    const rows = await fetchAvancesTrimestralesByAccion(accionId);
     const filtered = ejercicioFiscal
       ? rows.filter((r) => r.ejercicioFiscal === ejercicioFiscal)
       : rows;
@@ -76,14 +76,14 @@ export function AvanceTrimestralPanel({ obraId, ejercicioFiscal }: AvanceTrimest
       if (a.ejercicioFiscal !== b.ejercicioFiscal) return b.ejercicioFiscal - a.ejercicioFiscal;
       return a.trimestre - b.trimestre;
     });
-  }, [obraId, ejercicioFiscal]);
+  }, [accionId, ejercicioFiscal]);
 
   const { data, loading, error, reload } = useAsyncData(load, [load]);
 
   const handleCreate = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
-      await createAvanceTrimestral(obraId, {
+      await createAvanceTrimestral(accionId, {
         ejercicio_fiscal: ef,
         trimestre,
         avance_fisico_trimestre: Number(fisTri) || 0,
@@ -104,7 +104,7 @@ export function AvanceTrimestralPanel({ obraId, ejercicioFiscal }: AvanceTrimest
   const updateEstatus = async (av: AvanceTrimestral, estatus: string) => {
     setBusyId(av.id);
     try {
-      await updateAvanceTrimestral(obraId, av.id, { estatus });
+      await updateAvanceTrimestral(accionId, av.id, { estatus });
       toast.success('Estatus actualizado');
       reload();
     } catch {

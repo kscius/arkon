@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { PageState } from '@/components/PageState';
 import { useApp } from '@/context/AppContext';
 import { useAsyncData } from '@/hooks/use-async-data';
-import { createAvance, fetchAvancesByObra, fetchEstimacionesByObra, fetchAcciones, fetchAttentionToday, fetchEvmPortfolio, fetchContractorScores } from '@/lib/api';
+import { createAvance, fetchAvancesByAccion, fetchEstimacionesByAccion, fetchAcciones, fetchAttentionToday, fetchEvmPortfolio, fetchContractorScores } from '@/lib/api';
 import { AttentionTodayPanel } from '@/components/dashboard/AttentionTodayPanel';
 import { EvmSummaryChart } from '@/components/dashboard/EvmSummaryChart';
 import { ApiError } from '@/lib/api-client';
@@ -35,13 +35,13 @@ export default function DashboardContratistaPage() {
     const avancesPorObra = await Promise.all(
       misObras.map(async (obra) => ({
         obra,
-        avances: await fetchAvancesByObra(obra.id),
+        avances: await fetchAvancesByAccion(obra.id),
       })),
     );
     const estimacionesPorObra = await Promise.all(
       misObras.map(async (obra) => ({
         obra,
-        estimaciones: await fetchEstimacionesByObra(obra.id),
+        estimaciones: await fetchEstimacionesByAccion(obra.id),
       })),
     );
 

@@ -16,7 +16,7 @@ import { useAsyncData } from '@/hooks/use-async-data';
 import {
   createCofinanciamiento,
   deleteCofinanciamiento,
-  fetchCofinanciamientosByObra,
+  fetchCofinanciamientosByAccion,
   updateCofinanciamiento,
 } from '@/lib/api';
 import { canEditCofinanciamiento } from '@/lib/proagua-access';
@@ -48,10 +48,10 @@ const FUENTE_ORDER: CofinanciamientoFuente[] = [
 ];
 
 interface CofinanciamientoTableProps {
-  obraId: string;
+  accionId: string;
 }
 
-export function CofinanciamientoTable({ obraId }: CofinanciamientoTableProps) {
+export function CofinanciamientoTable({ accionId }: CofinanciamientoTableProps) {
   const { entity } = getBrand();
   const { user } = useApp();
   const canEdit = canEditCofinanciamiento(user);
@@ -64,7 +64,7 @@ export function CofinanciamientoTable({ obraId }: CofinanciamientoTableProps) {
   const [saving, setSaving] = useState(false);
 
   const load = useCallback(async () => {
-    const rows = await fetchCofinanciamientosByObra(obraId);
+    const rows = await fetchCofinanciamientosByAccion(accionId);
     const sorted = [...rows].sort((a, b) => {
       const ia = FUENTE_ORDER.indexOf(a.fuente as CofinanciamientoFuente);
       const ib = FUENTE_ORDER.indexOf(b.fuente as CofinanciamientoFuente);
@@ -72,7 +72,7 @@ export function CofinanciamientoTable({ obraId }: CofinanciamientoTableProps) {
     });
     const total = sorted.reduce((s, r) => s + r.monto, 0);
     return { rows: sorted, total };
-  }, [obraId]);
+  }, [accionId]);
 
   const { data, loading, error, reload } = useAsyncData(load, [load]);
 
@@ -109,10 +109,10 @@ export function CofinanciamientoTable({ obraId }: CofinanciamientoTableProps) {
         descripcion: descripcion.trim() || undefined,
       };
       if (editingId) {
-        await updateCofinanciamiento(editingId, obraId, body);
+        await updateCofinanciamiento(editingId, accionId, body);
         toast.success('Cofinanciamiento actualizado');
       } else {
-        await createCofinanciamiento(obraId, body);
+        await createCofinanciamiento(accionId, body);
         toast.success('Fuente agregada');
       }
       setDialogOpen(false);
